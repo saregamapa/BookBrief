@@ -202,22 +202,24 @@
             </div>
           </section>
 
-          <!-- Billing shortcut -->
+          <!-- Billing -->
           <section id="section-billing" class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
-            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Billing &amp; plan</h2>
-            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Manage your subscription, invoices, and payment method.</p>
-            <div class="mt-5 flex flex-wrap gap-3">
+            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Billing</h2>
+            <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">Open Stripe to manage payment method or cancel.</p>
+            <div class="mt-4 flex flex-wrap gap-2">
               <button
                 id="btn-portal"
                 type="button"
-                class="bb-focus rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-semibold hover:bg-stone-50 dark:border-stone-600 dark:hover:bg-stone-800"
-              >Open billing portal</button>
+                disabled
+                class="bb-focus rounded-xl border border-stone-300 px-4 py-2 text-sm font-semibold hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-600 dark:hover:bg-stone-800"
+              >Billing portal</button>
               <a
                 href="/frontend/dashboard.html"
-                class="bb-focus inline-flex items-center rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-50 dark:border-stone-600 dark:text-stone-400 dark:hover:bg-stone-800"
-              >View dashboard</a>
+                class="bb-focus inline-flex items-center rounded-xl border border-stone-300 px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 dark:border-stone-600 dark:text-stone-400 dark:hover:bg-stone-800"
+              >Dashboard</a>
             </div>
-            <p id="billing-alert" class="mt-3 hidden text-sm font-medium text-red-600 dark:text-red-400"></p>
+            <p id="billing-hint" class="mt-2 hidden text-xs text-stone-500 dark:text-stone-500">Subscribe once from the dashboard to enable the portal.</p>
+            <p id="billing-alert" class="mt-2 hidden text-sm font-medium text-red-600 dark:text-red-400"></p>
           </section>
 
           <!-- Danger zone -->
@@ -266,13 +268,22 @@
             if (nameEl) nameEl.textContent = user.full_name || "—";
           }
 
-          // Fetch subscription for plan display
+          // Subscription → plan label + billing portal availability
           try {
             var sub = await BBApi.apiFetch("/user/subscription");
             var planEl = document.getElementById("profile-plan");
             if (planEl && sub) {
-              var planName = sub.plan_name || sub.plan || "free";
+              var planName = (sub.plan_name || sub.plan || "free").toString();
               planEl.textContent = planName.charAt(0).toUpperCase() + planName.slice(1);
+            }
+            var portalBtn = document.getElementById("btn-portal");
+            var hint = document.getElementById("billing-hint");
+            if (portalBtn && sub) {
+              portalBtn.disabled = !sub.stripe_customer_id;
+              if (hint) {
+                if (!sub.stripe_customer_id) hint.classList.remove("hidden");
+                else hint.classList.add("hidden");
+              }
             }
           } catch (_) {}
 
@@ -360,20 +371,25 @@
             }
           });
 
-          // ── Billing portal ──
+          // ── Billing portal (same endpoint as dashboard) ──
           document.getElementById("btn-portal").addEventListener("click", async function () {
+            if (this.disabled) return;
             var btn = this;
-            var restore = BBUi.setLoadingBtn(btn, "Opening…");
+            var restore = BBUi.setLoadingBtn(btn, "…");
             var alertEl = document.getElementById("billing-alert");
             alertEl.classList.add("hidden");
             try {
-              var data = await BBApi.apiFetch("/stripe/portal", { method: "POST" });
+              var data = await BBApi.apiFetch("/stripe/create-portal-session", { method: "POST" });
               if (data && data.url) {
                 window.location.href = data.url;
+              } else {
+                restore();
+                alertEl.textContent = "No portal URL returned.";
+                alertEl.classList.remove("hidden");
               }
             } catch (err) {
               restore();
-              alertEl.textContent = err.message || "Could not open billing portal.";
+              alertEl.textContent = err.message || "Portal unavailable.";
               alertEl.classList.remove("hidden");
             }
           });

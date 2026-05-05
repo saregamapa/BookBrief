@@ -37,10 +37,11 @@ def configure_logging(*, debug: bool = False) -> None:
             logging.getLogger(noisy).setLevel(logging.WARNING)
 
     # ── shared processors ────────────────────────────────────────────────────
+    # Note: do not use structlog.stdlib.add_logger_name with PrintLoggerFactory —
+    # PrintLogger has no ``name`` attribute (see structlog #std-lib-vs-print).
     shared_processors: list[Any] = [
         structlog.contextvars.merge_contextvars,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
+        structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso", utc=True),
         structlog.processors.StackInfoRenderer(),
     ]

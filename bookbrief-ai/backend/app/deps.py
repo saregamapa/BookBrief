@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User
-from app.utils.security import decode_access_token, token_issued_at
+from app.utils.security import decode_access_token
 
 http_bearer = HTTPBearer(auto_error=False)
 
@@ -30,22 +30,37 @@ def _check_token_not_revoked(payload: dict, user: User) -> None:
     This implements instant token invalidation on password change / "revoke all
     sessions" without needing a server-side deny-list.  If ``password_changed_at``
     is unset (existing accounts that predate the column), the check is skipped.
+
+    Compare using **Unix whole seconds**: JWT ``iat`` is second-resolution, while
+    ``password_changed_at`` may include microseconds. Comparing datetimes directly
+    treated ``iat`` as the *start* of that second and wrongly revoked fresh tokens.
     """
     if user.password_changed_at is None:
         return
-    iat = token_issued_at(payload)
-    if iat is None:
-        # Token has no iat — conservatively reject it.
+    raw_iat = payload.get("iat")
+    if raw_iat is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token missing issuance timestamp",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    # Normalise password_changed_at to UTC-aware for comparison.
+    try:
+        iat_sec = int(raw_iat)
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token missing issuance timestamp",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from None
+
     pca = user.password_changed_at
     if pca.tzinfo is None:
         pca = pca.replace(tzinfo=timezone.utc)
-    if iat < pca:
+    else:
+        pca = pca.astimezone(timezone.utc)
+    pca_sec = int(pca.timestamp())
+
+    if iat_sec < pca_sec:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Session has been revoked — please log in again",

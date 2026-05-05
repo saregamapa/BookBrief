@@ -138,18 +138,24 @@
               disabled>
               Manage billing
             </button>
-            <button type="button" data-checkout="pro"
-              class="checkout-btn bb-focus hidden rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500">
-              Upgrade — Pro
-            </button>
-            <button type="button" data-checkout="growth"
-              class="checkout-btn bb-focus hidden rounded-lg border border-amber-700 px-4 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-50 dark:border-amber-500 dark:text-amber-200 dark:hover:bg-stone-800">
-              Upgrade — Growth
-            </button>
+            <a
+              href="https://buy.stripe.com/test_8x2dR91649IX9x43dF9Ve00"
+              data-checkout="pro"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="checkout-link bb-focus hidden inline-flex items-center rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500"
+            >Upgrade — Pro</a>
+            <a
+              href="https://buy.stripe.com/test_28E7sL4igg7l8t0eWn9Ve01"
+              data-checkout="growth"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="checkout-link bb-focus hidden inline-flex items-center rounded-lg border border-amber-700 px-4 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-50 dark:border-amber-500 dark:text-amber-200 dark:hover:bg-stone-800"
+            >Upgrade — Growth</a>
           </div>
         </div>
         <p id="billing-hint" class="mt-3 hidden text-xs text-stone-400 dark:text-stone-500">
-          Billing portal opens after your first successful checkout (a Stripe customer is created then).
+          “Manage billing” unlocks after Stripe has a customer on file (e.g. after you complete a subscription checkout).
         </p>
         <p id="billing-error" class="mt-2 hidden text-sm text-red-600 dark:text-red-400"></p>
       </section>
@@ -357,24 +363,6 @@
             restore();
             showBillingErr(e.message || "Portal failed");
           }
-        });
-
-        document.querySelectorAll(".checkout-btn").forEach(function (btn) {
-          btn.addEventListener("click", async function () {
-            var plan = btn.getAttribute("data-checkout");
-            showBillingErr("");
-            var restore = BBUi.setLoadingBtn(btn, "Redirecting…");
-            try {
-              var res = await BBApi.apiFetch("/stripe/create-checkout-session", {
-                method: "POST",
-                body: JSON.stringify({ plan: plan }),
-              });
-              window.location.href = res.url;
-            } catch (e) {
-              restore();
-              showBillingErr(e.message || "Checkout failed");
-            }
-          });
         });
 
         loadSubscription();

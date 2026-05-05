@@ -41,6 +41,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 - **Development:** set `DATABASE_URL=sqlite:///./bookbrief.db` (default in `.env.example`).
 - **Production:** set `DATABASE_URL` to a PostgreSQL URL using `postgresql+psycopg2://...`.
+- After pulling code that changes models or adds migrations, run **`alembic upgrade head`** from `backend/` before starting the app (otherwise you may see errors like `no such column`).
 
 Migrations (after models exist in step 2):
 
