@@ -80,6 +80,14 @@ class SummaryListResponse(BaseModel):
     total: int
 
 
+class SummaryStatusResponse(BaseModel):
+    """Lightweight polling response — no full markdown to keep payload small."""
+
+    id: int
+    status: str
+    error_message: Optional[str] = None
+
+
 class SummaryDeleteResponse(BaseModel):
     ok: bool = True
     id: int

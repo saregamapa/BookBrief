@@ -1,36 +1,63 @@
-# Render Blueprint — https://docs.render.com/infrastructure-as-code
-# Deploy: Dashboard → New → Blueprint → connect repo. If this repo’s git root is a
-# parent folder (e.g. BookBrief/), move this file to that root and set rootDir: bookbrief-ai.
+# render.yaml — BookBrief AI deployment on Render.com
+# Docs: https://render.com/docs/render-yaml-ref
+#
+# Services defined here:
+#   1. bookbrief-web     — FastAPI web service (uvicorn)
+#   2. bookbrief-db      — Managed PostgreSQL (Render Postgres)
+#
+# Deploy: connect this repo in the Render dashboard → "New Blueprint"
+# All env vars marked sync: false must be set manually in the Render dashboard.
+
 databases:
   - name: bookbrief-db
     databaseName: bookbrief
     user: bookbrief
-    plan: free
+    plan: starter          # upgrade to standard for production SLA
 
 services:
   - type: web
     name: bookbrief-web
     runtime: python
-    plan: free
-    rootDir: .
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /health
+    region: oregon         # or: frankfurt, singapore, ohio
+    plan: starter          # upgrade to standard for production
+
+    # ── Build ──────────────────────────────────────────────────────────────
+    rootDir: bookbrief-ai/backend
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      alembic upgrade head
+
+    # ── Start ──────────────────────────────────────────────────────────────
+    startCommand: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port $PORT
+      --workers 2
+      --loop uvloop
+      --http httptools
+      --proxy-headers
+      --forwarded-allow-ips='*'
+
+    # ── Health check ───────────────────────────────────────────────────────
+    healthCheckPath: /api/v1/health
+
+    # ── Auto-deploy on push to main ────────────────────────────────────────
+    autoDeploy: true
+
+    # ── Environment variables ──────────────────────────────────────────────
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.7
+      # Injected automatically by Render
       - key: DATABASE_URL
         fromDatabase:
           name: bookbrief-db
           property: connectionString
+
+      # Set in Render dashboard — never commit real values here
       - key: SECRET_KEY
-        generateValue: true
+        sync: false
       - key: JWT_SECRET_KEY
-        generateValue: true
-      - key: DEBUG
-        value: "false"
-      - key: OPENAI_MODEL
-        value: gpt-4o-mini
+        sync: false
       - key: OPENAI_API_KEY
         sync: false
       - key: STRIPE_SECRET_KEY
@@ -39,7 +66,25 @@ services:
         sync: false
       - key: STRIPE_PRICE_PRO
         sync: false
-      - key: STRIPE_PRICE_UNLIMITED
+      - key: STRIPE_PRICE_GROWTH
         sync: false
+
+      # Non-secret config — safe to set here
+      - key: DEBUG
+        value: "false"
+      - key: OPENAI_MODEL
+        value: "gpt-4o-mini"
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "10080"
+      - key: JWT_ALGORITHM
+        value: "HS256"
+
+      # Stripe redirect URLs — update after first deploy with real domain
+      - key: STRIPE_SUCCESS_URL
+        value: "https://bookbrief-web.onrender.com/frontend/dashboard.html?payment=success"
+      - key: STRIPE_CANCEL_URL
+        value: "https://bookbrief-web.onrender.com/frontend/dashboard.html?payment=cancelled"
+
+      # CORS — set to your real frontend origin if serving separately
       - key: CORS_ORIGINS
-        sync: false
+        value: "https://bookbrief-web.onrender.com"

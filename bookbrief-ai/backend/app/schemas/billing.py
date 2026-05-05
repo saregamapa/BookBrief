@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class CreateCheckoutRequest(BaseModel):
-    plan: Literal["pro", "unlimited"] = Field(description="Paid plan to subscribe to")
+    plan: Literal["pro", "growth"] = Field(description="Paid plan to subscribe to")
 
 
 class CheckoutUrlResponse(BaseModel):

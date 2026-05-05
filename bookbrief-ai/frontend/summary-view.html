@@ -16,167 +16,163 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = { darkMode: "class" };
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              parchment: { 50: "#fafaf9" },
+            },
+            boxShadow: {
+              soft: "0 4px 24px -4px rgba(28,25,23,.08),0 2px 8px -2px rgba(28,25,23,.06)",
+              "soft-dark": "0 4px 24px -4px rgba(0,0,0,.4)",
+            },
+          },
+        },
+      };
     </script>
     <link rel="stylesheet" href="/static/styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
     <style>
-      .bb-md h1 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin: 1.25rem 0 0.75rem;
-        font-family: Literata, Georgia, serif;
-      }
-      .bb-md h2 {
-        font-size: 1.35rem;
-        font-weight: 600;
-        margin: 1.25rem 0 0.5rem;
-        font-family: Literata, Georgia, serif;
-      }
-      .bb-md h3 {
-        font-size: 1.15rem;
-        font-weight: 600;
-        margin: 1rem 0 0.35rem;
-      }
-      .bb-md p {
-        margin: 0.65rem 0;
-        line-height: 1.65;
-      }
-      .bb-md ul,
-      .bb-md ol {
-        margin: 0.5rem 0 0.5rem 1.25rem;
-        padding-left: 0.25rem;
-      }
-      .bb-md li {
-        margin: 0.25rem 0;
-      }
-      .bb-md pre,
-      .bb-md code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        font-size: 0.9em;
-      }
-      .bb-md pre {
-        overflow-x: auto;
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        background: rgb(245 245 244);
-        margin: 0.75rem 0;
-      }
-      .dark .bb-md pre {
-        background: rgb(28 25 23);
-      }
-      .bb-md blockquote {
-        border-left: 3px solid rgb(180 83 9);
-        margin: 0.75rem 0;
-        padding-left: 1rem;
-        color: rgb(87 83 78);
-      }
-      .dark .bb-md blockquote {
-        color: rgb(214 211 209);
-      }
+      /* Markdown content styles */
+      .bb-md h1 { font-size: 1.75rem; font-weight: 700; margin: 1.25rem 0 .75rem; font-family: Literata, Georgia, serif; }
+      .bb-md h2 { font-size: 1.35rem; font-weight: 600; margin: 1.5rem 0 .5rem; font-family: Literata, Georgia, serif; }
+      .bb-md h3 { font-size: 1.1rem; font-weight: 600; margin: 1rem 0 .35rem; }
+      .bb-md p  { margin: .65rem 0; line-height: 1.7; }
+      .bb-md ul, .bb-md ol { margin: .5rem 0 .5rem 1.25rem; padding-left: .25rem; }
+      .bb-md li { margin: .3rem 0; line-height: 1.6; }
+      .bb-md pre, .bb-md code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: .9em; }
+      .bb-md pre { overflow-x:auto; padding: .75rem 1rem; border-radius: .5rem; background: #f5f5f4; margin: .75rem 0; }
+      .dark .bb-md pre { background: #1c1917; }
+      .bb-md code:not(pre code) { background: #f5f5f4; border-radius: .25rem; padding: .1em .35em; }
+      .dark .bb-md code:not(pre code) { background: #292524; }
+      .bb-md blockquote { border-left: 3px solid #b45309; margin: .75rem 0; padding-left: 1rem; color: #57534e; }
+      .dark .bb-md blockquote { color: #a8a29e; border-left-color: #d97706; }
+      .bb-md hr { border: none; border-top: 1px solid #e7e5e4; margin: 1.5rem 0; }
+      .dark .bb-md hr { border-top-color: #292524; }
+      @keyframes bb-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+      .bb-pulse { animation: bb-pulse 1.5s ease-in-out infinite; }
       @media print {
-        header,
-        .no-print {
-          display: none !important;
-        }
-        body {
-          background: white !important;
-          color: black !important;
-        }
-        .bb-md {
-          max-width: none !important;
-        }
+        header, .no-print { display: none !important; }
+        body { background: white !important; color: black !important; }
+        .bb-md { max-width: none !important; }
+        .print-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
       }
     </style>
   </head>
-  <body class="bb-paper min-h-screen text-stone-800 dark:bg-stone-950 dark:text-stone-100">
-    <header class="no-print flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-4 py-3 dark:border-stone-800 sm:px-6">
-      <a href="/frontend/dashboard.html" class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50"
-        >← Library</a
-      >
-      <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          id="theme-toggle"
-          class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs dark:border-stone-700 dark:bg-stone-900"
-        >
-          <span data-theme-label class="hidden sm:inline">Dark</span>
+
+  <body class="bb-paper min-h-screen text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-100">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <header class="no-print sticky top-0 z-40 border-b border-stone-200/80 bg-parchment-50/90 backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/90">
+      <div class="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <a href="/frontend/dashboard.html"
+           class="bb-focus flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Library
+        </a>
+        <a href="/frontend/index.html" class="flex items-center gap-2" aria-label="BookBrief AI home">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white dark:bg-amber-600" aria-hidden="true">B</span>
+        </a>
+        <button type="button" id="theme-toggle"
+          class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+          aria-label="Toggle dark mode">
+          <span data-theme-icon aria-hidden="true">◐</span>
+          <span data-theme-label class="hidden sm:inline ml-1">Dark</span>
         </button>
       </div>
     </header>
 
     <main class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-      <p id="load-err" class="hidden text-sm text-red-600 dark:text-red-400"></p>
 
+      <!-- Error state -->
+      <p id="load-err" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"></p>
+
+      <!-- Polling/processing state -->
+      <div id="processing-panel" class="hidden text-center py-16">
+        <div class="mx-auto mb-4 h-12 w-12 rounded-full border-4 border-stone-200 border-t-amber-700 dark:border-stone-700 dark:border-t-amber-500"
+             style="animation:spin 1s linear infinite;" aria-hidden="true"></div>
+        <h2 class="font-serif-display text-xl font-semibold text-stone-900 dark:text-stone-50">Building your summary…</h2>
+        <p id="processing-status" class="mt-2 text-sm text-stone-500 dark:text-stone-400">Queued for processing</p>
+        <p id="processing-elapsed" class="mt-1 text-xs text-stone-400 dark:text-stone-500"></p>
+      </div>
+
+      <!-- Full content shell -->
       <div id="summary-shell" class="hidden">
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+
+        <!-- Title + meta -->
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div class="min-w-0 flex-1">
             <h1 id="sum-title" class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50"></h1>
-            <p id="sum-meta" class="mt-1 text-sm text-stone-500 dark:text-stone-400"></p>
+            <p id="sum-meta" class="mt-1.5 text-sm text-stone-500 dark:text-stone-400"></p>
           </div>
-          <span
-            id="sum-status"
-            class="inline-flex shrink-0 rounded-full border border-stone-200 px-2.5 py-0.5 text-xs font-medium dark:border-stone-600"
-          ></span>
+          <span id="sum-status" class="shrink-0 self-start rounded-full px-2.5 py-0.5 text-xs font-semibold" style="display:inline-flex;align-items:center;gap:.25rem;"></span>
         </div>
 
+        <!-- Error/warning banner (soft failures) -->
+        <div id="sum-warn" class="hidden no-print mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+          <strong>Note:</strong> <span id="sum-warn-msg"></span>
+        </div>
+
+        <!-- Action bar -->
         <div class="no-print mt-6 flex flex-wrap gap-2">
-          <button
-            type="button"
-            id="btn-copy"
-            class="bb-focus rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:hover:bg-stone-800"
-          >
+          <button type="button" id="btn-copy"
+            class="bb-focus inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800">
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
             Copy markdown
           </button>
-          <button
-            type="button"
-            id="btn-md"
-            class="bb-focus rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:hover:bg-stone-800"
-          >
+          <button type="button" id="btn-md"
+            class="bb-focus inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800">
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
             Download .md
           </button>
-          <button
-            type="button"
-            id="btn-print"
-            class="bb-focus rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:hover:bg-stone-800"
-          >
-            Print / Save as PDF
+          <button type="button" id="btn-print"
+            class="bb-focus inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800">
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+            </svg>
+            Print / PDF
           </button>
-          <a
-            href="/frontend/summarize.html"
-            class="bb-focus inline-flex items-center rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 dark:bg-amber-600"
-            >New style</a
-          >
-          <button
-            type="button"
-            id="btn-delete"
-            class="bb-focus rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-800 hover:bg-red-50 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950/50"
-          >
+          <a href="/frontend/summarize.html"
+            class="bb-focus inline-flex items-center gap-1.5 rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500">
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            New style
+          </a>
+          <button type="button" id="btn-delete"
+            class="bb-focus inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950/50">
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
             Delete
           </button>
         </div>
 
-        <article
-          id="md-wrap"
-          class="mt-8 rounded-2xl border border-stone-200 bg-white/90 p-6 shadow-sm dark:border-stone-700 dark:bg-stone-900/60"
-        >
-          <div id="md-content" class="bb-md max-w-none"></div>
+        <!-- Markdown content -->
+        <article id="md-wrap" class="print-card mt-8 rounded-2xl border border-stone-200 bg-white/90 p-6 shadow-soft dark:border-stone-700 dark:bg-stone-900/60 dark:shadow-soft-dark sm:p-8">
+          <div id="md-content" class="bb-md max-w-none text-stone-800 dark:text-stone-200"></div>
         </article>
+
       </div>
     </main>
+
+    <style>
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 
     <script src="/frontend/js/api.js"></script>
     <script src="/frontend/js/auth.js"></script>
     <script src="/frontend/js/ui.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", async function () {
-        function escapeHtml(s) {
-          var d = document.createElement("div");
-          d.textContent = s == null ? "" : String(s);
-          return d.innerHTML;
-        }
-
         if (!window.BBAuth || !BBAuth.isLoggedIn()) {
           window.location.replace("/frontend/login.html");
           return;
@@ -186,12 +182,14 @@
         var params = new URLSearchParams(window.location.search);
         var id = params.get("id");
         var errEl = document.getElementById("load-err");
+
         if (!id) {
-          errEl.textContent = "Missing summary id. Open a summary from your library.";
+          errEl.textContent = "Missing summary ID. Open a summary from your library.";
           errEl.classList.remove("hidden");
           return;
         }
 
+        // ── Initial fetch ─────────────────────────────────────────────────────
         var data;
         try {
           data = await BBApi.summaries.get(id);
@@ -201,58 +199,106 @@
           return;
         }
 
+        // ── If still in-progress, poll first ─────────────────────────────────
+        if (data.status === "pending" || data.status === "processing") {
+          var procPanel = document.getElementById("processing-panel");
+          var procStatus = document.getElementById("processing-status");
+          var procElapsed = document.getElementById("processing-elapsed");
+          procPanel.classList.remove("hidden");
+
+          var startedAt = Date.now();
+          var elapsedTimer = setInterval(function () {
+            var s = Math.round((Date.now() - startedAt) / 1000);
+            procElapsed.textContent = "Elapsed: " + s + "s";
+          }, 1000);
+
+          var statusLabels = {
+            pending: "Queued for processing…",
+            processing: "Running the summarization pipeline…",
+          };
+
+          try {
+            data = await BBApi.summaries.pollUntilDone(id, {
+              onStatus: function (s) {
+                procStatus.textContent = statusLabels[s] || s;
+              },
+              timeoutMs: 360000,
+            });
+          } catch (e) {
+            clearInterval(elapsedTimer);
+            procPanel.classList.add("hidden");
+            errEl.textContent = e.message || "Summary generation failed.";
+            errEl.classList.remove("hidden");
+            return;
+          }
+          clearInterval(elapsedTimer);
+          procPanel.classList.add("hidden");
+        }
+
+        // ── Render summary ────────────────────────────────────────────────────
         document.getElementById("summary-shell").classList.remove("hidden");
+
         var title = data.title || "Untitled summary";
         document.getElementById("sum-title").textContent = title;
         document.title = title + " — BookBrief AI";
 
-        var metaParts = [data.source_type, data.style, new Date(data.created_at).toLocaleString()];
+        // Meta line
+        var metaParts = [
+          data.source_type,
+          data.style,
+          new Date(data.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }),
+        ];
         if (data.author) metaParts.splice(1, 0, "by " + data.author);
         document.getElementById("sum-meta").textContent = metaParts.join(" · ");
 
+        // Status badge
         var st = document.getElementById("sum-status");
+        var badgeColors = {
+          completed: { bg: "#166534", text: "#dcfce7" },
+          failed:    { bg: "#991b1b", text: "#fee2e2" },
+          processing:{ bg: "#92400e", text: "#fef3c7" },
+          pending:   { bg: "#1e3a5f", text: "#dbeafe" },
+        };
+        var bc = badgeColors[data.status] || { bg: "#292524", text: "#f5f5f4" };
+        st.style.background = bc.bg;
+        st.style.color = bc.text;
+        st.style.padding = ".2rem .625rem";
+        st.style.borderRadius = "999px";
         st.textContent = data.status;
-        if (data.status === "failed" || (data.error_message && data.error_message.length)) {
-          st.classList.add("border-red-300", "text-red-800", "dark:border-red-800", "dark:text-red-300");
-        }
 
+        // Warning banner for soft failures
         if (data.error_message) {
-          var warn = document.createElement("p");
-          warn.className =
-            "no-print mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100";
-          warn.textContent = data.error_message;
-          document.getElementById("summary-shell").insertBefore(warn, document.getElementById("md-wrap"));
+          document.getElementById("sum-warn-msg").textContent = data.error_message;
+          document.getElementById("sum-warn").classList.remove("hidden");
         }
 
+        // Render markdown
         var rawMd = data.output_markdown || "";
-        var html =
-          typeof marked !== "undefined" && marked.parse
-            ? marked.parse(rawMd)
-            : "<pre>" + escapeHtml(rawMd) + "</pre>";
+        var html;
+        if (typeof marked !== "undefined" && marked.parse) {
+          html = marked.parse(rawMd);
+        } else {
+          var d = document.createElement("div");
+          d.textContent = rawMd;
+          html = "<pre>" + d.innerHTML + "</pre>";
+        }
         if (typeof DOMPurify !== "undefined") {
           html = DOMPurify.sanitize(html);
         }
         document.getElementById("md-content").innerHTML = html;
 
+        // ── Action handlers ──────────────────────────────────────────────────
         document.getElementById("btn-copy").addEventListener("click", function () {
           BBUi.copyToClipboard(rawMd).then(
-            function () {
-              var b = document.getElementById("btn-copy");
-              var t = b.textContent;
-              b.textContent = "Copied!";
-              setTimeout(function () {
-                b.textContent = t;
-              }, 1600);
-            },
-            function () {
-              alert("Copy failed");
-            }
+            function () { BBUi.showToast("Copied to clipboard!", "success"); },
+            function () { BBUi.showToast("Copy failed — try selecting and copying manually.", "error"); }
           );
         });
 
         document.getElementById("btn-md").addEventListener("click", function () {
           var safe = (data.title || "summary").replace(/[^\w\-]+/g, "-").slice(0, 60);
           BBUi.downloadText(safe + ".md", rawMd);
+          BBUi.showToast("Downloading " + safe + ".md", "success");
         });
 
         document.getElementById("btn-print").addEventListener("click", function () {
@@ -260,12 +306,15 @@
         });
 
         document.getElementById("btn-delete").addEventListener("click", async function () {
-          if (!confirm("Delete this summary from your library?")) return;
+          if (!confirm("Delete this summary from your library? This cannot be undone.")) return;
           try {
             await BBApi.summaries.remove(id);
-            window.location.href = "/frontend/dashboard.html";
+            BBUi.showToast("Summary deleted.", "info");
+            setTimeout(function () {
+              window.location.href = "/frontend/dashboard.html";
+            }, 600);
           } catch (e) {
-            alert(e.message || "Delete failed");
+            BBUi.showToast(e.message || "Delete failed", "error");
           }
         });
       });

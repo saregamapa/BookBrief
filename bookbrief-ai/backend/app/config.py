@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Literal, Optional
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -44,12 +44,43 @@ class Settings(BaseSettings):
     stripe_secret_key: str = Field(default="", alias="STRIPE_SECRET_KEY")
     stripe_webhook_secret: str = Field(default="", alias="STRIPE_WEBHOOK_SECRET")
     stripe_price_pro: str = Field(default="", alias="STRIPE_PRICE_PRO")
-    stripe_price_unlimited: str = Field(default="", alias="STRIPE_PRICE_UNLIMITED")
+    stripe_price_growth: str = Field(default="", alias="STRIPE_PRICE_GROWTH")
     stripe_success_url: str = Field(default="", alias="STRIPE_SUCCESS_URL")
     stripe_cancel_url: str = Field(default="", alias="STRIPE_CANCEL_URL")
 
     public_app_url: str = Field(default="http://localhost:8000", alias="PUBLIC_APP_URL")
     render_external_url: Optional[str] = Field(default=None, alias="RENDER_EXTERNAL_URL")
+
+    # ── Production safety guard ─────────────────────────────────────────────
+    @model_validator(mode="after")
+    def _reject_dev_secrets_in_production(self) -> "Settings":
+        """Fail fast if obvious dev-only defaults are used outside debug mode."""
+        if self.debug:
+            return self
+
+        _DEV_SECRET_KEY = "dev-only-change-me-in-production"
+        _DEV_JWT_KEY = "dev-only-jwt-change-me"
+
+        bad: list[str] = []
+        if self.secret_key == _DEV_SECRET_KEY:
+            bad.append("SECRET_KEY is still the dev default")
+        if self.jwt_secret_key == _DEV_JWT_KEY:
+            bad.append("JWT_SECRET_KEY is still the dev default")
+        if not self.openai_api_key:
+            bad.append("OPENAI_API_KEY is not set")
+        if not self.stripe_secret_key:
+            bad.append("STRIPE_SECRET_KEY is not set")
+        if not self.stripe_webhook_secret:
+            bad.append("STRIPE_WEBHOOK_SECRET is not set")
+        if "sqlite" in self.database_url.lower():
+            bad.append("DATABASE_URL is SQLite (use PostgreSQL in production)")
+
+        if bad:
+            issues = "\n  • ".join(bad)
+            raise ValueError(
+                f"Production misconfiguration detected — set DEBUG=true to bypass:\n  • {issues}"
+            )
+        return self
 
     @field_validator("database_url")
     @classmethod

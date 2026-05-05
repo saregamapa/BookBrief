@@ -4,7 +4,9 @@
 (function (global) {
   "use strict";
 
-  var API_BASE = "";
+  // All API calls go to the versioned prefix so the backend can introduce
+  // breaking changes under /api/v2 without touching this client.
+  var API_BASE = "/api/v1";
 
   function buildHeaders(options, isFormData) {
     var h = Object.assign({}, (options && options.headers) || {});
@@ -91,6 +93,9 @@
     get: function (id) {
       return apiFetch("/summaries/" + encodeURIComponent(String(id)));
     },
+    getStatus: function (id) {
+      return apiFetch("/summaries/" + encodeURIComponent(String(id)) + "/status");
+    },
     remove: function (id) {
       return apiFetch("/summaries/" + encodeURIComponent(String(id)), { method: "DELETE" });
     },
@@ -100,6 +105,67 @@
     /** @param {FormData} formData */
     createPdf: function (formData) {
       return apiFetch("/summaries/pdf", { method: "POST", body: formData });
+    },
+
+    /**
+     * Poll /summaries/{id}/status until the job finishes, then fetch the full detail.
+     *
+     * @param {number} id          - Summary ID returned by createJson / createPdf
+     * @param {object} [opts]
+     * @param {number} [opts.intervalMs=2000]   - Initial poll interval
+     * @param {number} [opts.slowIntervalMs=5000] - Interval after 30 s
+     * @param {number} [opts.timeoutMs=300000]  - Give up after 5 min
+     * @param {function} [opts.onStatus]        - Called with each status string ('pending'|'processing'|...)
+     * @returns {Promise<object>}               - Full SummaryDetail on completion
+     */
+    pollUntilDone: function (id, opts) {
+      opts = opts || {};
+      var intervalMs = opts.intervalMs || 2000;
+      var slowIntervalMs = opts.slowIntervalMs || 5000;
+      var timeoutMs = opts.timeoutMs || 300000;
+      var onStatus = opts.onStatus || null;
+
+      return new Promise(function (resolve, reject) {
+        var started = Date.now();
+        var timer = null;
+
+        function poll() {
+          summaries.getStatus(id).then(function (data) {
+            if (onStatus) onStatus(data.status);
+
+            if (data.status === "completed") {
+              // Fetch the full detail and resolve.
+              summaries.get(id).then(resolve).catch(reject);
+              return;
+            }
+            if (data.status === "failed") {
+              var err = new Error(data.error_message || "Summary generation failed");
+              err.status = 422;
+              reject(err);
+              return;
+            }
+
+            // Still pending or processing — check timeout, then reschedule.
+            var elapsed = Date.now() - started;
+            if (elapsed >= timeoutMs) {
+              reject(new Error("Summary timed out after " + Math.round(timeoutMs / 1000) + " s"));
+              return;
+            }
+            var nextInterval = elapsed > 30000 ? slowIntervalMs : intervalMs;
+            timer = setTimeout(poll, nextInterval);
+          }).catch(function (err) {
+            // Network errors during polling — retry a few times before giving up.
+            var elapsed = Date.now() - started;
+            if (elapsed >= timeoutMs) {
+              reject(err);
+            } else {
+              timer = setTimeout(poll, slowIntervalMs);
+            }
+          });
+        }
+
+        poll();
+      });
     },
   };
 

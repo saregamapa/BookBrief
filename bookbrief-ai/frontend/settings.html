@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings — BookBrief AI</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("bookbrief-theme");
+          if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              ink: { 950: "#1c1917", 900: "#292524", 800: "#44403c" },
+              parchment: { 50: "#fafaf9", 100: "#f5f5f4" },
+            },
+            boxShadow: {
+              soft: "0 4px 24px -4px rgba(28,25,23,0.08), 0 2px 8px -2px rgba(28,25,23,0.06)",
+              "soft-dark": "0 4px 24px -4px rgba(0,0,0,0.4)",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="bb-paper min-h-screen text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-100">
+
+    <!-- ── Header ──────────────────────────────────────────────────────── -->
+    <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-parchment-50/90 backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/90">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div class="flex items-center gap-4">
+          <a href="/frontend/dashboard.html" class="bb-focus rounded-lg p-1.5 text-stone-500 hover:text-stone-800 dark:hover:text-stone-200" aria-label="Back to dashboard">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </a>
+          <a href="/frontend/index.html" class="flex items-center gap-2">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white dark:bg-amber-600">B</span>
+            <span class="font-serif-display text-base font-semibold text-stone-900 dark:text-stone-50">BookBrief <span class="text-amber-800 dark:text-amber-400">AI</span></span>
+          </a>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            id="theme-toggle"
+            class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+            aria-label="Toggle dark mode"
+          >
+            <span data-theme-icon class="hidden sm:inline" aria-hidden="true">◐</span>
+            <span data-theme-label class="hidden sm:inline">Dark</span>
+          </button>
+          <button
+            type="button"
+            id="btn-logout"
+            class="bb-focus rounded-lg border border-stone-200 px-3 py-2 text-xs font-medium text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-900"
+          >Log out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
+
+      <!-- Page title -->
+      <div class="mb-8">
+        <h1 class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50">Account settings</h1>
+        <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Manage your account and security preferences.</p>
+      </div>
+
+      <!-- Two-column layout on md+ -->
+      <div class="grid gap-6 lg:grid-cols-3">
+
+        <!-- ── Sidebar nav ──────────────────────────────────────────── -->
+        <nav class="flex flex-row gap-2 lg:flex-col" aria-label="Settings sections">
+          <a href="#section-profile" class="bb-focus flex items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/40 dark:text-amber-300">
+            <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            Profile
+          </a>
+          <a href="#section-password" class="bb-focus flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">
+            <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            Password
+          </a>
+          <a href="#section-sessions" class="bb-focus flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">
+            <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/></svg>
+            Sessions
+          </a>
+          <a href="#section-billing" class="bb-focus flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">
+            <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+            Billing
+          </a>
+        </nav>
+
+        <!-- ── Settings panels ─────────────────────────────────────── -->
+        <div class="space-y-6 lg:col-span-2">
+
+          <!-- Profile -->
+          <section id="section-profile" class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
+            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Profile</h2>
+            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Your account information.</p>
+            <div class="mt-5 space-y-4">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500">Email</p>
+                <p id="profile-email" class="mt-1 text-sm text-stone-700 dark:text-stone-300">—</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500">Name</p>
+                <p id="profile-name" class="mt-1 text-sm text-stone-700 dark:text-stone-300">—</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500">Plan</p>
+                <p id="profile-plan" class="mt-1 text-sm text-stone-700 dark:text-stone-300">—</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Password -->
+          <section id="section-password" class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
+            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Change password</h2>
+            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Choose a strong password of at least 8 characters.</p>
+            <p id="pw-alert" class="mt-3 hidden text-sm font-medium" role="alert"></p>
+            <form id="form-password" class="mt-5 space-y-4" novalidate>
+              <div>
+                <label for="pw-current" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Current password</label>
+                <input
+                  id="pw-current"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition-colors focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div>
+                <label for="pw-new" class="block text-sm font-medium text-stone-700 dark:text-stone-300">New password</label>
+                <input
+                  id="pw-new"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  minlength="8"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition-colors focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                  placeholder="At least 8 characters"
+                />
+                <!-- Strength bar -->
+                <div class="mt-2 flex items-center gap-2.5">
+                  <div class="h-1 flex-1 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-700">
+                    <div id="pw-bar" class="h-full w-0 rounded-full bg-stone-400 transition-all duration-300"></div>
+                  </div>
+                  <span id="pw-label" class="w-14 text-right text-xs text-stone-400 dark:text-stone-500"></span>
+                </div>
+              </div>
+              <div>
+                <label for="pw-confirm" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Confirm new password</label>
+                <input
+                  id="pw-confirm"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition-colors focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                  placeholder="Re-enter new password"
+                />
+              </div>
+              <div class="flex justify-end">
+                <button
+                  id="btn-pw"
+                  type="submit"
+                  class="bb-focus rounded-xl bg-amber-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-900 disabled:opacity-60 dark:bg-amber-600 dark:hover:bg-amber-500"
+                >Update password</button>
+              </div>
+            </form>
+          </section>
+
+          <!-- Sessions -->
+          <section id="section-sessions" class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
+            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Active sessions</h2>
+            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Sign out of all devices except this one.</p>
+            <div class="mt-5 flex items-center justify-between gap-4 rounded-xl border border-stone-200 p-4 dark:border-stone-700">
+              <div>
+                <p class="text-sm font-medium text-stone-800 dark:text-stone-200">Current session</p>
+                <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-500">This browser, signed in now.</p>
+              </div>
+              <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">Active</span>
+            </div>
+            <div class="mt-4">
+              <button
+                id="btn-revoke"
+                type="button"
+                class="bb-focus rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-800/50 dark:text-red-400 dark:hover:bg-red-950/30"
+              >Sign out all other devices</button>
+              <p class="mt-2 text-xs text-stone-500 dark:text-stone-500">This will invalidate all tokens except your current session.</p>
+            </div>
+          </section>
+
+          <!-- Billing shortcut -->
+          <section id="section-billing" class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
+            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Billing &amp; plan</h2>
+            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Manage your subscription, invoices, and payment method.</p>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <button
+                id="btn-portal"
+                type="button"
+                class="bb-focus rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-semibold hover:bg-stone-50 dark:border-stone-600 dark:hover:bg-stone-800"
+              >Open billing portal</button>
+              <a
+                href="/frontend/dashboard.html"
+                class="bb-focus inline-flex items-center rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-50 dark:border-stone-600 dark:text-stone-400 dark:hover:bg-stone-800"
+              >View dashboard</a>
+            </div>
+            <p id="billing-alert" class="mt-3 hidden text-sm font-medium text-red-600 dark:text-red-400"></p>
+          </section>
+
+          <!-- Danger zone -->
+          <section class="rounded-2xl border border-red-200 bg-white p-6 dark:border-red-900/40 dark:bg-stone-900">
+            <h2 class="font-serif-display text-lg font-semibold text-red-700 dark:text-red-400">Danger zone</h2>
+            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Irreversible actions. Please be certain before proceeding.</p>
+            <div class="mt-5 flex items-center justify-between gap-4 rounded-xl border border-red-100 bg-red-50/50 p-4 dark:border-red-900/30 dark:bg-red-950/10">
+              <div>
+                <p class="text-sm font-medium text-stone-800 dark:text-stone-200">Delete account</p>
+                <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-500">Permanently removes all your data and summaries.</p>
+              </div>
+              <button
+                type="button"
+                class="bb-focus flex-shrink-0 rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400 dark:hover:bg-red-950/30"
+                onclick="alert('Account deletion is not yet available in this version. Please contact support.')"
+              >Delete account</button>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/auth.js"></script>
+    <script src="/frontend/js/ui.js"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        // ── Auth guard ──
+        document.addEventListener("DOMContentLoaded", async function () {
+          if (!window.BBAuth || !BBAuth.isLoggedIn()) {
+            window.location.href = "/frontend/login.html";
+            return;
+          }
+
+          BBUi.initThemeToggle("#theme-toggle");
+
+          // ── Populate profile ──
+          var user = BBAuth.getUser();
+          if (user) {
+            var emailEl = document.getElementById("profile-email");
+            var nameEl = document.getElementById("profile-name");
+            if (emailEl) emailEl.textContent = user.email || "—";
+            if (nameEl) nameEl.textContent = user.full_name || "—";
+          }
+
+          // Fetch subscription for plan display
+          try {
+            var sub = await BBApi.apiFetch("/user/subscription");
+            var planEl = document.getElementById("profile-plan");
+            if (planEl && sub) {
+              var planName = sub.plan_name || sub.plan || "free";
+              planEl.textContent = planName.charAt(0).toUpperCase() + planName.slice(1);
+            }
+          } catch (_) {}
+
+          // ── Logout ──
+          document.getElementById("btn-logout").addEventListener("click", async function () {
+            try {
+              await BBAuth.logout();
+            } catch (_) {}
+            window.location.href = "/frontend/login.html";
+          });
+
+          // ── Password change ──
+          var pwNew = document.getElementById("pw-new");
+          var pwBar = document.getElementById("pw-bar");
+          var pwLabelEl = document.getElementById("pw-label");
+
+          function pwStrength(pw) {
+            var s = 0;
+            if (!pw) return { s: 0, label: "", pct: "0%", color: "" };
+            if (pw.length >= 8) s++;
+            if (pw.length >= 12) s++;
+            if (/[A-Z]/.test(pw)) s++;
+            if (/[0-9]/.test(pw)) s++;
+            if (/[^A-Za-z0-9]/.test(pw)) s++;
+            var labels = ["", "Weak", "Weak", "Fair", "Good", "Strong"];
+            var colors = ["", "#ef4444", "#ef4444", "#f59e0b", "#3b82f6", "#22c55e"];
+            return { s: s, label: labels[s], pct: (s * 20) + "%", color: colors[s] };
+          }
+
+          if (pwNew) {
+            pwNew.addEventListener("input", function () {
+              var st = pwStrength(this.value);
+              pwBar.style.width = st.pct;
+              pwBar.style.backgroundColor = st.color;
+              pwLabelEl.textContent = st.label;
+              pwLabelEl.style.color = st.color;
+            });
+          }
+
+          document.getElementById("form-password").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            var alertEl = document.getElementById("pw-alert");
+            BBUi.showAlert(alertEl, "", null);
+
+            var current = document.getElementById("pw-current").value;
+            var newPw = document.getElementById("pw-new").value;
+            var confirm = document.getElementById("pw-confirm").value;
+
+            if (newPw.length < 8) {
+              BBUi.showAlert(alertEl, "New password must be at least 8 characters.", "error");
+              return;
+            }
+            if (newPw !== confirm) {
+              BBUi.showAlert(alertEl, "Passwords do not match.", "error");
+              return;
+            }
+
+            var btn = document.getElementById("btn-pw");
+            var restore = BBUi.setLoadingBtn(btn, "Updating…");
+            try {
+              await BBAuth.changePassword(current, newPw);
+              BBUi.showToast("Password updated successfully.", "success");
+              document.getElementById("form-password").reset();
+              pwBar.style.width = "0";
+              pwLabelEl.textContent = "";
+            } catch (err) {
+              BBUi.showAlert(alertEl, err.message || "Could not update password.", "error");
+            } finally {
+              restore();
+            }
+          });
+
+          // ── Revoke all sessions ──
+          document.getElementById("btn-revoke").addEventListener("click", async function () {
+            if (!confirm("This will sign you out of all other devices. Your current session stays active. Continue?")) return;
+            var btn = this;
+            var restore = BBUi.setLoadingBtn(btn, "Revoking…");
+            try {
+              await BBAuth.revokeAllSessions();
+              BBUi.showToast("All other sessions revoked.", "success");
+            } catch (err) {
+              BBUi.showToast(err.message || "Could not revoke sessions.", "error");
+            } finally {
+              restore();
+            }
+          });
+
+          // ── Billing portal ──
+          document.getElementById("btn-portal").addEventListener("click", async function () {
+            var btn = this;
+            var restore = BBUi.setLoadingBtn(btn, "Opening…");
+            var alertEl = document.getElementById("billing-alert");
+            alertEl.classList.add("hidden");
+            try {
+              var data = await BBApi.apiFetch("/stripe/portal", { method: "POST" });
+              if (data && data.url) {
+                window.location.href = data.url;
+              }
+            } catch (err) {
+              restore();
+              alertEl.textContent = err.message || "Could not open billing portal.";
+              alertEl.classList.remove("hidden");
+            }
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

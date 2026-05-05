@@ -16,133 +16,225 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = { darkMode: "class" };
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              ink: { 950: "#1c1917", 900: "#292524", 800: "#44403c" },
+              parchment: { 50: "#fafaf9", 100: "#f5f5f4" },
+            },
+            boxShadow: {
+              soft: "0 4px 24px -4px rgba(28,25,23,.08),0 2px 8px -2px rgba(28,25,23,.06)",
+              "soft-dark": "0 4px 24px -4px rgba(0,0,0,.4)",
+            },
+          },
+        },
+      };
     </script>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
-  <body class="bb-paper min-h-screen text-stone-800 dark:bg-stone-950 dark:text-stone-100">
-    <header class="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-4 py-3 dark:border-stone-800 sm:px-6">
-      <a href="/frontend/dashboard.html" class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50"
-        >← Dashboard</a
-      >
-      <div class="flex items-center gap-2">
-        <button
-          type="button"
-          id="theme-toggle"
-          class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs dark:border-stone-700 dark:bg-stone-900"
-        >
-          <span data-theme-label class="hidden sm:inline">Dark</span>
+
+  <body class="bb-paper min-h-screen text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-100">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-parchment-50/90 backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/90">
+      <div class="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <a href="/frontend/dashboard.html"
+           class="bb-focus flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Library
+        </a>
+        <a href="/frontend/index.html" class="flex items-center gap-2">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white dark:bg-amber-600" aria-hidden="true">B</span>
+          <span class="font-serif-display text-base font-semibold text-stone-900 dark:text-stone-50 hidden sm:inline">BookBrief <span class="text-amber-800 dark:text-amber-400">AI</span></span>
+        </a>
+        <button type="button" id="theme-toggle"
+          class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+          aria-label="Toggle dark mode">
+          <span data-theme-icon aria-hidden="true">◐</span>
+          <span data-theme-label class="hidden sm:inline ml-1">Dark</span>
         </button>
       </div>
     </header>
 
     <main class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-      <h1 class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50">New summary</h1>
-      <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">
-        Paste text, look up a book by title, or upload a PDF. We run the full multi-step pipeline on the server.
-      </p>
 
-      <div
-        class="mt-8 rounded-2xl border border-stone-200 bg-white/90 p-6 shadow-sm dark:border-stone-700 dark:bg-stone-900/70"
-      >
-        <div class="flex flex-wrap gap-2" role="tablist" aria-label="Input type">
-          <button type="button" class="bb-tab bb-focus rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium dark:border-stone-600" data-tab="paste" aria-selected="true">Paste text</button>
-          <button type="button" class="bb-tab bb-focus rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium dark:border-stone-600" data-tab="title" aria-selected="false">Book title</button>
-          <button type="button" class="bb-tab bb-focus rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium dark:border-stone-600" data-tab="pdf" aria-selected="false">PDF upload</button>
+      <!-- ── Form panel ─────────────────────────────────────────────────── -->
+      <div id="form-panel">
+        <h1 class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50">New summary</h1>
+        <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">
+          Paste text, look up a book by title, or upload a PDF — we run the full multi-step pipeline.
+        </p>
+
+        <div class="mt-8 rounded-2xl border border-stone-200 bg-white/90 p-6 shadow-soft dark:border-stone-700 dark:bg-stone-900/70 dark:shadow-soft-dark">
+
+          <!-- Input-type tabs -->
+          <div class="flex flex-wrap gap-2" role="tablist" aria-label="Input type">
+            <button type="button" class="bb-tab bb-focus" data-tab="paste" aria-selected="true">
+              <span aria-hidden="true">📝</span> Paste text
+            </button>
+            <button type="button" class="bb-tab bb-focus" data-tab="title" aria-selected="false">
+              <span aria-hidden="true">📚</span> Book title
+            </button>
+            <button type="button" class="bb-tab bb-focus" data-tab="pdf" aria-selected="false">
+              <span aria-hidden="true">📄</span> PDF upload
+            </button>
+          </div>
+
+          <p id="form-alert" class="mt-4 hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300" role="alert"></p>
+
+          <form id="form-main" class="mt-6 space-y-5" novalidate>
+            <input type="hidden" id="field-source-type" value="paste" />
+
+            <!-- Paste panel -->
+            <div id="panel-paste">
+              <label for="paste-content" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                Excerpt or chapter
+              </label>
+              <textarea id="paste-content" rows="10"
+                class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 font-mono text-sm leading-relaxed text-stone-900 shadow-sm placeholder-stone-400 focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100 dark:placeholder-stone-600"
+                placeholder="Paste your book text here (minimum ~50 characters recommended)."
+              ></textarea>
+            </div>
+
+            <!-- Title panel -->
+            <div id="panel-title" class="hidden space-y-4">
+              <div>
+                <label for="book-title" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Title</label>
+                <input id="book-title" type="text"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                  placeholder="e.g. Atomic Habits" />
+              </div>
+              <div>
+                <label for="book-author" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                  Author <span class="font-normal text-stone-400">(optional)</span>
+                </label>
+                <input id="book-author" type="text"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                  placeholder="e.g. James Clear" />
+              </div>
+            </div>
+
+            <!-- PDF panel -->
+            <div id="panel-pdf" class="hidden">
+              <label for="pdf-file" class="block text-sm font-medium text-stone-700 dark:text-stone-300">PDF file</label>
+              <div class="mt-1.5 rounded-xl border-2 border-dashed border-stone-300 p-6 text-center dark:border-stone-600">
+                <svg class="mx-auto h-10 w-10 text-stone-300 dark:text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <p id="pdf-label" class="mt-2 text-sm text-stone-500 dark:text-stone-400">Choose a PDF or drop it here</p>
+                <input id="pdf-file" type="file" accept="application/pdf,.pdf"
+                  class="bb-focus mt-3 block w-full text-sm text-stone-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-amber-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-amber-900 hover:file:bg-amber-200 dark:text-stone-400 dark:file:bg-amber-900/40 dark:file:text-amber-100" />
+                <p class="mt-2 text-xs text-stone-400">First ~30 pages · max 15 MB</p>
+              </div>
+            </div>
+
+            <!-- Style + optional title row -->
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="field-style" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Style</label>
+                <select id="field-style"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 shadow-sm focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100">
+                  <option value="ultra_short">Ultra-short (~2 min)</option>
+                  <option value="standard" selected>Standard</option>
+                  <option value="detailed">Detailed (chapters/themes)</option>
+                  <option value="takeaways">Takeaways + actions</option>
+                  <option value="personalized">Personalized</option>
+                </select>
+              </div>
+              <div id="wrap-display-title">
+                <label for="field-title-optional" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                  Library title <span class="font-normal text-stone-400">(optional)</span>
+                </label>
+                <input id="field-title-optional" type="text"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 shadow-sm focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                  placeholder="How it appears in your library" />
+              </div>
+            </div>
+
+            <!-- Personalization -->
+            <div>
+              <label for="field-personal" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                Personalization <span class="font-normal text-stone-400">(optional)</span>
+              </label>
+              <textarea id="field-personal" rows="2"
+                class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-stone-900 shadow-sm placeholder-stone-400 focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100 dark:placeholder-stone-600"
+                placeholder="Reading goal, role, or context — especially useful for the "personalized" style."
+              ></textarea>
+            </div>
+
+            <button type="submit" id="btn-submit"
+              class="bb-focus w-full rounded-xl bg-amber-800 py-3 text-sm font-semibold text-white shadow-soft hover:bg-amber-900 disabled:cursor-wait disabled:opacity-70 dark:bg-amber-600 dark:shadow-soft-dark dark:hover:bg-amber-500">
+              Generate summary
+            </button>
+          </form>
         </div>
-
-        <p id="form-alert" class="mt-4 hidden text-sm font-medium" role="alert"></p>
-
-        <form id="form-main" class="mt-6 space-y-5">
-          <input type="hidden" id="field-source-type" name="source_type" value="paste" />
-
-          <div id="panel-paste">
-            <label for="paste-content" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Excerpt or chapter</label>
-            <textarea
-              id="paste-content"
-              rows="10"
-              class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 font-mono text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
-              placeholder="Paste your book text here (minimum ~50 characters recommended)."
-            ></textarea>
-          </div>
-
-          <div id="panel-title" class="hidden space-y-3">
-            <div>
-              <label for="book-title" class="block text-sm font-medium">Title</label>
-              <input
-                id="book-title"
-                type="text"
-                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
-                placeholder="e.g. Atomic Habits"
-              />
-            </div>
-            <div>
-              <label for="book-author" class="block text-sm font-medium">Author <span class="text-stone-400">(optional)</span></label>
-              <input
-                id="book-author"
-                type="text"
-                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
-                placeholder="e.g. James Clear"
-              />
-            </div>
-          </div>
-
-          <div id="panel-pdf" class="hidden">
-            <label for="pdf-file" class="block text-sm font-medium">PDF file</label>
-            <input
-              id="pdf-file"
-              type="file"
-              accept="application/pdf,.pdf"
-              class="bb-focus mt-1 block w-full text-sm text-stone-600 file:mr-4 file:rounded-lg file:border-0 file:bg-amber-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-amber-900 dark:text-stone-400 dark:file:bg-amber-900/40 dark:file:text-amber-100"
-            />
-            <p class="mt-1 text-xs text-stone-500">First ~30 pages are read; max 15 MB.</p>
-          </div>
-
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label for="field-style" class="block text-sm font-medium">Style</label>
-              <select
-                id="field-style"
-                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
-              >
-                <option value="ultra_short">Ultra-short (~2 min read)</option>
-                <option value="standard" selected>Standard</option>
-                <option value="detailed">Detailed (chapters / themes)</option>
-                <option value="takeaways">Takeaways + actions</option>
-                <option value="personalized">Personalized</option>
-              </select>
-            </div>
-            <div id="wrap-display-title">
-              <label for="field-title-optional" class="block text-sm font-medium">Library title <span class="text-stone-400">(optional)</span></label>
-              <input
-                id="field-title-optional"
-                type="text"
-                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
-                placeholder="For paste/PDF: how it appears in your list"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label for="field-personal" class="block text-sm font-medium">Personalization <span class="text-stone-400">(optional)</span></label>
-            <textarea
-              id="field-personal"
-              rows="2"
-              class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
-              placeholder="Reading goal, role, or context—especially for the “personalized” style."
-            ></textarea>
-          </div>
-
-          <button
-            type="submit"
-            id="btn-submit"
-            class="bb-focus w-full rounded-xl bg-amber-800 py-3 text-sm font-semibold text-white hover:bg-amber-900 disabled:cursor-wait disabled:opacity-70 dark:bg-amber-600"
-          >
-            Generate summary
-          </button>
-        </form>
       </div>
+
+      <!-- ── Progress panel (shown while polling) ───────────────────────── -->
+      <div id="progress-panel" class="hidden">
+        <h1 class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50">Generating…</h1>
+        <p id="progress-subtitle" class="mt-2 text-sm text-stone-600 dark:text-stone-400">
+          Running the multi-step summarization pipeline.
+        </p>
+
+        <div class="mt-8 rounded-2xl border border-stone-200 bg-white/90 p-6 shadow-soft dark:border-stone-700 dark:bg-stone-900/70 dark:shadow-soft-dark">
+
+          <!-- Step tracker -->
+          <div id="steps-container" class="space-y-1"></div>
+
+          <!-- Elapsed time -->
+          <p id="progress-elapsed" class="mt-5 text-xs text-stone-400 dark:text-stone-500"></p>
+
+          <!-- Error state (hidden by default) -->
+          <div id="progress-error" class="hidden mt-5">
+            <p id="progress-error-msg" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"></p>
+            <button type="button" id="btn-try-again"
+              class="bb-focus mt-4 rounded-xl border border-stone-300 px-5 py-2.5 text-sm font-medium hover:bg-stone-50 dark:border-stone-600 dark:hover:bg-stone-800">
+              Try again
+            </button>
+          </div>
+        </div>
+      </div>
+
     </main>
+
+    <style>
+      /* Input tab styles */
+      .bb-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: .375rem;
+        padding: .5rem 1rem;
+        font-size: .8125rem;
+        font-weight: 500;
+        border-radius: .625rem;
+        border: 1px solid #d6d3d1;
+        color: #57534e;
+        background: white;
+        cursor: pointer;
+        transition: all .15s;
+      }
+      .bb-tab[aria-selected="true"] {
+        border-color: #b45309;
+        background: #fffbeb;
+        color: #78350f;
+        font-weight: 600;
+      }
+      .dark .bb-tab {
+        border-color: #44403c;
+        color: #a8a29e;
+        background: #1c1917;
+      }
+      .dark .bb-tab[aria-selected="true"] {
+        border-color: #f59e0b;
+        background: rgba(120,53,15,.2);
+        color: #fde68a;
+      }
+    </style>
 
     <script src="/frontend/js/api.js"></script>
     <script src="/frontend/js/auth.js"></script>
@@ -158,42 +250,106 @@
         var alertEl = document.getElementById("form-alert");
         var hiddenSource = document.getElementById("field-source-type");
         var tabs = document.querySelectorAll(".bb-tab");
-        var panelPaste = document.getElementById("panel-paste");
-        var panelTitle = document.getElementById("panel-title");
-        var panelPdf = document.getElementById("panel-pdf");
 
+        // ── Tabs ────────────────────────────────────────────────────────────
         function setTab(which) {
           hiddenSource.value = which === "title" ? "title_author" : which === "pdf" ? "pdf" : "paste";
           tabs.forEach(function (t) {
             var on = t.getAttribute("data-tab") === which;
             t.setAttribute("aria-selected", on ? "true" : "false");
-            t.className =
-              "bb-tab bb-focus rounded-lg border px-4 py-2 text-sm font-medium " +
-              (on
-                ? "border-amber-800 bg-amber-50 text-amber-950 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-100"
-                : "border-stone-200 text-stone-700 dark:border-stone-600 dark:text-stone-300");
           });
-          panelPaste.classList.toggle("hidden", which !== "paste");
-          panelTitle.classList.toggle("hidden", which !== "title");
-          panelPdf.classList.toggle("hidden", which !== "pdf");
+          document.getElementById("panel-paste").classList.toggle("hidden", which !== "paste");
+          document.getElementById("panel-title").classList.toggle("hidden", which !== "title");
+          document.getElementById("panel-pdf").classList.toggle("hidden", which !== "pdf");
           document.getElementById("wrap-display-title").classList.toggle("hidden", which === "title");
         }
 
         tabs.forEach(function (t) {
-          t.addEventListener("click", function () {
-            setTab(t.getAttribute("data-tab"));
-          });
+          t.addEventListener("click", function () { setTab(t.getAttribute("data-tab")); });
         });
         setTab("paste");
 
+        // Show PDF filename in label
+        document.getElementById("pdf-file").addEventListener("change", function () {
+          var f = this.files[0];
+          document.getElementById("pdf-label").textContent = f ? f.name : "Choose a PDF or drop it here";
+        });
+
+        // ── Progress panel helpers ───────────────────────────────────────────
+        var STEPS = [
+          { id: "queue",    label: "Queued for processing" },
+          { id: "prepare",  label: "Preparing text and context" },
+          { id: "extract",  label: "Extracting key ideas" },
+          { id: "summarize",label: "Building the summary" },
+          { id: "refine",   label: "Refining and formatting" },
+        ];
+        var _steps = null;
+        var _elapsedTimer = null;
+        var _startedAt = null;
+
+        function showProgress(subtitle) {
+          document.getElementById("form-panel").classList.add("hidden");
+          var pp = document.getElementById("progress-panel");
+          pp.classList.remove("hidden");
+          document.getElementById("progress-subtitle").textContent = subtitle || "";
+          document.getElementById("progress-error").classList.add("hidden");
+          _steps = BBUi.createProgressSteps(document.getElementById("steps-container"), STEPS);
+          _steps.setStatus("queue", "done");
+          _steps.setStatus("prepare", "active");
+          _startedAt = Date.now();
+          _elapsedTimer = setInterval(function () {
+            var s = Math.round((Date.now() - _startedAt) / 1000);
+            document.getElementById("progress-elapsed").textContent = "Elapsed: " + s + "s";
+          }, 1000);
+        }
+
+        function onStatusUpdate(status) {
+          if (!_steps) return;
+          if (status === "pending") {
+            _steps.setStatus("queue", "active");
+          } else if (status === "processing") {
+            _steps.setStatus("queue", "done");
+            _steps.setStatus("prepare", "active");
+            // Cycle through middle steps every few seconds for visual feedback
+            setTimeout(function () { _steps.setStatus("prepare", "done"); _steps.setStatus("extract", "active"); }, 5000);
+            setTimeout(function () { _steps.setStatus("extract", "done"); _steps.setStatus("summarize", "active"); }, 12000);
+            setTimeout(function () { _steps.setStatus("summarize", "done"); _steps.setStatus("refine", "active"); }, 22000);
+          }
+        }
+
+        function showProgressError(msg) {
+          clearInterval(_elapsedTimer);
+          if (_steps) {
+            STEPS.forEach(function (s) {
+              var el = document.getElementById("steps-container");
+              if (el) _steps.setStatus(s.id, "pending");
+            });
+          }
+          document.getElementById("progress-error-msg").textContent = msg || "Generation failed.";
+          document.getElementById("progress-error").classList.remove("hidden");
+          BBUi.showToast(msg || "Generation failed", "error");
+        }
+
+        function allDone() {
+          clearInterval(_elapsedTimer);
+          if (_steps) {
+            STEPS.forEach(function (s) { _steps.setStatus(s.id, "done"); });
+          }
+          BBUi.showToast("Summary ready!", "success");
+        }
+
+        // ── Form submit ──────────────────────────────────────────────────────
         document.getElementById("form-main").addEventListener("submit", async function (e) {
           e.preventDefault();
           BBUi.showAlert(alertEl, "", null);
           var btn = document.getElementById("btn-submit");
           btn.disabled = true;
+          btn.textContent = "Submitting…";
+
           var style = document.getElementById("field-style").value;
           var personal = document.getElementById("field-personal").value.trim() || null;
           var displayTitle = document.getElementById("field-title-optional").value.trim() || null;
+          var summaryId;
 
           try {
             if (hiddenSource.value === "pdf") {
@@ -206,29 +362,54 @@
               if (displayTitle) fd.append("title", displayTitle);
               if (personal) fd.append("personalization_context", personal);
               var resPdf = await BBApi.summaries.createPdf(fd);
-              window.location.href = "/frontend/summary-view.html?id=" + encodeURIComponent(resPdf.id);
-              return;
-            }
-
-            var body = { style: style, personalization_context: personal };
-            if (hiddenSource.value === "title_author") {
-              body.source_type = "title_author";
-              body.title = document.getElementById("book-title").value.trim();
-              body.author = document.getElementById("book-author").value.trim() || null;
-              if (!body.title) throw new Error("Enter the book title.");
+              summaryId = resPdf.id;
+              showProgress("Reading PDF and building your summary…");
             } else {
-              body.source_type = "paste";
-              body.content = document.getElementById("paste-content").value;
-              if (displayTitle) body.title = displayTitle;
+              var body = { style: style, personalization_context: personal };
+              if (hiddenSource.value === "title_author") {
+                body.source_type = "title_author";
+                body.title = document.getElementById("book-title").value.trim();
+                body.author = document.getElementById("book-author").value.trim() || null;
+                if (!body.title) throw new Error("Enter the book title.");
+              } else {
+                body.source_type = "paste";
+                body.content = document.getElementById("paste-content").value;
+                if (displayTitle) body.title = displayTitle;
+              }
+              var res = await BBApi.summaries.createJson(body);
+              summaryId = res.id;
+              showProgress("Running multi-step summarization pipeline…");
             }
-
-            var res = await BBApi.summaries.createJson(body);
-            window.location.href = "/frontend/summary-view.html?id=" + encodeURIComponent(res.id);
           } catch (err) {
-            BBUi.showAlert(alertEl, err.message || "Request failed", "error");
-          } finally {
             btn.disabled = false;
+            btn.textContent = "Generate summary";
+            BBUi.showAlert(alertEl, err.message || "Request failed", "error");
+            return;
           }
+
+          // Poll until done
+          try {
+            await BBApi.summaries.pollUntilDone(summaryId, {
+              onStatus: onStatusUpdate,
+              timeoutMs: 360000, // 6 min
+            });
+            allDone();
+            setTimeout(function () {
+              window.location.href = "/frontend/summary-view.html?id=" + encodeURIComponent(summaryId);
+            }, 900);
+          } catch (err) {
+            showProgressError(err.message || "Summary generation failed.");
+          }
+        });
+
+        // Try again → show the form
+        document.getElementById("btn-try-again").addEventListener("click", function () {
+          clearInterval(_elapsedTimer);
+          document.getElementById("progress-panel").classList.add("hidden");
+          document.getElementById("form-panel").classList.remove("hidden");
+          var btn = document.getElementById("btn-submit");
+          btn.disabled = false;
+          btn.textContent = "Generate summary";
         });
       });
     </script>

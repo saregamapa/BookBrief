@@ -27,6 +27,11 @@ class User(Base):
     reset_token: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
     reset_token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Bumped whenever the password changes or the user force-revokes all sessions.
+    # Tokens issued BEFORE this timestamp are rejected, providing instant invalidation
+    # without server-side session storage.
+    password_changed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

@@ -53,5 +53,17 @@ class TokenResponse(BaseModel):
     user: UserPublic
 
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def password_not_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Password cannot be only whitespace")
+        return v
+
+
 class MessageResponse(BaseModel):
     message: str

@@ -30,6 +30,41 @@
     localStorage.removeItem(USER_KEY);
   }
 
+  /**
+   * Decode JWT payload without verifying the signature.
+   * Used only for client-side expiry checks; server always re-validates.
+   */
+  function _decodeJwtPayload(token) {
+    try {
+      var parts = token.split(".");
+      if (parts.length !== 3) return null;
+      var b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+      var json = decodeURIComponent(
+        atob(b64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+      return JSON.parse(json);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /**
+   * Returns true if the stored token is present and not yet expired (client-side only).
+   * The server performs authoritative validation on every request.
+   */
+  function isLoggedIn() {
+    var token = getToken();
+    if (!token) return false;
+    var payload = _decodeJwtPayload(token);
+    if (!payload || !payload.exp) return true; // no exp claim — let the server decide
+    return Math.floor(Date.now() / 1000) < payload.exp;
+  }
+
   async function login(email, password) {
     var data = await global.BBApi.apiFetch("/auth/login", {
       method: "POST",
@@ -63,6 +98,31 @@
     clearSession();
   }
 
+  /**
+   * Change password while authenticated.
+   * On success, stores the new token (all other sessions are revoked).
+   */
+  async function changePassword(currentPassword, newPassword) {
+    var data = await global.BBApi.apiFetch("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    });
+    setSession(data.access_token, data.user);
+    return data;
+  }
+
+  /**
+   * Revoke all active sessions (including other devices).
+   * The current local session is cleared after the server call.
+   */
+  async function revokeAllSessions() {
+    await global.BBApi.apiFetch("/auth/revoke-all", { method: "POST" });
+    clearSession();
+  }
+
   async function forgotPassword(email) {
     return global.BBApi.apiFetch("/auth/forgot-password", {
       method: "POST",
@@ -77,10 +137,6 @@
     });
   }
 
-  function isLoggedIn() {
-    return !!getToken();
-  }
-
   global.BBAuth = {
     getToken: getToken,
     getUser: getUser,
@@ -89,6 +145,8 @@
     login: login,
     register: register,
     logout: logout,
+    changePassword: changePassword,
+    revokeAllSessions: revokeAllSessions,
     forgotPassword: forgotPassword,
     resetPassword: resetPassword,
     isLoggedIn: isLoggedIn,

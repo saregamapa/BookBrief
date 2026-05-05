@@ -9,7 +9,7 @@ def sqlalchemy_enum_values(enum_class: type[Enum]) -> list[str]:
 class PlanTier(str, Enum):
     free = "free"
     pro = "pro"
-    unlimited = "unlimited"
+    growth = "growth"
 
 
 class SubscriptionStatus(str, Enum):

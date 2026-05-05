@@ -1,13 +1,23 @@
-"""Book summary CRUD and generation (paste, title/author, PDF)."""
+"""Book summary CRUD and generation (paste, title/author, PDF).
+
+Summarization is performed asynchronously:
+  1. POST /summaries or /summaries/pdf creates a row (status=pending) and returns 202 immediately.
+  2. A background task runs the LangGraph pipeline and updates the row.
+  3. Clients poll GET /summaries/{id}/status until status is 'completed' or 'failed'.
+  4. Clients fetch the full summary via GET /summaries/{id} once completed.
+"""
 
 from __future__ import annotations
 
+import traceback
 from collections import defaultdict
 from time import time
 from typing import DefaultDict, List, Optional
 
+import structlog
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     Depends,
     File,
     Form,
@@ -19,7 +29,7 @@ from fastapi import (
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.database import SessionLocal, get_db
 from app.deps import get_current_user
 from app.models.book_summary import BookSummary
 from app.models.enums import BookSourceType, SummaryJobStatus, SummaryStyle
@@ -30,28 +40,34 @@ from app.schemas.summary import (
     SummaryDetail,
     SummaryListItem,
     SummaryListResponse,
+    SummaryStatusResponse,
 )
 from app.services.pdf_text import extract_text_from_pdf
 from app.services.quota import assert_quota_allows_new_summary, sync_subscription_usage_counter
 from app.services.stripe_service import ensure_subscription_row
 from app.services.summary_graph import run_summarization
 
+log = structlog.get_logger(__name__)
+
 router = APIRouter(prefix="/summaries", tags=["summaries"])
 
 SOURCE_EXCERPT_STORE_MAX = 120_000
 MAX_PDF_BYTES = 15 * 1024 * 1024
 
-# Per-user sliding window (SlowAPI decorators break JSON body binding when combined with Request).
+# In-process per-user sliding window rate limiter (avoids binding Request to JSON body routes).
 _summary_hits: DefaultDict[int, List[float]] = defaultdict(list)
 _SUMMARY_RATE_MAX = 30
 _SUMMARY_RATE_WINDOW_SEC = 3600
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
 def _enforce_summary_rate(user: User) -> None:
     now = time()
-    window = _SUMMARY_RATE_WINDOW_SEC
     q = _summary_hits[user.id]
-    q[:] = [t for t in q if now - t < window]
+    q[:] = [t for t in q if now - t < _SUMMARY_RATE_WINDOW_SEC]
     if len(q) >= _SUMMARY_RATE_MAX:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -95,53 +111,118 @@ def _build_source_meta(
     return meta
 
 
-def _execute_summarization(
-    db: Session,
-    row: BookSummary,
-    *,
+# ---------------------------------------------------------------------------
+# Background task — runs after the response has been sent
+# ---------------------------------------------------------------------------
+
+def _bg_run_summarization(
+    summary_id: int,
     source_text: str,
     title: str,
     author: str,
     style: SummaryStyle,
     personalization: Optional[str],
     user_id: int,
-) -> BookSummary:
-    row.status = SummaryJobStatus.processing
-    row.error_message = None
-    db.add(row)
-    db.commit()
-    db.refresh(row)
-    try:
-        md = run_summarization(
-            source_text=source_text,
-            title=title,
-            author=author,
-            style=style,
-            personalization_context=personalization,
-        )
-        row.output_markdown = md
-        row.status = SummaryJobStatus.completed
-        if md.strip().startswith("# Summary unavailable"):
-            row.error_message = (
-                "The summarization pipeline reported an issue—often a missing API key or empty input. "
-                "See the markdown body for details."
+) -> None:
+    """Run the LangGraph pipeline in the background.
+
+    Opens its own DB session (the request session is already closed by the time
+    this runs) and writes the result back to the BookSummary row.
+    """
+    with SessionLocal() as db:
+        row = db.get(BookSummary, summary_id)
+        if row is None:
+            log.error("bg_summarization_row_missing", summary_id=summary_id)
+            return
+
+        # Mark as processing so the frontend knows work has started.
+        row.status = SummaryJobStatus.processing
+        row.error_message = None
+        db.add(row)
+        db.commit()
+        log.info("summarization_started", summary_id=summary_id, user_id=user_id, style=style.value)
+
+        try:
+            md = run_summarization(
+                source_text=source_text,
+                title=title,
+                author=author,
+                style=style,
+                personalization_context=personalization,
             )
-        else:
-            row.error_message = None
-    except Exception as exc:  # noqa: BLE001
-        row.status = SummaryJobStatus.failed
-        row.error_message = str(exc)[:2000]
-        row.output_markdown = ""
-    db.add(row)
-    db.commit()
-    db.refresh(row)
-    sync_subscription_usage_counter(db, user_id)
-    return row
+            row = db.get(BookSummary, summary_id)
+            if row is None:
+                return  # Deleted while processing — nothing to do.
+            row.output_markdown = md
+            row.status = SummaryJobStatus.completed
+            if md.strip().startswith("# Summary unavailable"):
+                row.error_message = (
+                    "The summarization pipeline reported an issue—often a missing API key or "
+                    "empty input. See the markdown body for details."
+                )
+            else:
+                row.error_message = None
+            log.info("summarization_completed", summary_id=summary_id, user_id=user_id)
+        except Exception as exc:  # noqa: BLE001
+            log.error(
+                "summarization_failed",
+                summary_id=summary_id,
+                user_id=user_id,
+                error=str(exc),
+                traceback=traceback.format_exc(),
+            )
+            row = db.get(BookSummary, summary_id)
+            if row is None:
+                return
+            row.status = SummaryJobStatus.failed
+            row.error_message = str(exc)[:2000]
+            row.output_markdown = ""
+
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+
+    # Sync usage counter in a fresh session (outside the `with` block above
+    # to avoid holding a connection during the commit).
+    with SessionLocal() as db2:
+        sync_subscription_usage_counter(db2, user_id)
 
 
-@router.post("", response_model=SummaryDetail, status_code=status.HTTP_201_CREATED)
+# ---------------------------------------------------------------------------
+# Startup recovery — called from main.py on_startup
+# ---------------------------------------------------------------------------
+
+def reset_stuck_processing_jobs() -> None:
+    """Mark any 'processing' summaries as 'failed' on server start.
+
+    If the server crashed while a background task was running, the row is
+    left in 'processing' state forever. This recovery pass resets them so
+    users see a clear failure instead of an infinite spinner.
+    """
+    with SessionLocal() as db:
+        stuck = list(
+            db.scalars(
+                select(BookSummary).where(BookSummary.status == SummaryJobStatus.processing)
+            ).all()
+        )
+        if not stuck:
+            return
+        for row in stuck:
+            row.status = SummaryJobStatus.failed
+            row.error_message = "Job was interrupted by a server restart. Please try again."
+            db.add(row)
+        db.commit()
+        log.warning("reset_stuck_jobs", count=len(stuck))
+
+
+# ---------------------------------------------------------------------------
+# POST /summaries — text / title_author (returns 202 immediately)
+# ---------------------------------------------------------------------------
+
+@router.post("", response_model=SummaryDetail, status_code=status.HTTP_202_ACCEPTED)
 def create_summary_json(
     payload: SummaryCreateJSON,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> SummaryDetail:
@@ -180,25 +261,30 @@ def create_summary_json(
     db.commit()
     db.refresh(row)
 
-    src_text = content if st == BookSourceType.paste else ""
-    ttl = title or ""
-    ath = author or ""
+    log.info("summary_queued", summary_id=row.id, user_id=user.id, source_type=st.value, style=style.value)
 
-    row = _execute_summarization(
-        db,
-        row,
-        source_text=src_text,
-        title=ttl,
-        author=ath,
+    # Schedule the LangGraph pipeline to run after this response is sent.
+    background_tasks.add_task(
+        _bg_run_summarization,
+        summary_id=row.id,
+        source_text=content if st == BookSourceType.paste else "",
+        title=title or "",
+        author=author or "",
         style=style,
         personalization=payload.personalization_context,
         user_id=user.id,
     )
+
     return _row_to_detail(row)
 
 
-@router.post("/pdf", response_model=SummaryDetail, status_code=status.HTTP_201_CREATED)
+# ---------------------------------------------------------------------------
+# POST /summaries/pdf — PDF upload (returns 202 immediately)
+# ---------------------------------------------------------------------------
+
+@router.post("/pdf", response_model=SummaryDetail, status_code=status.HTTP_202_ACCEPTED)
 def create_summary_pdf(
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
     style: str = Form("standard"),
@@ -220,6 +306,7 @@ def create_summary_pdf(
             detail=f"Invalid style: {style}",
         ) from e
 
+    # Read and validate the PDF synchronously (fast, before queuing).
     raw = file.file.read()
     if len(raw) > MAX_PDF_BYTES:
         raise HTTPException(
@@ -268,9 +355,13 @@ def create_summary_pdf(
     db.commit()
     db.refresh(row)
 
-    row = _execute_summarization(
-        db,
-        row,
+    log.info("pdf_summary_queued", summary_id=row.id, user_id=user.id, filename=safe_name)
+
+    # Schedule background processing — extracted text is passed in so we don't
+    # need to re-read the upload (the file handle is gone after the request).
+    background_tasks.add_task(
+        _bg_run_summarization,
+        summary_id=row.id,
         source_text=extracted,
         title=ttl or "",
         author=ath or "",
@@ -278,8 +369,37 @@ def create_summary_pdf(
         personalization=personalization_context,
         user_id=user.id,
     )
+
     return _row_to_detail(row)
 
+
+# ---------------------------------------------------------------------------
+# GET /summaries/{id}/status — lightweight polling endpoint
+# ---------------------------------------------------------------------------
+
+@router.get("/{summary_id}/status", response_model=SummaryStatusResponse)
+def get_summary_status(
+    summary_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> SummaryStatusResponse:
+    """Poll this endpoint until status is 'completed' or 'failed'.
+
+    Recommended polling interval: 2 s for the first 30 s, then 5 s.
+    """
+    row = db.get(BookSummary, summary_id)
+    if row is None or row.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Summary not found")
+    return SummaryStatusResponse(
+        id=row.id,
+        status=row.status.value,
+        error_message=row.error_message,
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET /summaries — list
+# ---------------------------------------------------------------------------
 
 @router.get("", response_model=SummaryListResponse)
 def list_summaries(
@@ -312,8 +432,7 @@ def list_summaries(
             conds.append(BookSummary.source_type == BookSourceType(source_type))
         except ValueError as e:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid source_type filter",
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid source_type filter"
             ) from e
     if summary_status:
         try:
@@ -322,12 +441,21 @@ def list_summaries(
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid status filter") from e
 
     total = int(db.scalar(select(func.count()).select_from(BookSummary).where(*conds)) or 0)
-
-    stmt = select(BookSummary).where(*conds).order_by(BookSummary.created_at.desc()).offset(skip).limit(limit)
+    stmt = (
+        select(BookSummary)
+        .where(*conds)
+        .order_by(BookSummary.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
     rows = list(db.scalars(stmt).all())
     items = [SummaryListItem.from_row(r) for r in rows]
     return SummaryListResponse(items=items, total=total)
 
+
+# ---------------------------------------------------------------------------
+# GET /summaries/{id} — full detail
+# ---------------------------------------------------------------------------
 
 @router.get("/{summary_id}", response_model=SummaryDetail)
 def get_summary(
@@ -341,6 +469,10 @@ def get_summary(
     return _row_to_detail(row)
 
 
+# ---------------------------------------------------------------------------
+# DELETE /summaries/{id}
+# ---------------------------------------------------------------------------
+
 @router.delete("/{summary_id}", response_model=SummaryDeleteResponse)
 def delete_summary(
     summary_id: int,
@@ -353,4 +485,5 @@ def delete_summary(
     db.delete(row)
     db.commit()
     sync_subscription_usage_counter(db, user.id)
+    log.info("summary_deleted", summary_id=summary_id, user_id=user.id)
     return SummaryDeleteResponse(id=summary_id)

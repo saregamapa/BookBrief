@@ -67,7 +67,7 @@ def upgrade() -> None:
     op.create_table('subscriptions',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('plan', sa.Enum('free', 'pro', 'unlimited', name='plantier', native_enum=False), nullable=False),
+    sa.Column('plan', sa.Enum('free', 'pro', 'growth', name='plantier', native_enum=False), nullable=False),
     sa.Column('status', sa.Enum('active', 'canceled', 'past_due', 'trialing', 'incomplete', name='subscriptionstatus', native_enum=False), nullable=False),
     sa.Column('summaries_used_period', sa.Integer(), nullable=False),
     sa.Column('current_period_start', sa.DateTime(timezone=True), nullable=True),

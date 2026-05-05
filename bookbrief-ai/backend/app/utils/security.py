@@ -27,6 +27,9 @@ def verify_password(plain: str, hashed: str) -> bool:
         return False
 
 
+_TOKEN_TYPE_ACCESS = "access"
+
+
 def create_access_token(
     subject: Union[str, int],
     expires_delta: Optional[timedelta] = None,
@@ -38,6 +41,7 @@ def create_access_token(
     now = datetime.now(timezone.utc)
     to_encode: dict[str, Any] = {
         "sub": str(subject),
+        "typ": _TOKEN_TYPE_ACCESS,
         "iat": int(now.timestamp()),
         "exp": int((now + expires_delta).timestamp()),
     }
@@ -51,12 +55,34 @@ def create_access_token(
 
 
 def decode_access_token(token: str) -> Optional[dict[str, Any]]:
+    """Decode and verify an access token.
+
+    Returns the payload dict on success, or None if the token is invalid,
+    expired, or is not an access token (wrong ``typ`` claim).
+    """
     settings = get_settings()
     try:
-        return jwt.decode(
+        payload = jwt.decode(
             token,
             settings.jwt_secret_key,
             algorithms=[settings.jwt_algorithm],
         )
     except JWTError:
+        return None
+
+    # Reject tokens that aren't access tokens (defence against token confusion).
+    if payload.get("typ") not in (_TOKEN_TYPE_ACCESS, None):
+        return None
+
+    return payload
+
+
+def token_issued_at(payload: dict[str, Any]) -> Optional[datetime]:
+    """Return the UTC datetime when the token was issued, or None if missing."""
+    iat = payload.get("iat")
+    if iat is None:
+        return None
+    try:
+        return datetime.fromtimestamp(int(iat), tz=timezone.utc)
+    except (TypeError, ValueError, OSError):
         return None

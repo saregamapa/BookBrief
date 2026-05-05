@@ -1,23 +1,37 @@
 /**
- * BookBrief AI — global styles (Tailwind via CDN handles utilities).
+ * BookBrief AI — global styles
+ * Tailwind (CDN) handles utilities; this file adds:
+ *   fonts · paper texture · focus rings · scrollbar · selection ·
+ *   reduced-motion · input helpers · details accordion · print styles
  */
 
+/* ── Fonts ────────────────────────────────────────────────────────────── */
 @import url("https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Source+Sans+3:wght@400;500;600;700&display=swap");
 
+/* ── Root ────────────────────────────────────────────────────────────── */
 :root {
   font-family: "Source Sans 3", system-ui, sans-serif;
   color-scheme: light dark;
+
+  /* Design tokens — referenced by JS for programmatic use */
+  --color-amber-800: #92400e;
+  --color-amber-600: #d97706;
+  --color-stone-200: #e7e5e4;
+  --color-stone-700: #44403c;
 }
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
+/* ── Typography ──────────────────────────────────────────────────────── */
 .font-serif-display {
   font-family: Literata, Georgia, "Times New Roman", serif;
 }
 
-/* Subtle paper texture in light mode */
+/* ── Paper texture ───────────────────────────────────────────────────── */
 .bb-paper {
   background-color: rgb(250 250 249);
   background-image: radial-gradient(
@@ -36,12 +50,312 @@ html {
   );
 }
 
-/* Focus rings */
+/* ── Focus rings (keyboard-only via :focus-visible) ─────────────────── */
+/*
+ * Use focus-visible so the ring appears for keyboard users
+ * but NOT for mouse/touch users who already see hover states.
+ */
 .bb-focus:focus {
+  outline: none; /* reset browser default */
+}
+
+.bb-focus:focus-visible {
+  outline: 2px solid rgb(180 83 9);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.dark .bb-focus:focus-visible {
+  outline-color: rgb(251 191 36);
+}
+
+/* Global fallback for non-.bb-focus interactive elements */
+*:focus-visible {
   outline: 2px solid rgb(180 83 9);
   outline-offset: 2px;
 }
 
-.dark .bb-focus:focus {
+.dark *:focus-visible {
   outline-color: rgb(251 191 36);
+}
+
+/* ── Text selection ──────────────────────────────────────────────────── */
+::selection {
+  background-color: rgb(254 243 199); /* amber-100 */
+  color: rgb(28 25 23);               /* stone-950 */
+}
+
+.dark ::selection {
+  background-color: rgb(120 53 15 / 0.5); /* amber-900/50 */
+  color: rgb(245 245 244);                 /* stone-100 */
+}
+
+/* ── Placeholder text ────────────────────────────────────────────────── */
+::placeholder {
+  color: rgb(168 162 158); /* stone-400 */
+  opacity: 1;
+}
+
+.dark ::placeholder {
+  color: rgb(87 83 78); /* stone-600 */
+}
+
+/* ── Scrollbar (Chromium / Safari) ──────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(214 211 208); /* stone-300 */
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(168 162 158); /* stone-400 */
+  background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgb(68 64 60); /* stone-700 */
+  background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgb(87 83 78); /* stone-600 */
+  background-clip: padding-box;
+}
+
+/* ── Standard input class ────────────────────────────────────────────── */
+/*
+ * Apply .bb-input to any <input>, <textarea>, <select> that doesn't
+ * already carry full Tailwind classes. Pages that inline Tailwind
+ * classes can ignore this — it's a convenient baseline.
+ */
+.bb-input {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(28 25 23);
+  background-color: #fff;
+  border: 1px solid rgb(214 211 208);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.bb-input:focus-visible {
+  outline: none;
+  border-color: rgb(180 83 9);
+  box-shadow: 0 0 0 3px rgb(180 83 9 / 0.12);
+}
+
+.dark .bb-input {
+  color: rgb(245 245 244);
+  background-color: rgb(12 10 9);
+  border-color: rgb(87 83 78);
+}
+
+.dark .bb-input:focus-visible {
+  border-color: rgb(251 191 36);
+  box-shadow: 0 0 0 3px rgb(251 191 36 / 0.15);
+}
+
+/* ── Standard card ───────────────────────────────────────────────────── */
+.bb-card {
+  background-color: #fff;
+  border: 1px solid rgb(231 229 228);
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px -2px rgb(28 25 23 / 0.06), 0 1px 3px -1px rgb(28 25 23 / 0.04);
+}
+
+.dark .bb-card {
+  background-color: rgb(41 37 36);
+  border-color: rgb(68 64 60);
+  box-shadow: 0 2px 12px -2px rgb(0 0 0 / 0.35);
+}
+
+/* ── Details / accordion ─────────────────────────────────────────────── */
+details summary {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details[open] > summary > span:last-child {
+  transform: rotate(45deg);
+}
+
+/* ── Tap target sizing (mobile accessibility) ────────────────────────── */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  a,
+  label,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Override for inline / icon-only buttons that should stay compact */
+  button.bb-compact,
+  a.bb-compact {
+    min-height: unset;
+    min-width: unset;
+  }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Transitions across color-scheme changes ─────────────────────────── */
+/* Gentle transition so dark/light toggle isn't jarring */
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Shimmer / skeleton (injected by ui.js — kept here as reference) ─── */
+/*
+ * @keyframes bb-shimmer { … }
+ * .bb-skeleton { … }
+ * These are injected at runtime by BBUi.showSkeleton() to avoid
+ * FOUC. Defined here only for documentation purposes.
+ */
+
+/* ── Print styles ────────────────────────────────────────────────────── */
+@media print {
+  /* Hide navigation, action bars, toasts, and banners */
+  header,
+  footer,
+  nav,
+  [data-no-print],
+  #sum-actions,
+  #sum-warn,
+  #sum-poll-panel,
+  .bb-no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #1c1917 !important;
+    font-size: 11pt;
+    line-height: 1.65;
+  }
+
+  /* Reset dark-mode overrides */
+  html.dark body {
+    background: #fff !important;
+    color: #1c1917 !important;
+  }
+
+  /* Summary content (summary-view.html IDs) */
+  #md-wrap {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  #md-content {
+    font-size: 11pt !important;
+    line-height: 1.7 !important;
+    color: #1c1917 !important;
+    max-width: 100% !important;
+  }
+
+  #md-content h1, #md-content h2, #md-content h3 {
+    break-after: avoid;
+    color: #1c1917 !important;
+  }
+
+  #md-content p, #md-content li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Show title / meta at top */
+  #sum-title {
+    font-size: 18pt !important;
+    margin-bottom: 4pt !important;
+    color: #1c1917 !important;
+  }
+
+  #sum-meta {
+    font-size: 9pt !important;
+    color: #78716c !important;
+    margin-bottom: 20pt !important;
+  }
+
+  /* Hide status badge and processing panel in print */
+  #sum-status,
+  #processing-panel {
+    display: none !important;
+  }
+
+  /* Avoid page break inside paragraphs */
+  p, li, blockquote {
+    break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: none; /* don't print URLs */
+  }
+}
+
+/* ── Utility: visually hidden (sr-only fallback) ─────────────────────── */
+.bb-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Skip-to-content link ────────────────────────────────────────────── */
+.bb-skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -10rem;
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: rgb(180 83 9);
+  color: #fff;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: top 0.1s;
+}
+
+.bb-skip-link:focus {
+  top: 1rem;
 }

@@ -1,8 +1,15 @@
-"""Summary quota from plan tier and billing / calendar window."""
+"""Summary quota enforcement: per-plan limits with correct time windows.
+
+Plan rules (matches pricing page):
+  Free:   3 summaries / week  (rolling calendar week, Monday-based)
+  Pro:    15 summaries / month (Stripe billing period, falls back to calendar month)
+  Growth: 25 summaries / month (Stripe billing period, falls back to calendar month)
+"""
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import logging
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple
 
 from fastapi import HTTPException, status
@@ -13,47 +20,86 @@ from app.models.book_summary import BookSummary
 from app.models.enums import PlanTier, SummaryJobStatus
 from app.models.subscription import Subscription
 
+logger = logging.getLogger(__name__)
 
-def plan_monthly_limit(plan: PlanTier) -> Optional[int]:
-    """None means effectively unlimited."""
-    if plan == PlanTier.free:
-        return 3
-    if plan == PlanTier.pro:
-        return 50
-    if plan == PlanTier.unlimited:
-        return None
-    return 3
 
+# ---------------------------------------------------------------------------
+# Plan limits
+# ---------------------------------------------------------------------------
+
+_PLAN_LIMITS: dict[PlanTier, Optional[int]] = {
+    PlanTier.free: 3,    # per week
+    PlanTier.pro: 15,    # per billing period / calendar month
+    PlanTier.growth: 25, # per billing period / calendar month
+}
+
+_FREE_WINDOW = "weekly"
+_PAID_WINDOW = "monthly"
+
+
+def plan_limit(plan: PlanTier) -> Optional[int]:
+    """Return the summary limit for a plan (None = unlimited)."""
+    return _PLAN_LIMITS.get(plan, 3)
+
+
+def plan_window_type(plan: PlanTier) -> str:
+    """Return 'weekly' for free tier, 'monthly' for paid tiers."""
+    return _FREE_WINDOW if plan == PlanTier.free else _PAID_WINDOW
+
+
+# ---------------------------------------------------------------------------
+# Time window helpers
+# ---------------------------------------------------------------------------
 
 def quota_window_bounds(sub: Subscription) -> Tuple[datetime, datetime]:
-    """
-    Return half-open interval [start, end) in UTC for counting completed summaries.
+    """Return half-open interval [start, end) in UTC for the active quota window.
 
-    If Stripe billing period is set, use it (normalized to aware UTC). Otherwise use calendar month UTC.
+    - Free tier: rolling calendar week (Mon 00:00 → next Mon 00:00 UTC)
+    - Paid tiers: Stripe billing period when present, else calendar month
     """
     now = datetime.now(timezone.utc)
+    window_type = plan_window_type(sub.plan)
 
+    if window_type == _FREE_WINDOW:
+        return calendar_week_bounds_utc(now)
+
+    # Paid: prefer Stripe billing period
     cps = sub.current_period_start
     cpe = sub.current_period_end
     if cps is not None and cpe is not None:
         start = cps if cps.tzinfo else cps.replace(tzinfo=timezone.utc)
         end = cpe if cpe.tzinfo else cpe.replace(tzinfo=timezone.utc)
-        if end <= start:
-            start, end = calendar_month_bounds_utc(now)
-        return start, end
+        if end > start:
+            return start, end
 
     return calendar_month_bounds_utc(now)
 
 
+def calendar_week_bounds_utc(now: datetime) -> Tuple[datetime, datetime]:
+    """Return [this Monday 00:00 UTC, next Monday 00:00 UTC)."""
+    now_utc = now.astimezone(timezone.utc)
+    days_since_monday = now_utc.weekday()  # Monday == 0
+    week_start = (now_utc - timedelta(days=days_since_monday)).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    week_end = week_start + timedelta(days=7)
+    return week_start, week_end
+
+
 def calendar_month_bounds_utc(now: datetime) -> Tuple[datetime, datetime]:
-    now = now.astimezone(timezone.utc)
-    start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    if now.month == 12:
-        end = datetime(now.year + 1, 1, 1, tzinfo=timezone.utc)
+    """Return [first of month 00:00 UTC, first of next month 00:00 UTC)."""
+    now_utc = now.astimezone(timezone.utc)
+    start = now_utc.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    if now_utc.month == 12:
+        end = datetime(now_utc.year + 1, 1, 1, tzinfo=timezone.utc)
     else:
-        end = datetime(now.year, now.month + 1, 1, tzinfo=timezone.utc)
+        end = datetime(now_utc.year, now_utc.month + 1, 1, tzinfo=timezone.utc)
     return start, end
 
+
+# ---------------------------------------------------------------------------
+# Usage counting
+# ---------------------------------------------------------------------------
 
 def count_completed_summaries_in_window(
     db: Session,
@@ -78,25 +124,36 @@ def count_completed_summaries_in_window(
     )
 
 
-def subscription_usage(db: Session, sub: Subscription) -> tuple[int, Optional[int], datetime, datetime]:
+def subscription_usage(
+    db: Session, sub: Subscription
+) -> tuple[int, Optional[int], datetime, datetime]:
     """Returns (used_count, limit_or_none, window_start, window_end)."""
     start, end = quota_window_bounds(sub)
     used = count_completed_summaries_in_window(db, sub.user_id, start, end)
-    limit = plan_monthly_limit(sub.plan)
+    limit = plan_limit(sub.plan)
     return used, limit, start, end
 
 
+# ---------------------------------------------------------------------------
+# Enforcement
+# ---------------------------------------------------------------------------
+
 def assert_quota_allows_new_summary(db: Session, sub: Subscription) -> None:
-    used, limit, _, _ = subscription_usage(db, sub)
+    """Raise HTTP 429 if the user has exhausted their quota for this period."""
+    used, limit, _start, _end = subscription_usage(db, sub)
     if limit is not None and used >= limit:
+        window = "week" if plan_window_type(sub.plan) == _FREE_WINDOW else "billing period"
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Monthly summary limit reached ({limit} per billing period). Upgrade your plan or wait until the next period.",
+            detail=(
+                f"Summary limit reached ({used}/{limit} this {window}). "
+                f"Upgrade your plan or wait until the next {window}."
+            ),
         )
 
 
 def sync_subscription_usage_counter(db: Session, user_id: int) -> None:
-    """Persist `summaries_used_period` from completed summaries in the active quota window."""
+    """Persist ``summaries_used_period`` from actual completed-summary count."""
     sub = db.scalar(select(Subscription).where(Subscription.user_id == user_id))
     if sub is None:
         return
@@ -104,3 +161,4 @@ def sync_subscription_usage_counter(db: Session, user_id: int) -> None:
     sub.summaries_used_period = used
     db.add(sub)
     db.commit()
+    logger.debug("quota_synced user_id=%s used=%s", user_id, used)
