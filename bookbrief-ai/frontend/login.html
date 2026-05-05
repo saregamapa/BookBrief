@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in — BookBrief AI</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("bookbrief-theme");
+          if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            boxShadow: {
+              soft: "0 4px 24px -4px rgba(28, 25, 23, 0.08), 0 2px 8px -2px rgba(28, 25, 23, 0.06)",
+              "soft-dark": "0 4px 24px -4px rgba(0, 0, 0, 0.45)",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body
+    class="bb-paper flex min-h-screen flex-col text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-100"
+  >
+    <header
+      class="border-b border-stone-200/80 bg-parchment-50/90 px-4 py-3 backdrop-blur dark:border-stone-800 dark:bg-stone-950/90 sm:px-6"
+    >
+      <div class="mx-auto flex max-w-6xl items-center justify-between">
+        <a href="/frontend/index.html" class="group flex items-center gap-2">
+          <span
+            class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-700 text-lg font-bold text-white dark:bg-amber-600"
+            >B</span
+          >
+          <span class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50"
+            >BookBrief <span class="text-amber-800 dark:text-amber-400">AI</span></span
+          >
+        </a>
+        <button
+          type="button"
+          id="theme-toggle"
+          class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+          aria-label="Toggle dark mode"
+        >
+          <span data-theme-label class="hidden sm:inline">Dark</span>
+          <span class="sm:hidden" aria-hidden="true">◐</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
+      <div class="w-full max-w-md">
+        <div
+          class="rounded-2xl border border-stone-200 bg-white/90 p-8 shadow-soft dark:border-stone-700 dark:bg-stone-900/90 dark:shadow-soft-dark"
+        >
+          <div class="flex rounded-xl bg-stone-100 p-1 dark:bg-stone-800" role="tablist" aria-label="Account mode">
+            <button
+              type="button"
+              id="tab-login"
+              role="tab"
+              aria-selected="true"
+              class="bb-focus flex-1 rounded-lg py-2.5 text-sm font-semibold text-stone-900 dark:text-stone-100"
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              id="tab-register"
+              role="tab"
+              aria-selected="false"
+              class="bb-focus flex-1 rounded-lg py-2.5 text-sm font-medium text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
+            >
+              Create account
+            </button>
+          </div>
+
+          <p id="form-alert" class="mt-4 hidden text-sm font-medium" role="alert"></p>
+
+          <!-- Login -->
+          <form id="form-login" class="mt-6 space-y-4" novalidate>
+            <div>
+              <label for="login-email" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Email</label>
+              <input
+                id="login-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                required
+                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+              />
+            </div>
+            <div>
+              <label for="login-password" class="block text-sm font-medium text-stone-700 dark:text-stone-300"
+                >Password</label
+              >
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+              />
+            </div>
+            <button
+              type="submit"
+              class="bb-focus w-full rounded-xl bg-amber-800 py-3 text-sm font-semibold text-white hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500"
+            >
+              Sign in
+            </button>
+            <p class="text-center text-sm text-stone-500 dark:text-stone-400">
+              <button type="button" id="link-forgot" class="font-medium text-amber-800 underline hover:text-amber-950 dark:text-amber-400">
+                Forgot password?
+              </button>
+            </p>
+          </form>
+
+          <!-- Register -->
+          <form id="form-register" class="mt-6 hidden space-y-4" novalidate>
+            <div>
+              <label for="reg-name" class="block text-sm font-medium text-stone-700 dark:text-stone-300"
+                >Name <span class="font-normal text-stone-400">(optional)</span></label
+              >
+              <input
+                id="reg-name"
+                name="full_name"
+                type="text"
+                autocomplete="name"
+                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+              />
+            </div>
+            <div>
+              <label for="reg-email" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Email</label>
+              <input
+                id="reg-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                required
+                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+              />
+            </div>
+            <div>
+              <label for="reg-password" class="block text-sm font-medium text-stone-700 dark:text-stone-300"
+                >Password</label
+              >
+              <input
+                id="reg-password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                required
+                minlength="8"
+                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+              />
+              <p class="mt-1 text-xs text-stone-500">At least 8 characters.</p>
+            </div>
+            <button
+              type="submit"
+              class="bb-focus w-full rounded-xl bg-amber-800 py-3 text-sm font-semibold text-white hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500"
+            >
+              Create account
+            </button>
+          </form>
+
+          <!-- Forgot -->
+          <div id="panel-forgot" class="mt-6 hidden border-t border-stone-200 pt-6 dark:border-stone-700">
+            <p class="text-sm text-stone-600 dark:text-stone-400">
+              Enter your email. If an account exists, we will prepare a reset. With <code class="rounded bg-stone-100 px-1 dark:bg-stone-800">DEBUG=true</code> on the server, the reset token is included in the response for testing.
+            </p>
+            <form id="form-forgot" class="mt-4 space-y-3">
+              <input
+                id="forgot-email"
+                type="email"
+                required
+                class="bb-focus w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                placeholder="you@example.com"
+              />
+              <button type="submit" class="bb-focus w-full rounded-xl border border-stone-300 py-2.5 text-sm font-semibold hover:bg-stone-50 dark:border-stone-600 dark:hover:bg-stone-800">
+                Send reset instructions
+              </button>
+              <button type="button" id="forgot-back" class="w-full text-sm text-stone-500 hover:text-stone-800 dark:hover:text-stone-300">
+                Back to sign in
+              </button>
+            </form>
+            <p id="forgot-result" class="mt-3 hidden text-sm"></p>
+          </div>
+
+          <!-- Reset password (e.g. /frontend/login.html?reset=1) -->
+          <div id="panel-reset" class="mt-6 hidden border-t border-stone-200 pt-6 dark:border-stone-700">
+            <a
+              href="/frontend/login.html"
+              class="mb-4 inline-block text-sm font-medium text-amber-800 hover:underline dark:text-amber-400"
+              >← Back to sign in</a
+            >
+            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Set new password</h2>
+            <form id="form-reset" class="mt-4 space-y-3">
+              <input
+                id="reset-token"
+                type="text"
+                required
+                class="bb-focus w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                placeholder="Reset token"
+              />
+              <input
+                id="reset-password"
+                type="password"
+                required
+                minlength="8"
+                class="bb-focus w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                placeholder="New password"
+              />
+              <button type="submit" class="bb-focus w-full rounded-xl bg-amber-800 py-2.5 text-sm font-semibold text-white dark:bg-amber-600">
+                Update password
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <p class="mt-8 text-center text-sm text-stone-500 dark:text-stone-500">
+          <a href="/frontend/index.html" class="font-medium text-amber-800 hover:underline dark:text-amber-400">← Back to home</a>
+        </p>
+      </div>
+    </main>
+
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/auth.js"></script>
+    <script src="/frontend/js/ui.js"></script>
+    <script>
+      (function () {
+        function setTab(isRegister) {
+          var loginForm = document.getElementById("form-login");
+          var regForm = document.getElementById("form-register");
+          var tabLogin = document.getElementById("tab-login");
+          var tabReg = document.getElementById("tab-register");
+          var forgot = document.getElementById("panel-forgot");
+          var reset = document.getElementById("panel-reset");
+          forgot.classList.add("hidden");
+          reset.classList.add("hidden");
+          if (isRegister) {
+            loginForm.classList.add("hidden");
+            regForm.classList.remove("hidden");
+            tabLogin.setAttribute("aria-selected", "false");
+            tabReg.setAttribute("aria-selected", "true");
+            tabLogin.className =
+              "bb-focus flex-1 rounded-lg py-2.5 text-sm font-medium text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200";
+            tabReg.className =
+              "bb-focus flex-1 rounded-lg py-2.5 text-sm font-semibold text-stone-900 dark:text-stone-100";
+          } else {
+            regForm.classList.add("hidden");
+            loginForm.classList.remove("hidden");
+            tabLogin.setAttribute("aria-selected", "true");
+            tabReg.setAttribute("aria-selected", "false");
+            tabLogin.className =
+              "bb-focus flex-1 rounded-lg py-2.5 text-sm font-semibold text-stone-900 dark:text-stone-100";
+            tabReg.className =
+              "bb-focus flex-1 rounded-lg py-2.5 text-sm font-medium text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200";
+          }
+          BBUi.showAlert(document.getElementById("form-alert"), "", null);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+          if (window.BBAuth && BBAuth.isLoggedIn()) {
+            window.location.href = "/frontend/dashboard.html";
+            return;
+          }
+          BBUi.initThemeToggle("#theme-toggle");
+
+          var params = new URLSearchParams(window.location.search);
+          if (params.get("reset") === "1") {
+            var tablist = document.querySelector('[role="tablist"]');
+            if (tablist) tablist.classList.add("hidden");
+            document.getElementById("form-login").classList.add("hidden");
+            document.getElementById("form-register").classList.add("hidden");
+            document.getElementById("panel-forgot").classList.add("hidden");
+            document.getElementById("panel-reset").classList.remove("hidden");
+          } else if (params.get("mode") === "register") {
+            setTab(true);
+          }
+
+          document.getElementById("tab-login").addEventListener("click", function () {
+            setTab(false);
+          });
+          document.getElementById("tab-register").addEventListener("click", function () {
+            setTab(true);
+          });
+
+          document.getElementById("form-login").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            var alertEl = document.getElementById("form-alert");
+            BBUi.showAlert(alertEl, "", null);
+            try {
+              await BBAuth.login(
+                document.getElementById("login-email").value.trim(),
+                document.getElementById("login-password").value
+              );
+              window.location.href = "/frontend/dashboard.html";
+            } catch (err) {
+              BBUi.showAlert(alertEl, err.message || "Sign in failed", "error");
+            }
+          });
+
+          document.getElementById("form-register").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            var alertEl = document.getElementById("form-alert");
+            BBUi.showAlert(alertEl, "", null);
+            try {
+              await BBAuth.register(
+                document.getElementById("reg-email").value.trim(),
+                document.getElementById("reg-password").value,
+                document.getElementById("reg-name").value
+              );
+              window.location.href = "/frontend/dashboard.html";
+            } catch (err) {
+              BBUi.showAlert(alertEl, err.message || "Could not create account", "error");
+            }
+          });
+
+          document.getElementById("link-forgot").addEventListener("click", function () {
+            document.getElementById("panel-forgot").classList.remove("hidden");
+            document.getElementById("forgot-email").value = document.getElementById("login-email").value.trim();
+          });
+
+          document.getElementById("forgot-back").addEventListener("click", function () {
+            document.getElementById("panel-forgot").classList.add("hidden");
+            document.getElementById("forgot-result").classList.add("hidden");
+          });
+
+          document.getElementById("form-forgot").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            var out = document.getElementById("forgot-result");
+            out.classList.remove("hidden", "text-emerald-600", "dark:text-emerald-400", "text-red-600");
+            try {
+              var res = await BBAuth.forgotPassword(document.getElementById("forgot-email").value.trim());
+              out.textContent = res.message || "Done.";
+              out.classList.add("text-emerald-600", "dark:text-emerald-400");
+            } catch (err) {
+              out.textContent = err.message || "Request failed";
+              out.classList.add("text-red-600", "dark:text-red-400");
+            }
+          });
+
+          document.getElementById("form-reset").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            var alertEl = document.getElementById("form-alert");
+            BBUi.showAlert(alertEl, "", null);
+            try {
+              await BBAuth.resetPassword(
+                document.getElementById("reset-token").value.trim(),
+                document.getElementById("reset-password").value
+              );
+              BBUi.showAlert(alertEl, "Password updated. You can sign in below.", "success");
+              document.getElementById("panel-reset").classList.add("hidden");
+              var tablist = document.querySelector('[role="tablist"]');
+              if (tablist) tablist.classList.remove("hidden");
+              document.getElementById("form-login").classList.remove("hidden");
+              setTab(false);
+              history.replaceState(null, "", "/frontend/login.html");
+            } catch (err) {
+              BBUi.showAlert(alertEl, err.message || "Reset failed", "error");
+            }
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

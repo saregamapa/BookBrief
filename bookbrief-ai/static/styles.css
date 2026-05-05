@@ -1,0 +1,47 @@
+/**
+ * BookBrief AI — global styles (Tailwind via CDN handles utilities).
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Source+Sans+3:wght@400;500;600;700&display=swap");
+
+:root {
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  color-scheme: light dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.font-serif-display {
+  font-family: Literata, Georgia, "Times New Roman", serif;
+}
+
+/* Subtle paper texture in light mode */
+.bb-paper {
+  background-color: rgb(250 250 249);
+  background-image: radial-gradient(
+    ellipse 120% 80% at 50% -20%,
+    rgb(254 243 199 / 0.35),
+    transparent
+  );
+}
+
+.dark .bb-paper {
+  background-color: rgb(12 10 9);
+  background-image: radial-gradient(
+    ellipse 100% 60% at 50% 0%,
+    rgb(120 53 15 / 0.12),
+    transparent
+  );
+}
+
+/* Focus rings */
+.bb-focus:focus {
+  outline: 2px solid rgb(180 83 9);
+  outline-offset: 2px;
+}
+
+.dark .bb-focus:focus {
+  outline-color: rgb(251 191 36);
+}

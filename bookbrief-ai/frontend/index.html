@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BookBrief AI — Smart book summaries</title>
+    <meta
+      name="description"
+      content="Turn books into clear summaries. Paste text, upload PDFs, or describe a title—get ultra-short to detailed briefs with BookBrief AI."
+    />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("bookbrief-theme");
+          if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              ink: { 950: "#1c1917", 900: "#292524", 800: "#44403c" },
+              parchment: { 50: "#fafaf9", 100: "#f5f5f4", 200: "#e7e5e4" },
+            },
+            boxShadow: {
+              soft: "0 4px 24px -4px rgba(28, 25, 23, 0.08), 0 2px 8px -2px rgba(28, 25, 23, 0.06)",
+              "soft-dark": "0 4px 24px -4px rgba(0, 0, 0, 0.4)",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body
+    class="bb-paper text-stone-800 antialiased transition-colors duration-200 dark:bg-stone-950 dark:text-stone-100"
+  >
+    <a
+      href="#main"
+      class="bb-focus sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-amber-100 focus:px-4 focus:py-2 dark:focus:bg-amber-900"
+      >Skip to content</a
+    >
+
+    <header
+      class="sticky top-0 z-40 border-b border-stone-200/80 bg-parchment-50/90 backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/90"
+    >
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <a href="/frontend/index.html" class="group flex items-center gap-2">
+          <span
+            class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-700 text-lg font-bold text-white shadow-sm ring-1 ring-amber-600/30 dark:bg-amber-600"
+            >B</span
+          >
+          <span class="font-serif-display text-lg font-semibold tracking-tight text-stone-900 dark:text-stone-50"
+            >BookBrief <span class="text-amber-800 dark:text-amber-400">AI</span></span
+          >
+        </a>
+
+        <nav class="hidden items-center gap-8 md:flex" aria-label="Main">
+          <a
+            href="#features"
+            class="text-sm font-medium text-stone-600 hover:text-amber-900 dark:text-stone-400 dark:hover:text-amber-200"
+            >Features</a
+          >
+          <a
+            href="#pricing"
+            class="text-sm font-medium text-stone-600 hover:text-amber-900 dark:text-stone-400 dark:hover:text-amber-200"
+            >Pricing</a
+          >
+          <a
+            href="#testimonials"
+            class="text-sm font-medium text-stone-600 hover:text-amber-900 dark:text-stone-400 dark:hover:text-amber-200"
+            >Stories</a
+          >
+        </nav>
+
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            id="theme-toggle"
+            class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+            aria-label="Toggle dark mode"
+          >
+            <span data-theme-label class="hidden sm:inline">Dark</span>
+            <span class="sm:hidden" aria-hidden="true">◐</span>
+          </button>
+          <a
+            href="/frontend/login.html"
+            class="bb-focus hidden rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 dark:border-stone-600 dark:text-stone-200 dark:hover:bg-stone-800 sm:inline-block"
+            >Log in</a
+          >
+          <a
+            href="/frontend/login.html?mode=register"
+            class="bb-focus inline-flex items-center rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-amber-900 dark:bg-amber-600 dark:shadow-soft-dark dark:hover:bg-amber-500"
+            >Start free</a
+          >
+          <button
+            type="button"
+            id="nav-toggle"
+            class="bb-focus rounded-lg border border-stone-200 p-2 md:hidden dark:border-stone-700"
+            aria-expanded="false"
+            aria-controls="mobile-nav"
+            aria-label="Open menu"
+          >
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="mobile-nav" class="hidden border-t border-stone-200 px-4 py-3 dark:border-stone-800 md:hidden">
+        <div class="flex flex-col gap-2">
+          <a href="#features" class="rounded-lg px-2 py-2 text-sm font-medium hover:bg-stone-100 dark:hover:bg-stone-900"
+            >Features</a
+          >
+          <a href="#pricing" class="rounded-lg px-2 py-2 text-sm font-medium hover:bg-stone-100 dark:hover:bg-stone-900"
+            >Pricing</a
+          >
+          <a
+            href="#testimonials"
+            class="rounded-lg px-2 py-2 text-sm font-medium hover:bg-stone-100 dark:hover:bg-stone-900"
+            >Stories</a
+          >
+          <a
+            href="/frontend/login.html"
+            class="rounded-lg px-2 py-2 text-sm font-medium hover:bg-stone-100 dark:hover:bg-stone-900"
+            >Log in</a
+          >
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- Hero -->
+      <section class="relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pt-24 lg:pt-28">
+        <div class="pointer-events-none absolute inset-0 opacity-40 dark:opacity-25" aria-hidden="true">
+          <div
+            class="absolute -left-20 top-20 h-72 w-72 rounded-full bg-amber-200 blur-3xl dark:bg-amber-900/40"
+          ></div>
+          <div
+            class="absolute -right-10 bottom-10 h-64 w-64 rounded-full bg-stone-300 blur-3xl dark:bg-stone-800"
+          ></div>
+        </div>
+        <div class="relative mx-auto max-w-3xl text-center">
+          <p
+            class="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-200/80 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/50 dark:text-amber-200"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+            Built for readers who value their time
+          </p>
+          <h1
+            class="font-serif-display text-4xl font-bold leading-tight tracking-tight text-stone-900 sm:text-5xl lg:text-6xl dark:text-stone-50"
+          >
+            Your next book,
+            <span class="text-amber-800 dark:text-amber-400">distilled beautifully.</span>
+          </h1>
+          <p class="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-stone-600 dark:text-stone-400">
+            Paste an excerpt, upload a PDF, or name a title—BookBrief AI runs a careful multi-step pipeline to deliver
+            summaries you can trust, export, and revisit.
+          </p>
+          <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a
+              href="/frontend/login.html?mode=register"
+              class="bb-focus w-full rounded-xl bg-amber-800 px-8 py-3.5 text-center text-base font-semibold text-white shadow-soft hover:bg-amber-900 sm:w-auto dark:bg-amber-600 dark:hover:bg-amber-500"
+              >Create free account</a
+            >
+            <a
+              href="#features"
+              class="bb-focus w-full rounded-xl border border-stone-300 bg-white/80 px-8 py-3.5 text-center text-base font-semibold text-stone-800 hover:bg-stone-50 sm:w-auto dark:border-stone-600 dark:bg-stone-900/80 dark:text-stone-100 dark:hover:bg-stone-800"
+              >See how it works</a
+            >
+          </div>
+          <p class="mt-6 text-sm text-stone-500 dark:text-stone-500">
+            No credit card for the free tier · Cancel anytime on paid plans
+          </p>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="features" class="border-y border-stone-200 bg-white/60 py-20 dark:border-stone-800 dark:bg-stone-900/40">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6">
+          <div class="mx-auto max-w-2xl text-center">
+            <h2 class="font-serif-display text-3xl font-bold text-stone-900 dark:text-stone-50">Everything you need</h2>
+            <p class="mt-3 text-stone-600 dark:text-stone-400">
+              One calm workspace—from raw material to polished brief.
+            </p>
+          </div>
+          <div class="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <article
+              class="rounded-2xl border border-stone-200/80 bg-parchment-50 p-6 shadow-sm dark:border-stone-700 dark:bg-stone-900/60"
+            >
+              <div class="text-2xl" aria-hidden="true">📖</div>
+              <h3 class="mt-3 font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-100">
+                Flexible input
+              </h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+                Paste text, upload PDFs (smart page limits), or give title + author for AI-assisted fetch.
+              </p>
+            </article>
+            <article
+              class="rounded-2xl border border-stone-200/80 bg-parchment-50 p-6 shadow-sm dark:border-stone-700 dark:bg-stone-900/60"
+            >
+              <div class="text-2xl" aria-hidden="true">✨</div>
+              <h3 class="mt-3 font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-100">
+                Styles that fit
+              </h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+                Ultra-short, standard, detailed chapters, takeaways + actions, or personalized to your reading goal.
+              </p>
+            </article>
+            <article
+              class="rounded-2xl border border-stone-200/80 bg-parchment-50 p-6 shadow-sm dark:border-stone-700 dark:bg-stone-900/60"
+            >
+              <div class="text-2xl" aria-hidden="true">📤</div>
+              <h3 class="mt-3 font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-100">
+                Export & library
+              </h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+                Copy, Markdown, or PDF—save summaries to your private library and regenerate in a new style anytime.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pricing -->
+      <section id="pricing" class="py-20">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6">
+          <div class="mx-auto max-w-2xl text-center">
+            <h2 class="font-serif-display text-3xl font-bold text-stone-900 dark:text-stone-50">Simple pricing</h2>
+            <p class="mt-3 text-stone-600 dark:text-stone-400">Start free. Upgrade when summaries become a habit.</p>
+          </div>
+          <div class="mt-14 grid gap-8 lg:grid-cols-3">
+            <div
+              class="flex flex-col rounded-2xl border border-stone-200 bg-white p-8 shadow-sm dark:border-stone-700 dark:bg-stone-900"
+            >
+              <h3 class="font-serif-display text-xl font-semibold text-stone-900 dark:text-stone-50">Free</h3>
+              <p class="mt-2 text-3xl font-bold text-stone-900 dark:text-white">$0</p>
+              <p class="mt-1 text-sm text-stone-500">Forever</p>
+              <ul class="mt-6 flex-1 space-y-3 text-sm text-stone-600 dark:text-stone-400">
+                <li class="flex gap-2"><span class="text-amber-700 dark:text-amber-500">✓</span>3 summaries / month</li>
+                <li class="flex gap-2"><span class="text-amber-700 dark:text-amber-500">✓</span>Core summary styles</li>
+                <li class="flex gap-2"><span class="text-amber-700 dark:text-amber-500">✓</span>Library access</li>
+              </ul>
+              <a
+                href="/frontend/login.html?mode=register"
+                class="bb-focus mt-8 block rounded-xl border border-stone-300 py-3 text-center text-sm font-semibold hover:bg-stone-50 dark:border-stone-600 dark:hover:bg-stone-800"
+                >Get started</a
+              >
+            </div>
+            <div
+              class="relative flex flex-col rounded-2xl border-2 border-amber-700 bg-gradient-to-b from-amber-50/90 to-white p-8 shadow-soft ring-1 ring-amber-600/20 dark:border-amber-500 dark:from-amber-950/40 dark:to-stone-900 dark:ring-amber-500/20"
+            >
+              <span
+                class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-800 px-3 py-0.5 text-xs font-semibold text-white dark:bg-amber-500"
+                >Popular</span
+              >
+              <h3 class="font-serif-display text-xl font-semibold text-stone-900 dark:text-stone-50">Pro</h3>
+              <p class="mt-2 text-3xl font-bold text-stone-900 dark:text-white">$9<span class="text-lg font-normal text-stone-500">/mo</span></p>
+              <p class="mt-1 text-sm text-stone-600 dark:text-stone-400">For avid readers & teams</p>
+              <ul class="mt-6 flex-1 space-y-3 text-sm text-stone-700 dark:text-stone-300">
+                <li class="flex gap-2"><span class="text-amber-800 dark:text-amber-400">✓</span>50 summaries / month</li>
+                <li class="flex gap-2"><span class="text-amber-800 dark:text-amber-400">✓</span>All styles + personalization</li>
+                <li class="flex gap-2"><span class="text-amber-800 dark:text-amber-400">✓</span>Stripe Customer Portal</li>
+              </ul>
+              <a
+                href="/frontend/login.html?mode=register"
+                class="bb-focus mt-8 block rounded-xl bg-amber-800 py-3 text-center text-sm font-semibold text-white hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500"
+                >Start Pro</a
+              >
+            </div>
+            <div
+              class="flex flex-col rounded-2xl border border-stone-200 bg-white p-8 shadow-sm dark:border-stone-700 dark:bg-stone-900"
+            >
+              <h3 class="font-serif-display text-xl font-semibold text-stone-900 dark:text-stone-50">Unlimited</h3>
+              <p class="mt-2 text-3xl font-bold text-stone-900 dark:text-white">$19<span class="text-lg font-normal text-stone-500">/mo</span></p>
+              <p class="mt-1 text-sm text-stone-600 dark:text-stone-400">No ceiling on learning</p>
+              <ul class="mt-6 flex-1 space-y-3 text-sm text-stone-600 dark:text-stone-400">
+                <li class="flex gap-2"><span class="text-amber-700 dark:text-amber-500">✓</span>Unlimited summaries</li>
+                <li class="flex gap-2"><span class="text-amber-700 dark:text-amber-500">✓</span>Priority-friendly usage</li>
+                <li class="flex gap-2"><span class="text-amber-700 dark:text-amber-500">✓</span>Everything in Pro</li>
+              </ul>
+              <a
+                href="/frontend/login.html?mode=register"
+                class="bb-focus mt-8 block rounded-xl border border-stone-300 py-3 text-center text-sm font-semibold hover:bg-stone-50 dark:border-stone-600 dark:hover:bg-stone-800"
+                >Go Unlimited</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testimonials -->
+      <section id="testimonials" class="border-t border-stone-200 bg-stone-100/50 py-20 dark:border-stone-800 dark:bg-stone-900/30">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6">
+          <h2 class="text-center font-serif-display text-3xl font-bold text-stone-900 dark:text-stone-50">
+            Readers are talking
+          </h2>
+          <div class="mt-12 grid gap-8 md:grid-cols-3">
+            <figure class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
+              <blockquote class="text-sm leading-relaxed text-stone-700 dark:text-stone-300">
+                “I ship a one-pager to my book club every month. BookBrief nails tone—warm, clear, never fluffy.”
+              </blockquote>
+              <figcaption class="mt-4 text-xs font-medium text-stone-500 dark:text-stone-500">— Maya Chen, educator</figcaption>
+            </figure>
+            <figure class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
+              <blockquote class="text-sm leading-relaxed text-stone-700 dark:text-stone-300">
+                “PDF upload + chapter-style output saved me hours on dense non-fiction. It feels surprisingly careful.”
+              </blockquote>
+              <figcaption class="mt-4 text-xs font-medium text-stone-500 dark:text-stone-500">— Jordan Ellis, founder</figcaption>
+            </figure>
+            <figure class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
+              <blockquote class="text-sm leading-relaxed text-stone-700 dark:text-stone-300">
+                “Dark mode + clean exports mean I actually revisit summaries instead of losing them in tabs.”
+              </blockquote>
+              <figcaption class="mt-4 text-xs font-medium text-stone-500 dark:text-stone-500">— Sam Rivera, designer</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section class="px-4 py-20 sm:px-6">
+        <div
+          class="mx-auto max-w-4xl rounded-3xl bg-gradient-to-br from-amber-900 via-amber-800 to-stone-900 px-8 py-14 text-center text-white shadow-soft-dark dark:from-amber-950 dark:via-stone-900 dark:to-stone-950"
+        >
+          <h2 class="font-serif-display text-3xl font-bold sm:text-4xl">Ready for your next brief?</h2>
+          <p class="mx-auto mt-4 max-w-lg text-amber-100/90">
+            Join BookBrief AI and turn highlights, PDFs, and must-read titles into summaries you will actually use.
+          </p>
+          <a
+            href="/frontend/login.html?mode=register"
+            class="bb-focus mt-8 inline-flex rounded-xl bg-white px-8 py-3.5 text-base font-semibold text-amber-950 hover:bg-amber-50"
+            >Start free today</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-stone-200 bg-white py-10 dark:border-stone-800 dark:bg-stone-950">
+      <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-center text-sm text-stone-500 sm:flex-row sm:text-left dark:text-stone-500">
+        <p class="font-serif-display font-medium text-stone-700 dark:text-stone-400">© BookBrief AI</p>
+        <div class="flex flex-wrap justify-center gap-6">
+          <a href="/health" class="hover:text-amber-800 dark:hover:text-amber-400">API status</a>
+          <a href="/frontend/login.html" class="hover:text-amber-800 dark:hover:text-amber-400">Log in</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="/frontend/js/ui.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        if (window.BBUi) {
+          BBUi.initThemeToggle("#theme-toggle");
+          BBUi.wireMobileNav("#nav-toggle", "#mobile-nav");
+        }
+      });
+    </script>
+  </body>
+</html>

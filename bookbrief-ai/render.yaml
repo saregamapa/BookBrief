@@ -1,0 +1,45 @@
+# Render Blueprint — https://docs.render.com/infrastructure-as-code
+# Deploy: Dashboard → New → Blueprint → connect repo. If this repo’s git root is a
+# parent folder (e.g. BookBrief/), move this file to that root and set rootDir: bookbrief-ai.
+databases:
+  - name: bookbrief-db
+    databaseName: bookbrief
+    user: bookbrief
+    plan: free
+
+services:
+  - type: web
+    name: bookbrief-web
+    runtime: python
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bookbrief-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "false"
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_UNLIMITED
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false

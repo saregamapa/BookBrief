@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New summary — BookBrief AI</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("bookbrief-theme");
+          if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { darkMode: "class" };
+    </script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="bb-paper min-h-screen text-stone-800 dark:bg-stone-950 dark:text-stone-100">
+    <header class="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-4 py-3 dark:border-stone-800 sm:px-6">
+      <a href="/frontend/dashboard.html" class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50"
+        >← Dashboard</a
+      >
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          id="theme-toggle"
+          class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs dark:border-stone-700 dark:bg-stone-900"
+        >
+          <span data-theme-label class="hidden sm:inline">Dark</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+      <h1 class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50">New summary</h1>
+      <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">
+        Paste text, look up a book by title, or upload a PDF. We run the full multi-step pipeline on the server.
+      </p>
+
+      <div
+        class="mt-8 rounded-2xl border border-stone-200 bg-white/90 p-6 shadow-sm dark:border-stone-700 dark:bg-stone-900/70"
+      >
+        <div class="flex flex-wrap gap-2" role="tablist" aria-label="Input type">
+          <button type="button" class="bb-tab bb-focus rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium dark:border-stone-600" data-tab="paste" aria-selected="true">Paste text</button>
+          <button type="button" class="bb-tab bb-focus rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium dark:border-stone-600" data-tab="title" aria-selected="false">Book title</button>
+          <button type="button" class="bb-tab bb-focus rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium dark:border-stone-600" data-tab="pdf" aria-selected="false">PDF upload</button>
+        </div>
+
+        <p id="form-alert" class="mt-4 hidden text-sm font-medium" role="alert"></p>
+
+        <form id="form-main" class="mt-6 space-y-5">
+          <input type="hidden" id="field-source-type" name="source_type" value="paste" />
+
+          <div id="panel-paste">
+            <label for="paste-content" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Excerpt or chapter</label>
+            <textarea
+              id="paste-content"
+              rows="10"
+              class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 font-mono text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+              placeholder="Paste your book text here (minimum ~50 characters recommended)."
+            ></textarea>
+          </div>
+
+          <div id="panel-title" class="hidden space-y-3">
+            <div>
+              <label for="book-title" class="block text-sm font-medium">Title</label>
+              <input
+                id="book-title"
+                type="text"
+                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                placeholder="e.g. Atomic Habits"
+              />
+            </div>
+            <div>
+              <label for="book-author" class="block text-sm font-medium">Author <span class="text-stone-400">(optional)</span></label>
+              <input
+                id="book-author"
+                type="text"
+                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                placeholder="e.g. James Clear"
+              />
+            </div>
+          </div>
+
+          <div id="panel-pdf" class="hidden">
+            <label for="pdf-file" class="block text-sm font-medium">PDF file</label>
+            <input
+              id="pdf-file"
+              type="file"
+              accept="application/pdf,.pdf"
+              class="bb-focus mt-1 block w-full text-sm text-stone-600 file:mr-4 file:rounded-lg file:border-0 file:bg-amber-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-amber-900 dark:text-stone-400 dark:file:bg-amber-900/40 dark:file:text-amber-100"
+            />
+            <p class="mt-1 text-xs text-stone-500">First ~30 pages are read; max 15 MB.</p>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="field-style" class="block text-sm font-medium">Style</label>
+              <select
+                id="field-style"
+                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+              >
+                <option value="ultra_short">Ultra-short (~2 min read)</option>
+                <option value="standard" selected>Standard</option>
+                <option value="detailed">Detailed (chapters / themes)</option>
+                <option value="takeaways">Takeaways + actions</option>
+                <option value="personalized">Personalized</option>
+              </select>
+            </div>
+            <div id="wrap-display-title">
+              <label for="field-title-optional" class="block text-sm font-medium">Library title <span class="text-stone-400">(optional)</span></label>
+              <input
+                id="field-title-optional"
+                type="text"
+                class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                placeholder="For paste/PDF: how it appears in your list"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="field-personal" class="block text-sm font-medium">Personalization <span class="text-stone-400">(optional)</span></label>
+            <textarea
+              id="field-personal"
+              rows="2"
+              class="bb-focus mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+              placeholder="Reading goal, role, or context—especially for the “personalized” style."
+            ></textarea>
+          </div>
+
+          <button
+            type="submit"
+            id="btn-submit"
+            class="bb-focus w-full rounded-xl bg-amber-800 py-3 text-sm font-semibold text-white hover:bg-amber-900 disabled:cursor-wait disabled:opacity-70 dark:bg-amber-600"
+          >
+            Generate summary
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/auth.js"></script>
+    <script src="/frontend/js/ui.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        if (!window.BBAuth || !BBAuth.isLoggedIn()) {
+          window.location.replace("/frontend/login.html");
+          return;
+        }
+        BBUi.initThemeToggle("#theme-toggle");
+
+        var alertEl = document.getElementById("form-alert");
+        var hiddenSource = document.getElementById("field-source-type");
+        var tabs = document.querySelectorAll(".bb-tab");
+        var panelPaste = document.getElementById("panel-paste");
+        var panelTitle = document.getElementById("panel-title");
+        var panelPdf = document.getElementById("panel-pdf");
+
+        function setTab(which) {
+          hiddenSource.value = which === "title" ? "title_author" : which === "pdf" ? "pdf" : "paste";
+          tabs.forEach(function (t) {
+            var on = t.getAttribute("data-tab") === which;
+            t.setAttribute("aria-selected", on ? "true" : "false");
+            t.className =
+              "bb-tab bb-focus rounded-lg border px-4 py-2 text-sm font-medium " +
+              (on
+                ? "border-amber-800 bg-amber-50 text-amber-950 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-100"
+                : "border-stone-200 text-stone-700 dark:border-stone-600 dark:text-stone-300");
+          });
+          panelPaste.classList.toggle("hidden", which !== "paste");
+          panelTitle.classList.toggle("hidden", which !== "title");
+          panelPdf.classList.toggle("hidden", which !== "pdf");
+          document.getElementById("wrap-display-title").classList.toggle("hidden", which === "title");
+        }
+
+        tabs.forEach(function (t) {
+          t.addEventListener("click", function () {
+            setTab(t.getAttribute("data-tab"));
+          });
+        });
+        setTab("paste");
+
+        document.getElementById("form-main").addEventListener("submit", async function (e) {
+          e.preventDefault();
+          BBUi.showAlert(alertEl, "", null);
+          var btn = document.getElementById("btn-submit");
+          btn.disabled = true;
+          var style = document.getElementById("field-style").value;
+          var personal = document.getElementById("field-personal").value.trim() || null;
+          var displayTitle = document.getElementById("field-title-optional").value.trim() || null;
+
+          try {
+            if (hiddenSource.value === "pdf") {
+              var f = document.getElementById("pdf-file").files[0];
+              if (!f) throw new Error("Choose a PDF file.");
+              var fd = new FormData();
+              fd.append("file", f, f.name);
+              fd.append("style", style);
+              fd.append("filename", f.name);
+              if (displayTitle) fd.append("title", displayTitle);
+              if (personal) fd.append("personalization_context", personal);
+              var resPdf = await BBApi.summaries.createPdf(fd);
+              window.location.href = "/frontend/summary-view.html?id=" + encodeURIComponent(resPdf.id);
+              return;
+            }
+
+            var body = { style: style, personalization_context: personal };
+            if (hiddenSource.value === "title_author") {
+              body.source_type = "title_author";
+              body.title = document.getElementById("book-title").value.trim();
+              body.author = document.getElementById("book-author").value.trim() || null;
+              if (!body.title) throw new Error("Enter the book title.");
+            } else {
+              body.source_type = "paste";
+              body.content = document.getElementById("paste-content").value;
+              if (displayTitle) body.title = displayTitle;
+            }
+
+            var res = await BBApi.summaries.createJson(body);
+            window.location.href = "/frontend/summary-view.html?id=" + encodeURIComponent(res.id);
+          } catch (err) {
+            BBUi.showAlert(alertEl, err.message || "Request failed", "error");
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

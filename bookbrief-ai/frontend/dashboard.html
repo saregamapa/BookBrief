@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — BookBrief AI</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("bookbrief-theme");
+          if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { darkMode: "class" };
+    </script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="bb-paper min-h-screen text-stone-800 dark:bg-stone-950 dark:text-stone-100">
+    <header
+      class="flex items-center justify-between border-b border-stone-200 px-4 py-3 dark:border-stone-800 sm:px-6"
+    >
+      <a href="/frontend/index.html" class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50"
+        >BookBrief <span class="text-amber-800 dark:text-amber-400">AI</span></a
+      >
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          id="theme-toggle"
+          class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs dark:border-stone-700 dark:bg-stone-900"
+        >
+          <span data-theme-label class="hidden sm:inline">Dark</span>
+        </button>
+        <span id="nav-user" class="hidden max-w-[10rem] truncate text-sm text-stone-600 dark:text-stone-400 sm:inline"></span>
+        <button
+          type="button"
+          id="btn-logout"
+          class="bb-focus rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium hover:bg-stone-100 dark:border-stone-600 dark:hover:bg-stone-800"
+        >
+          Log out
+        </button>
+      </div>
+    </header>
+    <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+      <h1 class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50">Your library</h1>
+      <p class="mt-2 text-stone-600 dark:text-stone-400">Search, open, and manage your summaries.</p>
+      <a
+        href="/frontend/summarize.html"
+        class="bb-focus mt-6 inline-flex rounded-xl bg-amber-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-900 dark:bg-amber-600"
+        >New summary</a
+      >
+
+      <section class="mt-12" aria-labelledby="lib-heading">
+        <h2 id="lib-heading" class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Recent summaries</h2>
+        <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          <div class="min-w-0 flex-1">
+            <label for="sum-q" class="sr-only">Search</label>
+            <input
+              id="sum-q"
+              type="search"
+              placeholder="Search title, author, or text…"
+              class="bb-focus w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+            />
+          </div>
+          <div>
+            <label for="sum-style" class="mb-1 block text-xs font-medium text-stone-500 dark:text-stone-400">Style</label>
+            <select
+              id="sum-style"
+              class="bb-focus w-full min-w-[8rem] rounded-lg border border-stone-300 bg-white px-2 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100 sm:w-auto"
+            >
+              <option value="">Any</option>
+              <option value="ultra_short">Ultra-short</option>
+              <option value="standard">Standard</option>
+              <option value="detailed">Detailed</option>
+              <option value="takeaways">Takeaways</option>
+              <option value="personalized">Personalized</option>
+            </select>
+          </div>
+          <div>
+            <label for="sum-status" class="mb-1 block text-xs font-medium text-stone-500 dark:text-stone-400">Status</label>
+            <select
+              id="sum-status"
+              class="bb-focus w-full min-w-[8rem] rounded-lg border border-stone-300 bg-white px-2 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100 sm:w-auto"
+            >
+              <option value="">Any</option>
+              <option value="completed">Completed</option>
+              <option value="failed">Failed</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            id="sum-apply"
+            class="bb-focus rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:hover:bg-stone-800"
+          >
+            Apply filters
+          </button>
+        </div>
+        <p id="sum-list-err" class="mt-3 hidden text-sm text-red-600 dark:text-red-400"></p>
+        <p id="sum-empty" class="mt-6 hidden text-sm text-stone-500 dark:text-stone-400">No summaries match your filters yet.</p>
+        <ul id="sum-list" class="mt-4 space-y-2"></ul>
+      </section>
+
+      <section
+        class="mt-12 rounded-2xl border border-stone-200 bg-white/80 p-6 shadow-sm dark:border-stone-700 dark:bg-stone-900/60"
+        aria-labelledby="billing-heading"
+      >
+        <h2 id="billing-heading" class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">
+          Plan &amp; billing
+        </h2>
+        <p id="plan-summary" class="mt-2 text-sm text-stone-600 dark:text-stone-400">Loading…</p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            id="btn-portal"
+            class="bb-focus rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-600 dark:hover:bg-stone-800"
+            disabled
+          >
+            Customer portal
+          </button>
+          <button
+            type="button"
+            data-checkout="pro"
+            class="bb-focus checkout-btn rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 dark:bg-amber-600"
+          >
+            Upgrade — Pro
+          </button>
+          <button
+            type="button"
+            data-checkout="unlimited"
+            class="bb-focus checkout-btn rounded-lg border border-amber-800 px-4 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-50 dark:border-amber-500 dark:text-amber-200 dark:hover:bg-stone-800"
+          >
+            Upgrade — Unlimited
+          </button>
+        </div>
+        <p id="billing-hint" class="mt-3 text-xs text-stone-500 dark:text-stone-500">
+          Portal opens after your first successful Checkout (Stripe customer is created then).
+        </p>
+        <p id="billing-error" class="mt-2 hidden text-sm text-red-600 dark:text-red-400"></p>
+      </section>
+    </main>
+    <script src="/frontend/js/api.js"></script>
+    <script src="/frontend/js/auth.js"></script>
+    <script src="/frontend/js/ui.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        if (!window.BBAuth || !BBAuth.isLoggedIn()) {
+          window.location.replace("/frontend/login.html");
+          return;
+        }
+        BBUi.initThemeToggle("#theme-toggle");
+        var u = BBAuth.getUser();
+        if (u && u.email) {
+          var el = document.getElementById("nav-user");
+          el.textContent = u.email;
+          el.classList.remove("hidden");
+        }
+        document.getElementById("btn-logout").addEventListener("click", async function () {
+          await BBAuth.logout();
+          window.location.href = "/frontend/login.html";
+        });
+
+        var billingErr = document.getElementById("billing-error");
+        function showBillingErr(msg) {
+          if (!msg) {
+            billingErr.classList.add("hidden");
+            billingErr.textContent = "";
+            return;
+          }
+          billingErr.textContent = msg;
+          billingErr.classList.remove("hidden");
+        }
+
+        async function loadSubscription() {
+          try {
+            var data = await BBApi.apiFetch("/user/subscription");
+            var period =
+              data.current_period_end != null
+                ? " Renews " + new Date(data.current_period_end).toLocaleDateString() + "."
+                : "";
+            document.getElementById("plan-summary").textContent =
+              "Plan: " +
+              data.plan +
+              " · Status: " +
+              data.status +
+              " · Summaries this period: " +
+              data.summaries_used_period +
+              "." +
+              period;
+            document.getElementById("btn-portal").disabled = !data.stripe_customer_id;
+            showBillingErr("");
+            var proBtn = document.querySelector('[data-checkout="pro"]');
+            var unlBtn = document.querySelector('[data-checkout="unlimited"]');
+            if (data.plan === "unlimited") {
+              proBtn.classList.add("hidden");
+              unlBtn.classList.add("hidden");
+            } else if (data.plan === "pro") {
+              proBtn.classList.add("hidden");
+            }
+          } catch (e) {
+            document.getElementById("plan-summary").textContent = "Could not load subscription.";
+            showBillingErr(e.message || "Error");
+          }
+        }
+
+        document.getElementById("btn-portal").addEventListener("click", async function () {
+          showBillingErr("");
+          try {
+            var res = await BBApi.apiFetch("/stripe/create-portal-session", { method: "POST" });
+            window.location.href = res.url;
+          } catch (e) {
+            showBillingErr(e.message || "Portal failed");
+          }
+        });
+
+        document.querySelectorAll(".checkout-btn").forEach(function (btn) {
+          btn.addEventListener("click", async function () {
+            var plan = btn.getAttribute("data-checkout");
+            showBillingErr("");
+            try {
+              var res = await BBApi.apiFetch("/stripe/create-checkout-session", {
+                method: "POST",
+                body: JSON.stringify({ plan: plan }),
+              });
+              window.location.href = res.url;
+            } catch (e) {
+              showBillingErr(e.message || "Checkout failed");
+            }
+          });
+        });
+
+        loadSubscription();
+
+        var sumErr = document.getElementById("sum-list-err");
+        function renderSummaries(items, hasFilters) {
+          var ul = document.getElementById("sum-list");
+          var empty = document.getElementById("sum-empty");
+          ul.innerHTML = "";
+          if (!items || !items.length) {
+            empty.textContent = hasFilters
+              ? "No summaries match your filters."
+              : "No summaries yet. Start with New summary.";
+            empty.classList.remove("hidden");
+            return;
+          }
+          empty.classList.add("hidden");
+          items.forEach(function (it) {
+            var li = document.createElement("li");
+            li.className =
+              "rounded-xl border border-stone-200 bg-white/90 px-4 py-3 dark:border-stone-700 dark:bg-stone-900/50";
+            var title = it.title || "Untitled";
+            var href = "/frontend/summary-view.html?id=" + encodeURIComponent(it.id);
+            var prev = (it.output_preview || "").replace(/\s+/g, " ").trim();
+            if (prev.length > 180) prev = prev.slice(0, 180) + "…";
+            li.innerHTML =
+              '<a class="font-medium text-amber-900 hover:underline dark:text-amber-300" href="' +
+              href +
+              '">' +
+              escapeHtml(title) +
+              "</a>" +
+              '<span class="ml-2 text-xs text-stone-500 dark:text-stone-400">' +
+              escapeHtml(it.style) +
+              " · " +
+              escapeHtml(it.source_type) +
+              " · " +
+              escapeHtml(it.status) +
+              "</span>" +
+              '<p class="mt-1 text-sm text-stone-600 dark:text-stone-400">' +
+              escapeHtml(prev || "—") +
+              "</p>";
+            ul.appendChild(li);
+          });
+        }
+        function escapeHtml(s) {
+          if (!s) return "";
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/"/g, "&quot;");
+        }
+        async function loadSummaries() {
+          sumErr.classList.add("hidden");
+          sumErr.textContent = "";
+          var q = document.getElementById("sum-q").value.trim();
+          var st = document.getElementById("sum-style").value;
+          var stat = document.getElementById("sum-status").value;
+          var params = { limit: 50 };
+          if (q) params.q = q;
+          if (st) params.style = st;
+          if (stat) params.status = stat;
+          try {
+            var res = await BBApi.summaries.list(params);
+            var hasFilters = !!(q || st || stat);
+            renderSummaries(res.items || [], hasFilters);
+          } catch (e) {
+            sumErr.textContent = e.message || "Could not load summaries.";
+            sumErr.classList.remove("hidden");
+          }
+        }
+        document.getElementById("sum-apply").addEventListener("click", loadSummaries);
+        document.getElementById("sum-q").addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            loadSummaries();
+          }
+        });
+        loadSummaries();
+      });
+    </script>
+  </body>
+</html>
