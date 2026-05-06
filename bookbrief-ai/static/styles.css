@@ -1,8 +1,9 @@
 /**
- * BookBrief AI — global styles
+ * BookBrief AI — global styles (Production v2)
  * Tailwind (CDN) handles utilities; this file adds:
  *   fonts · paper texture · focus rings · scrollbar · selection ·
- *   reduced-motion · input helpers · details accordion · print styles
+ *   reduced-motion · input helpers · details accordion · print styles ·
+ *   glassmorphism · 3D card utilities · scroll-reveal · premium animations
  */
 
 /* ── Fonts ────────────────────────────────────────────────────────────── */
@@ -12,12 +13,15 @@
 :root {
   font-family: "Source Sans 3", system-ui, sans-serif;
   color-scheme: light dark;
-
-  /* Design tokens — referenced by JS for programmatic use */
   --color-amber-800: #92400e;
   --color-amber-600: #d97706;
+  --color-amber-400: #fbbf24;
   --color-stone-200: #e7e5e4;
   --color-stone-700: #44403c;
+  --glass-blur: 18px;
+  --glow-amber: rgba(217, 119, 6, 0.35);
+  --glow-amber-strong: rgba(217, 119, 6, 0.55);
+  --shadow-depth: 0 20px 60px -12px rgba(28,25,23,0.22), 0 8px 24px -8px rgba(28,25,23,0.12);
 }
 
 html {
@@ -34,328 +38,281 @@ html {
 /* ── Paper texture ───────────────────────────────────────────────────── */
 .bb-paper {
   background-color: rgb(250 250 249);
-  background-image: radial-gradient(
-    ellipse 120% 80% at 50% -20%,
-    rgb(254 243 199 / 0.35),
-    transparent
-  );
+  background-image: radial-gradient(ellipse 120% 80% at 50% -20%, rgb(254 243 199 / 0.35), transparent);
 }
-
-.dark .bb-paper {
-  background-color: rgb(12 10 9);
-  background-image: radial-gradient(
-    ellipse 100% 60% at 50% 0%,
-    rgb(120 53 15 / 0.12),
-    transparent
-  );
-}
-
-/* ── Focus rings (keyboard-only via :focus-visible) ─────────────────── */
-/*
- * Use focus-visible so the ring appears for keyboard users
- * but NOT for mouse/touch users who already see hover states.
- */
-.bb-focus:focus {
-  outline: none; /* reset browser default */
-}
-
-.bb-focus:focus-visible {
-  outline: 2px solid rgb(180 83 9);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-.dark .bb-focus:focus-visible {
-  outline-color: rgb(251 191 36);
-}
-
-/* Global fallback for non-.bb-focus interactive elements */
-*:focus-visible {
-  outline: 2px solid rgb(180 83 9);
-  outline-offset: 2px;
-}
-
-.dark *:focus-visible {
-  outline-color: rgb(251 191 36);
-}
-
+/* ── Focus rings ─────────────────────────────────────────────────────── */
+.bb-focus:focus { outline: none; }
+.bb-focus:focus-visible { outline: 2px solid rgb(180 83 9); outline-offset: 2px; border-radius: 4px; }
+*:focus-visible { outline: 2px solid rgb(180 83 9); outline-offset: 2px; }
 /* ── Text selection ──────────────────────────────────────────────────── */
-::selection {
-  background-color: rgb(254 243 199); /* amber-100 */
-  color: rgb(28 25 23);               /* stone-950 */
-}
-
-.dark ::selection {
-  background-color: rgb(120 53 15 / 0.5); /* amber-900/50 */
-  color: rgb(245 245 244);                 /* stone-100 */
-}
-
-/* ── Placeholder text ────────────────────────────────────────────────── */
-::placeholder {
-  color: rgb(168 162 158); /* stone-400 */
-  opacity: 1;
-}
-
-.dark ::placeholder {
-  color: rgb(87 83 78); /* stone-600 */
-}
-
-/* ── Scrollbar (Chromium / Safari) ──────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgb(214 211 208); /* stone-300 */
-  border-radius: 99px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgb(168 162 158); /* stone-400 */
-  background-clip: padding-box;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: rgb(68 64 60); /* stone-700 */
-  background-clip: padding-box;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgb(87 83 78); /* stone-600 */
-  background-clip: padding-box;
-}
-
-/* ── Standard input class ────────────────────────────────────────────── */
-/*
- * Apply .bb-input to any <input>, <textarea>, <select> that doesn't
- * already carry full Tailwind classes. Pages that inline Tailwind
- * classes can ignore this — it's a convenient baseline.
- */
+::selection { background-color: rgb(254 243 199); color: rgb(28 25 23); }
+/* ── Placeholder ─────────────────────────────────────────────────────── */
+::placeholder { color: rgb(168 162 158); opacity: 1; }
+/* ── Scrollbar ───────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(214 211 208); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: rgb(168 162 158); background-clip: padding-box; }
+/* ── Standard input ──────────────────────────────────────────────────── */
 .bb-input {
-  display: block;
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: rgb(28 25 23);
-  background-color: #fff;
-  border: 1px solid rgb(214 211 208);
-  border-radius: 0.75rem;
+  display: block; width: 100%;
+  padding: 0.625rem 0.875rem; font-size: 0.875rem; line-height: 1.5;
+  color: rgb(28 25 23); background-color: #fff;
+  border: 1px solid rgb(214 211 208); border-radius: 0.75rem;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  -webkit-appearance: none;
-  appearance: none;
+  -webkit-appearance: none; appearance: none;
 }
-
-.bb-input:focus-visible {
-  outline: none;
-  border-color: rgb(180 83 9);
-  box-shadow: 0 0 0 3px rgb(180 83 9 / 0.12);
-}
-
-.dark .bb-input {
-  color: rgb(245 245 244);
-  background-color: rgb(12 10 9);
-  border-color: rgb(87 83 78);
-}
-
-.dark .bb-input:focus-visible {
-  border-color: rgb(251 191 36);
-  box-shadow: 0 0 0 3px rgb(251 191 36 / 0.15);
-}
-
+.bb-input:focus-visible { outline: none; border-color: rgb(180 83 9); box-shadow: 0 0 0 3px rgb(180 83 9 / 0.12); }
 /* ── Standard card ───────────────────────────────────────────────────── */
 .bb-card {
-  background-color: #fff;
-  border: 1px solid rgb(231 229 228);
-  border-radius: 1rem;
+  background-color: #fff; border: 1px solid rgb(231 229 228); border-radius: 1rem;
   box-shadow: 0 2px 8px -2px rgb(28 25 23 / 0.06), 0 1px 3px -1px rgb(28 25 23 / 0.04);
 }
+/* ── Details accordion ───────────────────────────────────────────────── */
+details summary { cursor: pointer; -webkit-user-select: none; user-select: none; }
+details summary::-webkit-details-marker { display: none; }
+details[open] > summary > span:last-child { transform: rotate(45deg); }
 
-.dark .bb-card {
-  background-color: rgb(41 37 36);
-  border-color: rgb(68 64 60);
-  box-shadow: 0 2px 12px -2px rgb(0 0 0 / 0.35);
-}
-
-/* ── Details / accordion ─────────────────────────────────────────────── */
-details summary {
-  cursor: pointer;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-details summary::-webkit-details-marker {
-  display: none;
-}
-
-details[open] > summary > span:last-child {
-  transform: rotate(45deg);
-}
-
-/* ── Tap target sizing (mobile accessibility) ────────────────────────── */
+/* ── Tap targets ─────────────────────────────────────────────────────── */
 @media (pointer: coarse) {
-  button,
-  [role="button"],
-  a,
-  label,
-  input[type="checkbox"],
-  input[type="radio"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* Override for inline / icon-only buttons that should stay compact */
-  button.bb-compact,
-  a.bb-compact {
-    min-height: unset;
-    min-width: unset;
-  }
+  button,[role="button"],a,label,input[type="checkbox"],input[type="radio"] { min-height: 44px; min-width: 44px; }
+  button.bb-compact,a.bb-compact { min-height: unset; min-width: unset; }
 }
 
 /* ── Reduced motion ──────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+  *,*::before,*::after { animation-duration:0.01ms!important; animation-iteration-count:1!important; transition-duration:0.01ms!important; scroll-behavior:auto!important; }
 }
 
-/* ── Transitions across color-scheme changes ─────────────────────────── */
-/* Gentle transition so dark/light toggle isn't jarring */
-body {
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-/* ── Shimmer / skeleton (injected by ui.js — kept here as reference) ─── */
-/*
- * @keyframes bb-shimmer { … }
- * .bb-skeleton { … }
- * These are injected at runtime by BBUi.showSkeleton() to avoid
- * FOUC. Defined here only for documentation purposes.
- */
+/* ── Theme transition ────────────────────────────────────────────────── */
+body { transition: background-color 0.2s ease, color 0.2s ease; }
 
 /* ── Print styles ────────────────────────────────────────────────────── */
 @media print {
-  /* Hide navigation, action bars, toasts, and banners */
-  header,
-  footer,
-  nav,
-  [data-no-print],
-  #sum-actions,
-  #sum-warn,
-  #sum-poll-panel,
-  .bb-no-print {
-    display: none !important;
-  }
-
-  body {
-    background: #fff !important;
-    color: #1c1917 !important;
-    font-size: 11pt;
-    line-height: 1.65;
-  }
-
-  /* Reset dark-mode overrides */
-  html.dark body {
-    background: #fff !important;
-    color: #1c1917 !important;
-  }
-
-  /* Summary content (summary-view.html IDs) */
-  #md-wrap {
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-  }
-
-  #md-content {
-    font-size: 11pt !important;
-    line-height: 1.7 !important;
-    color: #1c1917 !important;
-    max-width: 100% !important;
-  }
-
-  #md-content h1, #md-content h2, #md-content h3 {
-    break-after: avoid;
-    color: #1c1917 !important;
-  }
-
-  #md-content p, #md-content li {
-    orphans: 3;
-    widows: 3;
-  }
-
-  /* Show title / meta at top */
-  #sum-title {
-    font-size: 18pt !important;
-    margin-bottom: 4pt !important;
-    color: #1c1917 !important;
-  }
-
-  #sum-meta {
-    font-size: 9pt !important;
-    color: #78716c !important;
-    margin-bottom: 20pt !important;
-  }
-
-  /* Hide status badge and processing panel in print */
-  #sum-status,
-  #processing-panel {
-    display: none !important;
-  }
-
-  /* Avoid page break inside paragraphs */
-  p, li, blockquote {
-    break-inside: avoid;
-  }
-
-  a[href]::after {
-    content: none; /* don't print URLs */
-  }
+  header,footer,nav,[data-no-print],#sum-actions,#sum-warn,#sum-poll-panel,.bb-no-print { display: none !important; }
+  body { background: #fff !important; color: #1c1917 !important; font-size: 11pt; line-height: 1.65; }
+  html#md-wrap { border: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; }
+  #md-content { font-size: 11pt !important; line-height: 1.7 !important; color: #1c1917 !important; max-width: 100% !important; }
+  #md-content h1,#md-content h2,#md-content h3 { break-after: avoid; color: #1c1917 !important; }
+  #md-content p,#md-content li { orphans: 3; widows: 3; }
+  #sum-title { font-size: 18pt !important; margin-bottom: 4pt !important; color: #1c1917 !important; }
+  #sum-meta { font-size: 9pt !important; color: #78716c !important; margin-bottom: 20pt !important; }
+  #sum-status,#processing-panel { display: none !important; }
+  p,li,blockquote { break-inside: avoid; }
+  a[href]::after { content: none; }
 }
 
-/* ── Utility: visually hidden (sr-only fallback) ─────────────────────── */
-.bb-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+/* ── Utility: visually hidden ────────────────────────────────────────── */
+.bb-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* ── Skip-to-content ─────────────────────────────────────────────────── */
+.bb-skip-link { position: absolute; left: 1rem; top: -10rem; z-index: 9999; padding: 0.5rem 1rem; background: rgb(180 83 9); color: #fff; border-radius: 0.5rem; font-weight: 600; transition: top 0.1s; }
+.bb-skip-link:focus { top: 1rem; }
+
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/*  PRODUCTION v2 — Premium Additions                                    */
+/* ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Animation Keyframes ─────────────────────────────────────────────── */
+@keyframes float-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes float-gentle {
+  0%,100% { transform: translateY(0px); }
+  50%     { transform: translateY(-8px); }
+}
+@keyframes drift {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%     { transform: translate(8px,-12px) scale(1.04); }
+}
+@keyframes drift2 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%     { transform: translate(-6px,10px) scale(0.97); }
+}
+@keyframes bb-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes bb-pulse {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.4; }
+}
+@keyframes glow-pulse {
+  0%,100% { box-shadow: 0 0 20px var(--glow-amber), 0 0 40px transparent; }
+  50%     { box-shadow: 0 0 35px var(--glow-amber-strong), 0 0 70px rgba(217,119,6,0.12); }
+}
+@keyframes gradient-shift {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes border-glow {
+  0%,100% { border-color: rgba(217,119,6,0.4); }
+  50%     { border-color: rgba(217,119,6,0.9); }
+}
+@keyframes shimmer-sweep {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-/* ── Skip-to-content link ────────────────────────────────────────────── */
-.bb-skip-link {
-  position: absolute;
-  left: 1rem;
-  top: -10rem;
-  z-index: 9999;
-  padding: 0.5rem 1rem;
-  background: rgb(180 83 9);
-  color: #fff;
+/* ── Animate-in ──────────────────────────────────────────────────────── */
+.animate-in  { animation: float-up 0.55s ease both; }
+.delay-1     { animation-delay: 0.10s; }
+.delay-2     { animation-delay: 0.22s; }
+.delay-3     { animation-delay: 0.34s; }
+.delay-4     { animation-delay: 0.46s; }
+.delay-5     { animation-delay: 0.58s; }
+
+/* ── Scroll reveal ───────────────────────────────────────────────────── */
+.bb-reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1);
+}
+.bb-reveal.bb-visible { opacity: 1; transform: translateY(0); }
+.bb-reveal-left {
+  opacity: 0; transform: translateX(-24px);
+  transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1);
+}
+.bb-reveal-left.bb-visible { opacity: 1; transform: translateX(0); }
+.bb-reveal-scale {
+  opacity: 0; transform: scale(0.94);
+  transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1);
+}
+.bb-reveal-scale.bb-visible { opacity: 1; transform: scale(1); }
+
+/* ── Glassmorphism ───────────────────────────────────────────────────── */
+.bb-glass {
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid rgba(255,255,255,0.14);
+}
+.bb-glass-dark {
+  background: rgba(12,10,9,0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+/* ── Glow ────────────────────────────────────────────────────────────── */
+.bb-glow-amber {
+  box-shadow: 0 0 0 1px rgba(217,119,6,0.2), 0 4px 20px rgba(217,119,6,0.18);
+  transition: box-shadow 0.3s ease;
+}
+.bb-glow-amber:hover {
+  box-shadow: 0 0 0 1px rgba(217,119,6,0.4), 0 8px 32px rgba(217,119,6,0.35), 0 0 0 4px rgba(217,119,6,0.08);
+}
+.bb-glow-ring { animation: glow-pulse 3s ease-in-out infinite; }
+
+/* ── Gradient text ───────────────────────────────────────────────────── */
+.bb-gradient-text {
+  background: linear-gradient(135deg, #d97706 0%, #92400e 50%, #d97706 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 4s ease infinite;
+}
+/* ── Premium button ──────────────────────────────────────────────────── */
+.bb-btn-primary {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #92400e, #b45309);
+  color: white; font-weight: 600; border-radius: 0.75rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(146,64,14,0.35), 0 1px 3px rgba(0,0,0,0.1);
+}
+.bb-btn-primary::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.bb-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(146,64,14,0.45), 0 2px 6px rgba(0,0,0,0.12); }
+.bb-btn-primary:hover::before { opacity: 1; }
+.bb-btn-primary:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(146,64,14,0.3); }
+
+/* ── Shimmer skeleton ────────────────────────────────────────────────── */
+.bb-skeleton {
   border-radius: 0.5rem;
-  font-weight: 600;
-  transition: top 0.1s;
+  background: linear-gradient(90deg, #e7e5e4 25%, #d6d3d1 50%, #e7e5e4 75%);
+  background-size: 400% 100%;
+  animation: bb-shimmer 1.4s ease-in-out infinite;
+}
+/* ── Feature card ────────────────────────────────────────────────────── */
+.bb-feature-card {
+  position: relative; overflow: hidden;
+  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.bb-feature-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(217,119,6,0.05), transparent 60%);
+  opacity: 0; transition: opacity 0.35s ease; pointer-events: none;
+}
+.bb-feature-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px -8px rgba(28,25,23,0.12), 0 6px 16px -4px rgba(28,25,23,0.08); border-color: rgba(217,119,6,0.25); }
+.bb-feature-card:hover::after { opacity: 1; }
+/* ── Summary card ────────────────────────────────────────────────────── */
+.bb-summary-card {
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease, border-color 0.3s ease;
+  cursor: pointer;
+}
+.bb-summary-card:hover { transform: translateY(-3px) scale(1.004); box-shadow: 0 12px 32px -8px rgba(28,25,23,0.14), 0 4px 12px -4px rgba(28,25,23,0.08); border-color: rgba(217,119,6,0.3); }
+/* ── Pricing card ────────────────────────────────────────────────────── */
+.bb-price-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.bb-price-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px -12px rgba(28,25,23,0.15); }
+/* ── Testimonial card ────────────────────────────────────────────────── */
+.bb-testimonial { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.bb-testimonial:hover { transform: translateY(-3px); box-shadow: 0 12px 28px -6px rgba(28,25,23,0.1); }
+/* ── Book spine accent ───────────────────────────────────────────────── */
+.bb-book-accent { position: relative; }
+.bb-book-accent::before {
+  content: ''; position: absolute; left: 0; top: 12%; bottom: 12%;
+  width: 3px; background: linear-gradient(to bottom, #d97706, #92400e);
+  border-radius: 0 2px 2px 0;
 }
 
-.bb-skip-link:focus {
-  top: 1rem;
+/* ── Input glow ──────────────────────────────────────────────────────── */
+.bb-input-glow { transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease; }
+.bb-input-glow:focus { border-color: #b45309; box-shadow: 0 0 0 3px rgba(180,83,9,0.12), 0 1px 3px rgba(0,0,0,0.08); outline: none; }
+/* ── Tab button ──────────────────────────────────────────────────────── */
+.bb-tab {
+  padding: 0.4rem 0.875rem; border-radius: 0.5rem;
+  font-size: 0.8125rem; font-weight: 500;
+  border: 1px solid transparent; color: rgb(87 83 78);
+  background: transparent; transition: all 0.2s ease; cursor: pointer;
 }
+.bb-tab:hover { color: rgb(28 25 23); background: rgb(231 229 228); }
+.bb-tab[aria-selected="true"],.bb-tab.active { background: #fff; color: rgb(28 25 23); font-weight: 600; box-shadow: 0 1px 4px rgba(28,25,23,0.12); border-color: rgb(231 229 228); }
+/* ── Blob animations ─────────────────────────────────────────────────── */
+.blob   { animation: drift  8s ease-in-out infinite; }
+.blob-2 { animation: drift2 11s ease-in-out infinite; }
+.blob-3 { animation: drift  14s ease-in-out infinite reverse; }
+
+/* ── Step connector ──────────────────────────────────────────────────── */
+.step-connector::before {
+  content: ''; position: absolute; left: 1.5rem; top: 3rem; bottom: -1.5rem;
+  width: 2px; background: linear-gradient(to bottom, #d97706, transparent);
+}
+
+/* ── Pulse ───────────────────────────────────────────────────────────── */
+.bb-pulse { animation: bb-pulse 1.5s ease-in-out infinite; }
+
+/* ── Hero canvas ─────────────────────────────────────────────────────── */
+.bb-hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* ── Markdown content ────────────────────────────────────────────────── */
+.bb-md h1 { font-size:1.75rem; font-weight:700; margin:1.25rem 0 .75rem; font-family:Literata,Georgia,serif; }
+.bb-md h2 { font-size:1.35rem; font-weight:600; margin:1.5rem 0 .5rem;  font-family:Literata,Georgia,serif; }
+.bb-md h3 { font-size:1.1rem;  font-weight:600; margin:1rem 0 .35rem; }
+.bb-md p  { margin:.65rem 0; line-height:1.7; }
+.bb-md ul,.bb-md ol { margin:.5rem 0 .5rem 1.25rem; padding-left:.25rem; }
+.bb-md li { margin:.3rem 0; line-height:1.6; }
+.bb-md pre,.bb-md code { font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:.9em; }
+.bb-md pre { overflow-x:auto; padding:.75rem 1rem; border-radius:.5rem; background:#f5f5f4; margin:.75rem 0; }
+.bb-md code:not(pre code) { background:#f5f5f4; border-radius:.25rem; padding:.1em .35em; }
+.bb-md blockquote { border-left:3px solid #b45309; margin:.75rem 0; padding-left:1rem; color:#57534e; }
+.bb-md hr { border:none; border-top:1px solid #e7e5e4; margin:1.5rem 0; }
+@keyframes bb-pulse-anim { 0%,100%{opacity:1} 50%{opacity:.4} }
+.bb-pulse-anim { animation: bb-pulse-anim 1.5s ease-in-out infinite; }

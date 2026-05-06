@@ -4,20 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Library — BookBrief AI</title>
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("bookbrief-theme");
-          if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-            document.documentElement.classList.add("dark");
-          }
-        } catch (e) {}
-      })();
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
-        darkMode: "class",
         theme: {
           extend: {
             colors: {
@@ -33,6 +22,7 @@
     </script>
     <link rel="stylesheet" href="/static/styles.css" />
     <style>
+      /* Shimmer skeleton */
       @keyframes bb-shimmer {
         0%   { background-position: 200% 0; }
         100% { background-position: -200% 0; }
@@ -47,29 +37,153 @@
         background: linear-gradient(90deg, #292524 25%, #44403c 50%, #292524 75%);
         background-size: 400% 100%;
       }
+
+      /* Ambient page header gradient */
+      .dash-hero {
+        background: linear-gradient(135deg,
+          rgba(251, 191, 36, 0.06) 0%,
+          rgba(217, 119, 6, 0.04) 40%,
+          transparent 70%
+        );
+        border-bottom: 1px solid rgba(214, 211, 209, 0.5);
+        padding: 28px 0 24px;
+      }
+      .dark .dash-hero {
+        background: linear-gradient(135deg,
+          rgba(180, 83, 9, 0.08) 0%,
+          rgba(120, 53, 15, 0.06) 40%,
+          transparent 70%
+        );
+        border-bottom: 1px solid rgba(68, 64, 60, 0.4);
+      }
+
+      /* 3D perspective tilt on summary cards */
+      .sum-card {
+        transform-style: preserve-3d;
+        transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                    box-shadow 0.3s ease,
+                    border-color 0.2s ease;
+        will-change: transform;
+        perspective: 800px;
+      }
+      .sum-card:hover {
+        transform: translateY(-3px) rotateX(1.5deg);
+        box-shadow: 0 8px 28px -6px rgba(28,25,23,.13), 0 3px 10px -3px rgba(28,25,23,.08);
+        border-color: rgba(217, 119, 6, 0.25);
+      }
+      .dark .sum-card:hover {
+        box-shadow: 0 8px 32px -6px rgba(0,0,0,.5);
+        border-color: rgba(217, 119, 6, 0.2);
+      }
+      /* Amber left accent line on card */
+      .sum-card::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 12px; bottom: 12px;
+        width: 3px;
+        border-radius: 0 2px 2px 0;
+        background: linear-gradient(to bottom, #d97706, #92400e);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+      .sum-card {
+        position: relative;
+        overflow: hidden;
+      }
+      .sum-card:hover::before {
+        opacity: 1;
+      }
+
+      /* Search input glow */
+      #sum-q:focus {
+        border-color: #d97706;
+        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.10), 0 1px 4px rgba(28,25,23,.06);
+      }
+      .dark #sum-q:focus {
+        border-color: #b45309;
+        box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.15);
+      }
+
+      /* Plan card glassmorphism */
+      .plan-card {
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(214, 211, 209, 0.7);
+        box-shadow: 0 4px 20px -4px rgba(28,25,23,.08);
+        transition: box-shadow 0.3s ease;
+      }
+      .plan-card:hover {
+        box-shadow: 0 6px 28px -4px rgba(28,25,23,.12);
+      }
+      .dark .plan-card {
+        background: rgba(28, 25, 23, 0.75);
+        border: 1px solid rgba(68, 64, 60, 0.5);
+        box-shadow: 0 4px 20px -4px rgba(0,0,0,.4);
+      }
+      .dark .plan-card:hover {
+        box-shadow: 0 6px 32px -4px rgba(0,0,0,.55);
+      }
+
+      /* Empty state animation */
+      @keyframes floatEmpty {
+        0%, 100% { transform: translateY(0) rotate(-3deg); }
+        50%       { transform: translateY(-8px) rotate(-3deg); }
+      }
+      .empty-book-icon {
+        display: inline-block;
+        animation: floatEmpty 3s ease-in-out infinite;
+        font-size: 3rem;
+        line-height: 1;
+      }
+
+      /* Page-in animation */
+      .dash-fade-in {
+        animation: dashFadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      @keyframes dashFadeIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .dash-fade-in.delay-1 { animation-delay: 0.1s; }
+      .dash-fade-in.delay-2 { animation-delay: 0.2s; }
+      .dash-fade-in.delay-3 { animation-delay: 0.3s; }
+
+      /* New summary CTA button shine */
+      .btn-new-summary {
+        position: relative;
+        overflow: hidden;
+      }
+      .btn-new-summary::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        transform: skewX(-20deg);
+        transition: left 0.5s ease;
+      }
+      .btn-new-summary:hover::after {
+        left: 160%;
+      }
     </style>
   </head>
 
-  <body class="bb-paper min-h-screen text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-100">
+  <body class="bb-paper min-h-screen text-stone-800 antialiased">
 
     <!-- ── Header ─────────────────────────────────────────────────────────── -->
-    <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-parchment-50/90 backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/90">
+    <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-white/90 backdrop-blur-md">
       <div class="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <a href="/frontend/index.html" class="flex items-center gap-2">
-          <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-700 text-lg font-bold text-white shadow-sm dark:bg-amber-600" aria-hidden="true">B</span>
-          <span class="font-serif-display text-base font-semibold text-stone-900 dark:text-stone-50 hidden sm:inline">BookBrief <span class="text-amber-800 dark:text-amber-400">AI</span></span>
+          <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-700 text-lg font-bold text-white shadow-sm" aria-hidden="true">B</span>
+          <span class="font-serif-display text-base font-semibold text-stone-900 hidden sm:inline">BookBrief <span class="text-amber-800">AI</span></span>
         </a>
 
         <div class="flex items-center gap-2 sm:gap-3">
-          <button type="button" id="theme-toggle"
-            class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
-            aria-label="Toggle dark mode">
-            <span data-theme-icon aria-hidden="true">◐</span>
-            <span data-theme-label class="hidden sm:inline ml-1">Dark</span>
-          </button>
-          <span id="nav-user" class="hidden max-w-[9rem] truncate text-sm text-stone-500 dark:text-stone-400 sm:inline"></span>
+          <span id="nav-user" class="hidden max-w-[9rem] truncate text-sm text-stone-500 sm:inline"></span>
           <a href="/frontend/settings.html"
-            class="bb-focus rounded-lg border border-stone-200 p-1.5 text-stone-500 hover:bg-stone-100 hover:text-stone-800 dark:border-stone-700 dark:hover:bg-stone-800 dark:hover:text-stone-200"
+            class="bb-focus rounded-lg border border-stone-200 p-1.5 text-stone-500 hover:bg-stone-100 hover:text-stone-800 transition-colors"
             aria-label="Account settings">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -77,36 +191,45 @@
             </svg>
           </a>
           <button type="button" id="btn-logout"
-            class="bb-focus rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-800">
+            class="bb-focus rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100 transition-colors">
             Log out
           </button>
         </div>
       </div>
     </header>
 
-    <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-
-      <!-- ── Page title + CTA ────────────────────────────────────────────── -->
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50">Your library</h1>
-          <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Search, open, and manage your summaries.</p>
+    <!-- ── Ambient page hero ──────────────────────────────────────────────── -->
+    <div class="dash-hero">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between dash-fade-in">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xl" aria-hidden="true">📚</span>
+              <h1 class="font-serif-display text-2xl font-bold text-stone-900">Your library</h1>
+            </div>
+            <p class="text-sm text-stone-500">Search, open, and manage your summaries.</p>
+          </div>
+          <a href="/frontend/summarize.html"
+            class="btn-new-summary bb-focus inline-flex items-center gap-2 rounded-xl bg-amber-800 px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-amber-900 hover:shadow-md transition-all active:scale-[0.97] sm:shrink-0">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            New summary
+          </a>
         </div>
-        <a href="/frontend/summarize.html"
-          class="bb-focus inline-flex items-center gap-2 rounded-xl bg-amber-800 px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500 sm:shrink-0">
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
-          New summary
-        </a>
       </div>
+    </div>
+
+    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
 
       <!-- ── Plan & billing card ─────────────────────────────────────────── -->
-      <section class="mt-8 rounded-2xl border border-stone-200 bg-white/80 p-5 shadow-soft dark:border-stone-700 dark:bg-stone-900/60 dark:shadow-soft-dark"
+      <section class="plan-card mt-2 rounded-2xl p-5 dash-fade-in delay-1"
                aria-labelledby="billing-heading">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div class="min-w-0 flex-1">
-            <h2 id="billing-heading" class="text-sm font-semibold text-stone-700 dark:text-stone-300">Plan &amp; usage</h2>
+            <h2 id="billing-heading" class="text-sm font-semibold text-stone-700 flex items-center gap-1.5">
+              <span aria-hidden="true">⚡</span> Plan &amp; usage
+            </h2>
             <div id="plan-loading" class="mt-3 space-y-2">
               <div class="bb-skeleton h-4 w-32"></div>
               <div class="bb-skeleton h-2.5 w-full max-w-xs rounded-full"></div>
@@ -114,27 +237,27 @@
             </div>
             <div id="plan-content" class="hidden mt-2">
               <div class="flex items-baseline gap-2">
-                <span id="plan-name" class="text-base font-bold text-stone-900 dark:text-stone-50 capitalize"></span>
+                <span id="plan-name" class="text-base font-bold text-stone-900 capitalize"></span>
                 <span id="plan-status-badge" class="rounded-full px-2 py-0.5 text-xs font-semibold"></span>
               </div>
               <!-- Quota bar -->
               <div class="mt-3 max-w-xs">
-                <div class="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 mb-1">
+                <div class="flex items-center justify-between text-xs text-stone-500 mb-1">
                   <span id="quota-label">Summaries used</span>
-                  <span id="quota-fraction"></span>
+                  <span id="quota-fraction" class="font-medium text-stone-700"></span>
                 </div>
-                <div class="h-2 w-full rounded-full bg-stone-200 dark:bg-stone-700" role="progressbar"
+                <div class="h-2 w-full rounded-full bg-stone-200 overflow-hidden" role="progressbar"
                      aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="quota-bar-wrap">
-                  <div id="quota-bar" class="h-2 rounded-full bg-amber-700 dark:bg-amber-500 transition-all duration-500" style="width:0%"></div>
+                  <div id="quota-bar" class="h-full w-0 rounded-full bg-amber-700 transition-all duration-700"></div>
                 </div>
               </div>
-              <p id="plan-renew" class="mt-2 text-xs text-stone-400 dark:text-stone-500"></p>
+              <p id="plan-renew" class="mt-2 text-xs text-stone-400"></p>
             </div>
           </div>
 
           <div class="flex flex-wrap gap-2 shrink-0">
             <button type="button" id="btn-portal"
-              class="bb-focus rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-800"
+              class="bb-focus rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
               disabled>
               Manage billing
             </button>
@@ -143,40 +266,43 @@
               data-checkout="pro"
               target="_blank"
               rel="noopener noreferrer"
-              class="checkout-link bb-focus hidden inline-flex items-center rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500"
+              class="checkout-link bb-focus hidden inline-flex items-center rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 transition-colors"
             >Upgrade — Pro</a>
             <a
               href="https://buy.stripe.com/test_28E7sL4igg7l8t0eWn9Ve01"
               data-checkout="growth"
               target="_blank"
               rel="noopener noreferrer"
-              class="checkout-link bb-focus hidden inline-flex items-center rounded-lg border border-amber-700 px-4 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-50 dark:border-amber-500 dark:text-amber-200 dark:hover:bg-stone-800"
+              class="checkout-link bb-focus hidden inline-flex items-center rounded-lg border border-amber-700 px-4 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-50 transition-colors"
             >Upgrade — Growth</a>
           </div>
         </div>
-        <p id="billing-hint" class="mt-3 hidden text-xs text-stone-400 dark:text-stone-500">
-          “Manage billing” unlocks after Stripe has a customer on file (e.g. after you complete a subscription checkout).
+        <p id="billing-hint" class="mt-3 hidden text-xs text-stone-400">
+          "Manage billing" unlocks after Stripe has a customer on file (e.g. after you complete a subscription checkout).
         </p>
-        <p id="billing-error" class="mt-2 hidden text-sm text-red-600 dark:text-red-400"></p>
+        <p id="billing-error" class="mt-2 hidden text-sm text-red-600"></p>
       </section>
 
       <!-- ── Summary list ────────────────────────────────────────────────── -->
-      <section class="mt-10" aria-labelledby="lib-heading">
+      <section class="mt-10 dash-fade-in delay-2" aria-labelledby="lib-heading">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:flex-wrap">
-          <h2 id="lib-heading" class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50 flex-1 min-w-0 sm:w-auto">
+          <h2 id="lib-heading" class="font-serif-display text-lg font-semibold text-stone-900 flex-1 min-w-0 sm:w-auto">
             Recent summaries
           </h2>
           <!-- Filters row -->
           <div class="flex flex-1 flex-wrap items-end gap-2 min-w-0">
-            <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0 relative">
               <label for="sum-q" class="sr-only">Search</label>
+              <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+              </svg>
               <input id="sum-q" type="search" placeholder="Search title, author, or text…"
-                class="bb-focus w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100" />
+                class="bb-focus w-full rounded-lg border border-stone-300 bg-white pl-9 pr-3 py-2 text-sm transition-all" />
             </div>
             <div>
               <label for="sum-style" class="sr-only">Style</label>
               <select id="sum-style"
-                class="bb-focus rounded-lg border border-stone-300 bg-white px-2 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100">
+                class="bb-focus rounded-lg border border-stone-300 bg-white px-2 py-2 text-sm">
                 <option value="">Any style</option>
                 <option value="ultra_short">Ultra-short</option>
                 <option value="standard">Standard</option>
@@ -188,7 +314,7 @@
             <div>
               <label for="sum-status" class="sr-only">Status</label>
               <select id="sum-status"
-                class="bb-focus rounded-lg border border-stone-300 bg-white px-2 py-2 text-sm dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100">
+                class="bb-focus rounded-lg border border-stone-300 bg-white px-2 py-2 text-sm">
                 <option value="">Any status</option>
                 <option value="completed">Completed</option>
                 <option value="failed">Failed</option>
@@ -199,11 +325,11 @@
           </div>
         </div>
 
-        <p id="sum-list-err" class="mt-3 hidden text-sm text-red-600 dark:text-red-400"></p>
+        <p id="sum-list-err" class="mt-3 hidden text-sm text-red-600"></p>
 
         <!-- Skeleton while loading -->
         <div id="sum-skeleton" class="mt-4 space-y-3">
-          <div class="rounded-xl border border-stone-200 bg-white/80 p-4 dark:border-stone-700 dark:bg-stone-900/50">
+          <div class="rounded-xl border border-stone-200 bg-white/80 p-4">
             <div class="flex items-start justify-between gap-3">
               <div class="flex-1 space-y-2">
                 <div class="bb-skeleton h-4 w-40"></div>
@@ -214,7 +340,7 @@
               <div class="bb-skeleton h-5 w-20 rounded-full"></div>
             </div>
           </div>
-          <div class="rounded-xl border border-stone-200 bg-white/80 p-4 dark:border-stone-700 dark:bg-stone-900/50">
+          <div class="rounded-xl border border-stone-200 bg-white/80 p-4">
             <div class="flex items-start justify-between gap-3">
               <div class="flex-1 space-y-2">
                 <div class="bb-skeleton h-4 w-52"></div>
@@ -224,23 +350,93 @@
               <div class="bb-skeleton h-5 w-20 rounded-full"></div>
             </div>
           </div>
+          <div class="rounded-xl border border-stone-200 bg-white/80 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 space-y-2">
+                <div class="bb-skeleton h-4 w-36"></div>
+                <div class="bb-skeleton h-3 w-56"></div>
+                <div class="bb-skeleton h-3 w-4/5"></div>
+              </div>
+              <div class="bb-skeleton h-5 w-20 rounded-full"></div>
+            </div>
+          </div>
         </div>
 
-        <p id="sum-empty" class="mt-8 hidden text-center text-sm text-stone-400 dark:text-stone-500">
-          No summaries yet —
-          <a href="/frontend/summarize.html" class="font-medium text-amber-800 hover:underline dark:text-amber-400">create your first one</a>.
-        </p>
+        <!-- Enhanced empty state -->
+        <div id="sum-empty" class="mt-16 hidden text-center">
+          <div class="empty-book-icon mb-4">📖</div>
+          <h3 class="font-serif-display text-lg font-semibold text-stone-700">No summaries yet</h3>
+          <p class="mt-1 text-sm text-stone-400">Your reading insights will appear here.</p>
+          <a href="/frontend/summarize.html"
+            class="mt-5 inline-flex items-center gap-2 rounded-xl bg-amber-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-900 transition-colors">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Summarize your first book
+          </a>
+        </div>
+
         <ul id="sum-list" class="mt-4 hidden space-y-3"></ul>
 
         <div id="sum-pagination" class="mt-6 hidden flex justify-center">
           <button type="button" id="btn-load-more"
-            class="bb-focus rounded-lg border border-stone-300 px-6 py-2 text-sm font-medium hover:bg-stone-50 dark:border-stone-600 dark:hover:bg-stone-800">
+            class="bb-focus rounded-lg border border-stone-300 px-6 py-2 text-sm font-medium hover:bg-stone-50 transition-colors">
             Load more
           </button>
         </div>
       </section>
 
     </main>
+
+    <!-- ═══════════ UNIVERSAL FOOTER ═══════════ -->
+    <footer class="border-t border-stone-200 mt-auto" style="background:linear-gradient(180deg,#fafaf9 0%,#f5f4f1 100%);">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-12 pb-8">
+        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="lg:col-span-1">
+            <a href="/frontend/index.html" class="inline-flex items-center gap-2.5 mb-3">
+              <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white">B</span>
+              <span class="font-serif-display text-sm font-semibold text-stone-800">BookBrief <span class="text-amber-700">AI</span></span>
+            </a>
+            <p class="text-xs text-stone-500 leading-relaxed">Turn books into clear, structured summaries — in under a minute.</p>
+          </div>
+          <div>
+            <h4 class="mb-3 text-xs font-bold uppercase tracking-widest text-stone-400">Product</h4>
+            <ul class="space-y-2 text-xs">
+              <li><a href="/frontend/features.html"     class="text-stone-500 hover:text-amber-800 transition-colors">Features</a></li>
+              <li><a href="/frontend/how-it-works.html" class="text-stone-500 hover:text-amber-800 transition-colors">How It Works</a></li>
+              <li><a href="/frontend/pricing.html"      class="text-stone-500 hover:text-amber-800 transition-colors">Pricing</a></li>
+              <li><a href="/frontend/faq.html"          class="text-stone-500 hover:text-amber-800 transition-colors">FAQ</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="mb-3 text-xs font-bold uppercase tracking-widest text-stone-400">Account</h4>
+            <ul class="space-y-2 text-xs">
+              <li><a href="/frontend/dashboard.html"  class="text-stone-500 hover:text-amber-800 transition-colors">Dashboard</a></li>
+              <li><a href="/frontend/settings.html"   class="text-stone-500 hover:text-amber-800 transition-colors">Settings</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="mb-3 text-xs font-bold uppercase tracking-widest text-stone-400">Legal</h4>
+            <ul class="space-y-2 text-xs">
+              <li><a href="/frontend/privacy.html"  class="text-stone-500 hover:text-amber-800 transition-colors">Privacy Policy</a></li>
+              <li><a href="/frontend/cookies.html"  class="text-stone-500 hover:text-amber-800 transition-colors">Cookie Policy</a></li>
+              <li><a href="/frontend/terms.html"    class="text-stone-500 hover:text-amber-800 transition-colors">Terms of Service</a></li>
+              <li><a href="mailto:hi@bookbriefai.com" class="text-stone-500 hover:text-amber-800 transition-colors">Contact Us</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-stone-200">
+        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 sm:px-6 py-4 sm:flex-row">
+          <p class="text-xs text-stone-400">© 2026 BookBrief AI. All rights reserved.</p>
+          <div class="flex gap-4 text-xs text-stone-400">
+            <a href="/frontend/privacy.html" class="hover:text-amber-700 transition-colors">Privacy</a>
+            <a href="/frontend/cookies.html" class="hover:text-amber-700 transition-colors">Cookies</a>
+            <a href="/frontend/terms.html"   class="hover:text-amber-700 transition-colors">Terms</a>
+          </div>
+        </div>
+      </div>
+    </footer>
 
     <script src="/frontend/js/api.js"></script>
     <script src="/frontend/js/auth.js"></script>
@@ -251,7 +447,6 @@
           window.location.replace("/frontend/login.html");
           return;
         }
-        BBUi.initThemeToggle("#theme-toggle");
 
         var u = BBAuth.getUser();
         if (u && u.email) {
@@ -405,10 +600,13 @@
           empty.classList.add("hidden");
           ul.classList.remove("hidden");
 
-          items.forEach(function (it) {
+          items.forEach(function (it, index) {
             var li = document.createElement("li");
             li.className =
-              "rounded-xl border border-stone-200 bg-white/90 px-4 py-4 shadow-sm transition-shadow hover:shadow-soft dark:border-stone-700 dark:bg-stone-900/50 dark:hover:shadow-soft-dark";
+              "sum-card rounded-xl border border-stone-200 bg-white/90 px-4 py-4";
+            // Staggered fade-in
+            li.style.animationDelay = (index * 0.05) + "s";
+            li.style.animation = "dashFadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) " + (index * 0.05) + "s both";
 
             var title = it.title || "Untitled";
             var href = "/frontend/summary-view.html?id=" + encodeURIComponent(it.id);
@@ -422,15 +620,15 @@
             li.innerHTML =
               '<div class="flex items-start justify-between gap-3 min-w-0">' +
                 '<div class="min-w-0 flex-1">' +
-                  '<a class="font-serif-display font-semibold text-amber-900 hover:underline dark:text-amber-300" href="' + href + '">' +
+                  '<a class="font-serif-display font-semibold text-amber-900 hover:underline transition-colors" href="' + href + '">' +
                     srcIcon + ' ' + escapeHtml(title) +
                   '</a>' +
-                  '<p class="mt-0.5 text-xs text-stone-400 dark:text-stone-500">' +
+                  '<p class="mt-0.5 text-xs text-stone-400">' +
                     escapeHtml(styleLabel) + ' · ' + date +
                     (it.author ? ' · ' + escapeHtml(it.author) : '') +
                   '</p>' +
                   (preview
-                    ? '<p class="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400">' + escapeHtml(preview) + '</p>'
+                    ? '<p class="mt-2 text-sm leading-relaxed text-stone-600 line-clamp-3">' + escapeHtml(preview) + '</p>'
                     : '') +
                 '</div>' +
                 '<span style="flex-shrink:0;background:' + bc.bg + ';color:' + bc.text + ';' +
@@ -484,6 +682,152 @@
 
         loadSummaries();
       });
+    </script>
+
+    <!-- ── Ambient floating 3D books ──────────────────────────────────── -->
+        <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js"}}</script>
+    <script type="module">
+      import * as THREE from 'three';
+      (function(){
+        if (window.innerWidth < 640) return;
+
+        var canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.42;';
+        document.body.prepend(canvas);
+
+        var renderer = new THREE.WebGLRenderer({ canvas:canvas, alpha:true, antialias:true });
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.setClearColor(0, 0);
+        renderer.setSize(innerWidth, innerHeight, false);
+
+        var scene  = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(52, innerWidth/innerHeight, 0.1, 120);
+        camera.position.set(0, 0, 13);
+
+        // ── Lighting: warm key + neon rim tints ──────────────────────────────
+        scene.add(new THREE.AmbientLight(0xfff8ef, 1.2));
+        var key = new THREE.DirectionalLight(0xfff4e0, 1.8);
+        key.position.set(4, 8, 8); scene.add(key);
+        var rimBlue = new THREE.PointLight(0x6366f1, 1.6, 55);
+        rimBlue.position.set(-10, 5, 7); scene.add(rimBlue);
+        var rimPurple = new THREE.PointLight(0xa855f7, 1.2, 50);
+        rimPurple.position.set(10, -3, 6); scene.add(rimPurple);
+        var rimCyan = new THREE.DirectionalLight(0x22d3ee, 0.5);
+        rimCyan.position.set(0, -8, 5); scene.add(rimCyan);
+
+        // ── 16 books with vivid spine colours ────────────────────────────────
+        var bookData = [
+          { isbn:'9780735211292', spine:0xe85d04, cover:0xfaa307 },  // Atomic Habits — orange
+          { isbn:'9780062316097', spine:0x0077b6, cover:0x023e8a },  // Sapiens — blue
+          { isbn:'9780441013593', spine:0xd62828, cover:0xa4161a },  // Dune — red
+          { isbn:'9780061122415', spine:0xffb703, cover:0xfb8500 },  // Alchemist — amber
+          { isbn:'9780451524935', spine:0x2d6a4f, cover:0x1b4332 },  // 1984 — forest
+          { isbn:'9780807014271', spine:0x9b5de5, cover:0x5a189a },  // Man Search — purple
+          { isbn:'9780857197689', spine:0x06a77d, cover:0x028090 },  // Psych Money — teal
+          { isbn:'9780399590504', spine:0xf72585, cover:0xb5179e },  // Educated — pink
+          { isbn:'9781612680194', spine:0xe63946, cover:0xc1121f },  // Rich Dad — crimson
+          { isbn:'9780062457714', spine:0x80b918, cover:0x55a630 },  // Power Now — lime
+          { isbn:'9780399594793', spine:0xe040fb, cover:0x9c27b0 },  // Becoming — magenta
+          { isbn:'9780525559474', spine:0x0096c7, cover:0x0077b6 },  // Think Again — ocean
+          { isbn:'9781847941831', spine:0xff6b6b, cover:0xee9b00 },  // Ikigai — coral
+          { isbn:'9780062316110', spine:0x3a86ff, cover:0x023e8a },  // Outliers — electric
+          { isbn:'9780316346627', spine:0x8338ec, cover:0x5f0f40 },  // Tipping Point — violet
+          { isbn:'9780062991539', spine:0x2dc653, cover:0x136f63 },  // Cant Hurt Me — emerald
+        ];
+
+        // Left-side column (x < 0) + right-side column (x > 0)
+        // Kept far from centre so they frame the page without covering the UI
+        var positions = [
+          // LEFT — spread vertically
+          [-11.5,  7.0, -4.5], [-10.5,  3.5, -3.5], [-12.0,  0.0, -5.0],
+          [-11.0, -3.5, -4.0], [-10.0, -7.0, -3.5], [-12.5,  5.5, -6.0],
+          [-11.8, -5.5, -5.5], [-10.8,  1.8, -3.0],
+          // RIGHT — spread vertically
+          [ 11.5,  7.0, -4.5], [ 10.5,  3.5, -3.5], [ 12.0,  0.0, -5.0],
+          [ 11.0, -3.5, -4.0], [ 10.0, -7.0, -3.5], [ 12.5,  5.5, -6.0],
+          [ 11.8, -5.5, -5.5], [ 10.8,  1.8, -3.0],
+        ];
+
+        var BW=0.92, BH=1.38, BD=0.13;
+        var loader = new THREE.TextureLoader();
+        var books = [];
+
+        bookData.forEach(function(bd, i){
+          var pos = positions[i] || [0, 0, 0];
+          var group = new THREE.Group();
+
+          var geo  = new THREE.BoxGeometry(BW, BH, BD);
+          var sM   = function(c){ return new THREE.MeshStandardMaterial({color:c,roughness:0.35,metalness:0.1}); };
+          var mats = [sM(bd.spine),sM(bd.spine),sM(0x222222),sM(0x222222),sM(bd.cover),sM(bd.cover)];
+          var mesh = new THREE.Mesh(geo, mats);
+
+          loader.load('https://covers.openlibrary.org/b/isbn/'+bd.isbn+'-M.jpg', function(tex){
+            tex.colorSpace = THREE.SRGBColorSpace;
+            mesh.material[4] = new THREE.MeshStandardMaterial({map:tex,roughness:0.36,metalness:0.04});
+          });
+
+          group.add(mesh);
+          group.position.set(pos[0], pos[1], pos[2]);
+          group.rotation.y = (Math.random() - 0.5) * 0.8;
+          group.rotation.z = (Math.random() - 0.5) * 0.1;
+          scene.add(group);
+
+          books.push({
+            group:    group,
+            baseY:    pos[1],
+            floatSpd: 0.45 + Math.random() * 0.55,
+            phase:    Math.random() * Math.PI * 2,
+            rotSpd:   (Math.random() - 0.5) * 0.007,
+          });
+        });
+
+        // ── Subtle particles ─────────────────────────────────────────────────
+        var pGeo = new THREE.BufferGeometry();
+        var N = 400, pPos = new Float32Array(N*3), pCol = new Float32Array(N*3);
+        var pal = [[0.39,0.40,0.95],[0.66,0.33,0.97],[0.13,0.83,0.94],[0.96,0.44,0.71],[0.98,0.75,0.2]];
+        for (var k = 0; k < N; k++){
+          pPos[k*3]   = (Math.random()-0.5)*32;
+          pPos[k*3+1] = (Math.random()-0.5)*26;
+          pPos[k*3+2] = (Math.random()-0.5)*18 - 6;
+          var c = pal[k % pal.length];
+          pCol[k*3]=c[0]; pCol[k*3+1]=c[1]; pCol[k*3+2]=c[2];
+        }
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
+        scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
+          size:0.05, vertexColors:true, transparent:true, opacity:0.55
+        })));
+
+        // ── Mouse parallax ───────────────────────────────────────────────────
+        var mX = 0, mY = 0;
+        window.addEventListener('mousemove', function(e){
+          mX = (e.clientX / innerWidth  - 0.5) * 2;
+          mY = (e.clientY / innerHeight - 0.5) * 2;
+        }, { passive:true });
+
+        // ── Resize ───────────────────────────────────────────────────────────
+        window.addEventListener('resize', function(){
+          renderer.setSize(innerWidth, innerHeight, false);
+          camera.aspect = innerWidth / innerHeight;
+          camera.updateProjectionMatrix();
+        });
+
+        // ── Animate ──────────────────────────────────────────────────────────
+        var t = 0;
+        (function animate(){
+          requestAnimationFrame(animate);
+          t += 0.011;
+          // gentle camera drift + mouse parallax
+          camera.position.x += (mX * 0.35 - camera.position.x) * 0.04;
+          camera.position.y += (-mY * 0.25 - camera.position.y) * 0.04;
+          camera.lookAt(0, 0, 0);
+          books.forEach(function(b){
+            b.group.position.y = b.baseY + Math.sin(t * b.floatSpd + b.phase) * 0.28;
+            b.group.rotation.y += b.rotSpd;
+          });
+          renderer.render(scene, camera);
+        })();
+      })();
     </script>
   </body>
 </html>

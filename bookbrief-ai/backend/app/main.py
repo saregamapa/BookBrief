@@ -151,7 +151,7 @@ def create_app() -> FastAPI:
     # ── Root redirect ─────────────────────────────────────────────────────────
     @app.get("/", include_in_schema=False)
     def root_redirect() -> RedirectResponse:
-        return RedirectResponse(url="/frontend/index.html")
+        return RedirectResponse(url="/frontend/cinematic/index.html")
 
     # ── Startup / shutdown events ─────────────────────────────────────────────
     @app.on_event("startup")

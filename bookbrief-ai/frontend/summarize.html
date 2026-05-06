@@ -4,20 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>New summary — BookBrief AI</title>
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("bookbrief-theme");
-          if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-            document.documentElement.classList.add("dark");
-          }
-        } catch (e) {}
-      })();
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
-        darkMode: "class",
         theme: {
           extend: {
             colors: {
@@ -33,175 +22,6 @@
       };
     </script>
     <link rel="stylesheet" href="/static/styles.css" />
-  </head>
-
-  <body class="bb-paper min-h-screen text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-100">
-
-    <!-- ── Header ─────────────────────────────────────────────────────────── -->
-    <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-parchment-50/90 backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/90">
-      <div class="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <a href="/frontend/dashboard.html"
-           class="bb-focus flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100">
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
-          Library
-        </a>
-        <a href="/frontend/index.html" class="flex items-center gap-2">
-          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white dark:bg-amber-600" aria-hidden="true">B</span>
-          <span class="font-serif-display text-base font-semibold text-stone-900 dark:text-stone-50 hidden sm:inline">BookBrief <span class="text-amber-800 dark:text-amber-400">AI</span></span>
-        </a>
-        <button type="button" id="theme-toggle"
-          class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
-          aria-label="Toggle dark mode">
-          <span data-theme-icon aria-hidden="true">◐</span>
-          <span data-theme-label class="hidden sm:inline ml-1">Dark</span>
-        </button>
-      </div>
-    </header>
-
-    <main class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-
-      <!-- ── Form panel ─────────────────────────────────────────────────── -->
-      <div id="form-panel">
-        <h1 class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50">New summary</h1>
-        <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">
-          Paste text, look up a book by title, or upload a PDF — we run the full multi-step pipeline.
-        </p>
-
-        <div class="mt-8 rounded-2xl border border-stone-200 bg-white/90 p-6 shadow-soft dark:border-stone-700 dark:bg-stone-900/70 dark:shadow-soft-dark">
-
-          <!-- Input-type tabs -->
-          <div class="flex flex-wrap gap-2" role="tablist" aria-label="Input type">
-            <button type="button" class="bb-tab bb-focus" data-tab="paste" aria-selected="true">
-              <span aria-hidden="true">📝</span> Paste text
-            </button>
-            <button type="button" class="bb-tab bb-focus" data-tab="title" aria-selected="false">
-              <span aria-hidden="true">📚</span> Book title
-            </button>
-            <button type="button" class="bb-tab bb-focus" data-tab="pdf" aria-selected="false">
-              <span aria-hidden="true">📄</span> PDF upload
-            </button>
-          </div>
-
-          <p id="form-alert" class="mt-4 hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300" role="alert"></p>
-
-          <form id="form-main" class="mt-6 space-y-5" novalidate>
-            <input type="hidden" id="field-source-type" value="paste" />
-
-            <!-- Paste panel -->
-            <div id="panel-paste">
-              <label for="paste-content" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
-                Excerpt or chapter
-              </label>
-              <textarea id="paste-content" rows="10"
-                class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 font-mono text-sm leading-relaxed text-stone-900 shadow-sm placeholder-stone-400 focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100 dark:placeholder-stone-600"
-                placeholder="Paste your book text here (minimum ~50 characters recommended)."
-              ></textarea>
-            </div>
-
-            <!-- Title panel -->
-            <div id="panel-title" class="hidden space-y-4">
-              <div>
-                <label for="book-title" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Title</label>
-                <input id="book-title" type="text"
-                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
-                  placeholder="e.g. Atomic Habits" />
-              </div>
-              <div>
-                <label for="book-author" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
-                  Author <span class="font-normal text-stone-400">(optional)</span>
-                </label>
-                <input id="book-author" type="text"
-                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
-                  placeholder="e.g. James Clear" />
-              </div>
-            </div>
-
-            <!-- PDF panel -->
-            <div id="panel-pdf" class="hidden">
-              <label for="pdf-file" class="block text-sm font-medium text-stone-700 dark:text-stone-300">PDF file</label>
-              <div class="mt-1.5 rounded-xl border-2 border-dashed border-stone-300 p-6 text-center dark:border-stone-600">
-                <svg class="mx-auto h-10 w-10 text-stone-300 dark:text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                <p id="pdf-label" class="mt-2 text-sm text-stone-500 dark:text-stone-400">Choose a PDF or drop it here</p>
-                <input id="pdf-file" type="file" accept="application/pdf,.pdf"
-                  class="bb-focus mt-3 block w-full text-sm text-stone-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-amber-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-amber-900 hover:file:bg-amber-200 dark:text-stone-400 dark:file:bg-amber-900/40 dark:file:text-amber-100" />
-                <p class="mt-2 text-xs text-stone-400">First ~30 pages · max 15 MB</p>
-              </div>
-            </div>
-
-            <!-- Style + optional title row -->
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label for="field-style" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Style</label>
-                <select id="field-style"
-                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 shadow-sm focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100">
-                  <option value="ultra_short">Ultra-short (~2 min)</option>
-                  <option value="standard" selected>Standard</option>
-                  <option value="detailed">Detailed (chapters/themes)</option>
-                  <option value="takeaways">Takeaways + actions</option>
-                  <option value="personalized">Personalized</option>
-                </select>
-              </div>
-              <div id="wrap-display-title">
-                <label for="field-title-optional" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
-                  Library title <span class="font-normal text-stone-400">(optional)</span>
-                </label>
-                <input id="field-title-optional" type="text"
-                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 shadow-sm focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
-                  placeholder="How it appears in your library" />
-              </div>
-            </div>
-
-            <!-- Personalization -->
-            <div>
-              <label for="field-personal" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
-                Personalization <span class="font-normal text-stone-400">(optional)</span>
-              </label>
-              <textarea id="field-personal" rows="2"
-                class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-stone-900 shadow-sm placeholder-stone-400 focus:border-amber-600 focus:ring-1 focus:ring-amber-600/30 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100 dark:placeholder-stone-600"
-                placeholder="Reading goal, role, or context — especially useful for the "personalized" style."
-              ></textarea>
-            </div>
-
-            <button type="submit" id="btn-submit"
-              class="bb-focus w-full rounded-xl bg-amber-800 py-3 text-sm font-semibold text-white shadow-soft hover:bg-amber-900 disabled:cursor-wait disabled:opacity-70 dark:bg-amber-600 dark:shadow-soft-dark dark:hover:bg-amber-500">
-              Generate summary
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <!-- ── Progress panel (shown while polling) ───────────────────────── -->
-      <div id="progress-panel" class="hidden">
-        <h1 class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50">Generating…</h1>
-        <p id="progress-subtitle" class="mt-2 text-sm text-stone-600 dark:text-stone-400">
-          Running the multi-step summarization pipeline.
-        </p>
-
-        <div class="mt-8 rounded-2xl border border-stone-200 bg-white/90 p-6 shadow-soft dark:border-stone-700 dark:bg-stone-900/70 dark:shadow-soft-dark">
-
-          <!-- Step tracker -->
-          <div id="steps-container" class="space-y-1"></div>
-
-          <!-- Elapsed time -->
-          <p id="progress-elapsed" class="mt-5 text-xs text-stone-400 dark:text-stone-500"></p>
-
-          <!-- Error state (hidden by default) -->
-          <div id="progress-error" class="hidden mt-5">
-            <p id="progress-error-msg" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"></p>
-            <button type="button" id="btn-try-again"
-              class="bb-focus mt-4 rounded-xl border border-stone-300 px-5 py-2.5 text-sm font-medium hover:bg-stone-50 dark:border-stone-600 dark:hover:bg-stone-800">
-              Try again
-            </button>
-          </div>
-        </div>
-      </div>
-
-    </main>
-
     <style>
       /* Input tab styles */
       .bb-tab {
@@ -216,24 +36,382 @@
         color: #57534e;
         background: white;
         cursor: pointer;
-        transition: all .15s;
+        transition: all .18s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .bb-tab:hover {
+        border-color: #b45309;
+        color: #78350f;
+        background: #fffbeb;
+        transform: translateY(-1px);
       }
       .bb-tab[aria-selected="true"] {
         border-color: #b45309;
         background: #fffbeb;
         color: #78350f;
         font-weight: 600;
+        box-shadow: 0 2px 8px rgba(180, 83, 9, 0.15);
+        transform: translateY(-1px);
       }
       .dark .bb-tab {
         border-color: #44403c;
         color: #a8a29e;
         background: #1c1917;
       }
+      .dark .bb-tab:hover {
+        border-color: #f59e0b;
+        background: rgba(120,53,15,.15);
+        color: #fde68a;
+        transform: translateY(-1px);
+      }
       .dark .bb-tab[aria-selected="true"] {
         border-color: #f59e0b;
         background: rgba(120,53,15,.2);
         color: #fde68a;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+        transform: translateY(-1px);
       }
+
+      /* Form card glassmorphism */
+      .form-card {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(214, 211, 209, 0.7);
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,0.6) inset,
+          0 6px 28px -6px rgba(28,25,23,.1),
+          0 2px 8px -2px rgba(28,25,23,.06);
+        transition: box-shadow 0.3s ease;
+      }
+      .dark .form-card {
+        background: rgba(28, 25, 23, 0.85);
+        border: 1px solid rgba(68, 64, 60, 0.5);
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,0.04) inset,
+          0 6px 28px -6px rgba(0,0,0,.45);
+      }
+      .form-card:focus-within {
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,0.7) inset,
+          0 0 0 3px rgba(217, 119, 6, 0.07),
+          0 8px 32px -6px rgba(28,25,23,.12);
+      }
+      .dark .form-card:focus-within {
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,0.05) inset,
+          0 0 0 3px rgba(217, 119, 6, 0.10),
+          0 8px 32px -6px rgba(0,0,0,.5);
+      }
+
+      /* PDF drop zone hover */
+      .pdf-dropzone {
+        transition: border-color 0.2s ease, background 0.2s ease;
+      }
+      .pdf-dropzone:hover, .pdf-dropzone.dragover {
+        border-color: #d97706;
+        background: rgba(251, 191, 36, 0.04);
+      }
+      .dark .pdf-dropzone:hover, .dark .pdf-dropzone.dragover {
+        border-color: #d97706;
+        background: rgba(120, 53, 15, 0.1);
+      }
+
+      /* Submit button shine */
+      .btn-generate {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s ease;
+      }
+      .btn-generate::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+        transform: skewX(-20deg);
+        transition: left 0.5s ease;
+      }
+      .btn-generate:not(:disabled):hover::after {
+        left: 160%;
+      }
+      .btn-generate:not(:disabled):hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(120, 53, 15, 0.35);
+      }
+      .btn-generate:not(:disabled):active {
+        transform: translateY(0);
+      }
+
+      /* Progress step list */
+      .step-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        font-size: 0.875rem;
+        color: #a8a29e;
+        transition: color 0.3s ease;
+      }
+      .step-item.active { color: #1c1917; font-weight: 500; }
+      .step-item.done   { color: #166534; }
+      .dark .step-item.active { color: #f5f5f4; }
+      .dark .step-item.done   { color: #4ade80; }
+
+      /* Page in animation */
+      .page-in {
+        animation: pageIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      @keyframes pageIn {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .page-in.delay-1 { animation-delay: 0.08s; }
+      .page-in.delay-2 { animation-delay: 0.16s; }
+
+      /* Ambient glow dot for progress */
+      @keyframes glow-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
+        50%       { box-shadow: 0 0 0 6px rgba(217, 119, 6, 0); }
+      }
+      .progress-dot-active {
+        animation: glow-pulse 1.5s ease-in-out infinite;
+      }
+    </style>
+  </head>
+
+  <body class="bb-paper min-h-screen text-stone-800 antialiased">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-white/90 backdrop-blur-md">
+      <div class="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <a href="/frontend/dashboard.html"
+           class="bb-focus flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Library
+        </a>
+        <a href="/frontend/index.html" class="flex items-center gap-2">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white" aria-hidden="true">B</span>
+          <span class="font-serif-display text-base font-semibold text-stone-900 hidden sm:inline">BookBrief <span class="text-amber-800">AI</span></span>
+        </a>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+
+      <!-- ── Form panel ─────────────────────────────────────────────────── -->
+      <div id="form-panel">
+
+        <!-- Page heading with book icon -->
+        <div class="page-in flex items-start gap-3">
+          <div class="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-2xl">
+            📚
+          </div>
+          <div>
+            <h1 class="font-serif-display text-2xl font-bold text-stone-900">New summary</h1>
+            <p class="mt-1 text-sm text-stone-600">
+              Paste text, look up a book by title, or upload a PDF — we run the full multi-step pipeline.
+            </p>
+          </div>
+        </div>
+
+        <div class="page-in delay-1 mt-8 form-card rounded-2xl p-6">
+
+          <!-- Input-type tabs -->
+          <div class="flex flex-wrap gap-2" role="tablist" aria-label="Input type">
+            <button type="button" class="bb-tab bb-focus" data-tab="paste" aria-selected="true">
+              <span aria-hidden="true">📝</span> Paste text
+            </button>
+            <button type="button" class="bb-tab bb-focus" data-tab="title" aria-selected="false">
+              <span aria-hidden="true">📚</span> Book title
+            </button>
+            <button type="button" class="bb-tab bb-focus" data-tab="pdf" aria-selected="false">
+              <span aria-hidden="true">📄</span> PDF upload
+            </button>
+          </div>
+
+          <p id="form-alert" class="mt-4 hidden rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-800" role="alert"></p>
+
+          <form id="form-main" class="mt-6 space-y-5" novalidate>
+            <input type="hidden" id="field-source-type" value="paste" />
+
+            <!-- Paste panel -->
+            <div id="panel-paste">
+              <label for="paste-content" class="block text-sm font-medium text-stone-700">
+                Excerpt or chapter
+              </label>
+              <textarea id="paste-content" rows="10"
+                class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 font-mono text-sm leading-relaxed text-stone-900 shadow-sm placeholder-stone-400 transition-all focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15"
+                placeholder="Paste your book text here (minimum ~50 characters recommended)."
+              ></textarea>
+            </div>
+
+            <!-- Title panel -->
+            <div id="panel-title" class="hidden space-y-4">
+              <div>
+                <label for="book-title" class="block text-sm font-medium text-stone-700">Title</label>
+                <input id="book-title" type="text"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm transition-all focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15"
+                  placeholder="e.g. Atomic Habits" />
+              </div>
+              <div>
+                <label for="book-author" class="block text-sm font-medium text-stone-700">
+                  Author <span class="font-normal text-stone-400">(optional)</span>
+                </label>
+                <input id="book-author" type="text"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-900 shadow-sm transition-all focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15"
+                  placeholder="e.g. James Clear" />
+              </div>
+            </div>
+
+            <!-- PDF panel -->
+            <div id="panel-pdf" class="hidden">
+              <label for="pdf-file" class="block text-sm font-medium text-stone-700">PDF file</label>
+              <div class="pdf-dropzone mt-1.5 rounded-xl border-2 border-dashed border-stone-300 p-8 text-center">
+                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-stone-100">
+                  <svg class="h-7 w-7 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </div>
+                <p id="pdf-label" class="text-sm font-medium text-stone-600">Choose a PDF or drop it here</p>
+                <input id="pdf-file" type="file" accept="application/pdf,.pdf"
+                  class="bb-focus mt-3 block w-full text-sm text-stone-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-amber-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-amber-900 hover:file:bg-amber-200" />
+                <p class="mt-2 text-xs text-stone-400">First ~30 pages · max 15 MB</p>
+              </div>
+            </div>
+
+            <!-- Style + optional title row -->
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="field-style" class="block text-sm font-medium text-stone-700">Style</label>
+                <select id="field-style"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 shadow-sm transition-all focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15">
+                  <option value="ultra_short">Ultra-short (~2 min)</option>
+                  <option value="standard" selected>Standard</option>
+                  <option value="detailed">Detailed (chapters/themes)</option>
+                  <option value="takeaways">Takeaways + actions</option>
+                  <option value="personalized">Personalized</option>
+                </select>
+              </div>
+              <div id="wrap-display-title">
+                <label for="field-title-optional" class="block text-sm font-medium text-stone-700">
+                  Library title <span class="font-normal text-stone-400">(optional)</span>
+                </label>
+                <input id="field-title-optional" type="text"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 shadow-sm transition-all focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15"
+                  placeholder="How it appears in your library" />
+              </div>
+            </div>
+
+            <!-- Personalization -->
+            <div>
+              <label for="field-personal" class="block text-sm font-medium text-stone-700">
+                Personalization <span class="font-normal text-stone-400">(optional)</span>
+              </label>
+              <textarea id="field-personal" rows="2"
+                class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-stone-900 shadow-sm placeholder-stone-400 transition-all focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15"
+                placeholder="Reading goal, role, or context — especially useful for the "personalized" style."
+              ></textarea>
+            </div>
+
+            <button type="submit" id="btn-submit"
+              class="btn-generate bb-focus w-full rounded-xl bg-amber-800 py-3 text-sm font-semibold text-white shadow-soft disabled:cursor-wait disabled:opacity-70">
+              ✨ Generate summary
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── Progress panel (shown while polling) ───────────────────────── -->
+      <div id="progress-panel" class="hidden">
+        <div class="flex items-center gap-3 page-in">
+          <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+            <div class="h-5 w-5 rounded-full border-2 border-amber-300 border-t-amber-700"
+                 style="animation: spin 0.9s linear infinite;" aria-hidden="true"></div>
+          </div>
+          <div>
+            <h1 class="font-serif-display text-2xl font-bold text-stone-900">Generating…</h1>
+            <p id="progress-subtitle" class="mt-0.5 text-sm text-stone-600">
+              Running the multi-step summarization pipeline.
+            </p>
+          </div>
+        </div>
+
+        <div class="page-in delay-1 mt-8 form-card rounded-2xl p-6">
+
+          <!-- Step tracker -->
+          <div id="steps-container" class="space-y-1 divide-y divide-stone-100"></div>
+
+          <!-- Elapsed time -->
+          <p id="progress-elapsed" class="mt-5 text-xs text-stone-400 font-mono"></p>
+
+          <!-- Error state (hidden by default) -->
+          <div id="progress-error" class="hidden mt-5">
+            <p id="progress-error-msg" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"></p>
+            <button type="button" id="btn-try-again"
+              class="bb-focus mt-4 rounded-xl border border-stone-300 px-5 py-2.5 text-sm font-medium hover:bg-stone-50 transition-colors">
+              ← Try again
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ═══════════ UNIVERSAL FOOTER ═══════════ -->
+    <footer class="border-t border-stone-200 mt-8" style="background:linear-gradient(180deg,#fafaf9 0%,#f5f4f1 100%);">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-12 pb-8">
+        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="lg:col-span-1">
+            <a href="/frontend/index.html" class="inline-flex items-center gap-2.5 mb-3">
+              <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white">B</span>
+              <span class="font-serif-display text-sm font-semibold text-stone-800">BookBrief <span class="text-amber-700">AI</span></span>
+            </a>
+            <p class="text-xs text-stone-500 leading-relaxed">Turn books into clear, structured summaries.</p>
+          </div>
+          <div>
+            <h4 class="mb-3 text-xs font-bold uppercase tracking-widest text-stone-400">Product</h4>
+            <ul class="space-y-2 text-xs">
+              <li><a href="/frontend/features.html"     class="text-stone-500 hover:text-amber-800 transition-colors">Features</a></li>
+              <li><a href="/frontend/how-it-works.html" class="text-stone-500 hover:text-amber-800 transition-colors">How It Works</a></li>
+              <li><a href="/frontend/pricing.html"      class="text-stone-500 hover:text-amber-800 transition-colors">Pricing</a></li>
+              <li><a href="/frontend/faq.html"          class="text-stone-500 hover:text-amber-800 transition-colors">FAQ</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="mb-3 text-xs font-bold uppercase tracking-widest text-stone-400">Account</h4>
+            <ul class="space-y-2 text-xs">
+              <li><a href="/frontend/dashboard.html" class="text-stone-500 hover:text-amber-800 transition-colors">Dashboard</a></li>
+              <li><a href="/frontend/settings.html"  class="text-stone-500 hover:text-amber-800 transition-colors">Settings</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="mb-3 text-xs font-bold uppercase tracking-widest text-stone-400">Legal</h4>
+            <ul class="space-y-2 text-xs">
+              <li><a href="/frontend/privacy.html"    class="text-stone-500 hover:text-amber-800 transition-colors">Privacy Policy</a></li>
+              <li><a href="/frontend/cookies.html"    class="text-stone-500 hover:text-amber-800 transition-colors">Cookie Policy</a></li>
+              <li><a href="/frontend/terms.html"      class="text-stone-500 hover:text-amber-800 transition-colors">Terms of Service</a></li>
+              <li><a href="mailto:hi@bookbriefai.com" class="text-stone-500 hover:text-amber-800 transition-colors">Contact Us</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-stone-200">
+        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 sm:px-6 py-4 sm:flex-row">
+          <p class="text-xs text-stone-400">© 2026 BookBrief AI. All rights reserved.</p>
+          <div class="flex gap-4 text-xs text-stone-400">
+            <a href="/frontend/privacy.html" class="hover:text-amber-700 transition-colors">Privacy</a>
+            <a href="/frontend/cookies.html" class="hover:text-amber-700 transition-colors">Cookies</a>
+            <a href="/frontend/terms.html"   class="hover:text-amber-700 transition-colors">Terms</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <style>
+      @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 
     <script src="/frontend/js/api.js"></script>
@@ -245,7 +423,6 @@
           window.location.replace("/frontend/login.html");
           return;
         }
-        BBUi.initThemeToggle("#theme-toggle");
 
         var alertEl = document.getElementById("form-alert");
         var hiddenSource = document.getElementById("field-source-type");
@@ -382,7 +559,7 @@
             }
           } catch (err) {
             btn.disabled = false;
-            btn.textContent = "Generate summary";
+            btn.textContent = "✨ Generate summary";
             BBUi.showAlert(alertEl, err.message || "Request failed", "error");
             return;
           }
@@ -409,9 +586,155 @@
           document.getElementById("form-panel").classList.remove("hidden");
           var btn = document.getElementById("btn-submit");
           btn.disabled = false;
-          btn.textContent = "Generate summary";
+          btn.textContent = "✨ Generate summary";
         });
       });
+    </script>
+
+    <!-- ── Ambient floating 3D books ──────────────────────────────────── -->
+        <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js"}}</script>
+    <script type="module">
+      import * as THREE from 'three';
+      (function(){
+        if (window.innerWidth < 640) return;
+
+        var canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.42;';
+        document.body.prepend(canvas);
+
+        var renderer = new THREE.WebGLRenderer({ canvas:canvas, alpha:true, antialias:true });
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.setClearColor(0, 0);
+        renderer.setSize(innerWidth, innerHeight, false);
+
+        var scene  = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(52, innerWidth/innerHeight, 0.1, 120);
+        camera.position.set(0, 0, 13);
+
+        // ── Lighting: warm key + neon rim tints ──────────────────────────────
+        scene.add(new THREE.AmbientLight(0xfff8ef, 1.2));
+        var key = new THREE.DirectionalLight(0xfff4e0, 1.8);
+        key.position.set(4, 8, 8); scene.add(key);
+        var rimBlue = new THREE.PointLight(0x6366f1, 1.6, 55);
+        rimBlue.position.set(-10, 5, 7); scene.add(rimBlue);
+        var rimPurple = new THREE.PointLight(0xa855f7, 1.2, 50);
+        rimPurple.position.set(10, -3, 6); scene.add(rimPurple);
+        var rimCyan = new THREE.DirectionalLight(0x22d3ee, 0.5);
+        rimCyan.position.set(0, -8, 5); scene.add(rimCyan);
+
+        // ── 16 books with vivid spine colours ────────────────────────────────
+        var bookData = [
+          { isbn:'9780735211292', spine:0xe85d04, cover:0xfaa307 },  // Atomic Habits — orange
+          { isbn:'9780062316097', spine:0x0077b6, cover:0x023e8a },  // Sapiens — blue
+          { isbn:'9780441013593', spine:0xd62828, cover:0xa4161a },  // Dune — red
+          { isbn:'9780061122415', spine:0xffb703, cover:0xfb8500 },  // Alchemist — amber
+          { isbn:'9780451524935', spine:0x2d6a4f, cover:0x1b4332 },  // 1984 — forest
+          { isbn:'9780807014271', spine:0x9b5de5, cover:0x5a189a },  // Man Search — purple
+          { isbn:'9780857197689', spine:0x06a77d, cover:0x028090 },  // Psych Money — teal
+          { isbn:'9780399590504', spine:0xf72585, cover:0xb5179e },  // Educated — pink
+          { isbn:'9781612680194', spine:0xe63946, cover:0xc1121f },  // Rich Dad — crimson
+          { isbn:'9780062457714', spine:0x80b918, cover:0x55a630 },  // Power Now — lime
+          { isbn:'9780399594793', spine:0xe040fb, cover:0x9c27b0 },  // Becoming — magenta
+          { isbn:'9780525559474', spine:0x0096c7, cover:0x0077b6 },  // Think Again — ocean
+          { isbn:'9781847941831', spine:0xff6b6b, cover:0xee9b00 },  // Ikigai — coral
+          { isbn:'9780062316110', spine:0x3a86ff, cover:0x023e8a },  // Outliers — electric
+          { isbn:'9780316346627', spine:0x8338ec, cover:0x5f0f40 },  // Tipping Point — violet
+          { isbn:'9780062991539', spine:0x2dc653, cover:0x136f63 },  // Cant Hurt Me — emerald
+        ];
+
+        // Left-side column (x < 0) + right-side column (x > 0)
+        // Kept far from centre so they frame the page without covering the UI
+        var positions = [
+          // LEFT — spread vertically
+          [-11.5,  7.0, -4.5], [-10.5,  3.5, -3.5], [-12.0,  0.0, -5.0],
+          [-11.0, -3.5, -4.0], [-10.0, -7.0, -3.5], [-12.5,  5.5, -6.0],
+          [-11.8, -5.5, -5.5], [-10.8,  1.8, -3.0],
+          // RIGHT — spread vertically
+          [ 11.5,  7.0, -4.5], [ 10.5,  3.5, -3.5], [ 12.0,  0.0, -5.0],
+          [ 11.0, -3.5, -4.0], [ 10.0, -7.0, -3.5], [ 12.5,  5.5, -6.0],
+          [ 11.8, -5.5, -5.5], [ 10.8,  1.8, -3.0],
+        ];
+
+        var BW=0.92, BH=1.38, BD=0.13;
+        var loader = new THREE.TextureLoader();
+        var books = [];
+
+        bookData.forEach(function(bd, i){
+          var pos = positions[i] || [0, 0, 0];
+          var group = new THREE.Group();
+
+          var geo  = new THREE.BoxGeometry(BW, BH, BD);
+          var sM   = function(c){ return new THREE.MeshStandardMaterial({color:c,roughness:0.35,metalness:0.1}); };
+          var mats = [sM(bd.spine),sM(bd.spine),sM(0x222222),sM(0x222222),sM(bd.cover),sM(bd.cover)];
+          var mesh = new THREE.Mesh(geo, mats);
+
+          loader.load('https://covers.openlibrary.org/b/isbn/'+bd.isbn+'-M.jpg', function(tex){
+            tex.colorSpace = THREE.SRGBColorSpace;
+            mesh.material[4] = new THREE.MeshStandardMaterial({map:tex,roughness:0.36,metalness:0.04});
+          });
+
+          group.add(mesh);
+          group.position.set(pos[0], pos[1], pos[2]);
+          group.rotation.y = (Math.random() - 0.5) * 0.8;
+          group.rotation.z = (Math.random() - 0.5) * 0.1;
+          scene.add(group);
+
+          books.push({
+            group:    group,
+            baseY:    pos[1],
+            floatSpd: 0.45 + Math.random() * 0.55,
+            phase:    Math.random() * Math.PI * 2,
+            rotSpd:   (Math.random() - 0.5) * 0.007,
+          });
+        });
+
+        // ── Subtle particles ─────────────────────────────────────────────────
+        var pGeo = new THREE.BufferGeometry();
+        var N = 400, pPos = new Float32Array(N*3), pCol = new Float32Array(N*3);
+        var pal = [[0.39,0.40,0.95],[0.66,0.33,0.97],[0.13,0.83,0.94],[0.96,0.44,0.71],[0.98,0.75,0.2]];
+        for (var k = 0; k < N; k++){
+          pPos[k*3]   = (Math.random()-0.5)*32;
+          pPos[k*3+1] = (Math.random()-0.5)*26;
+          pPos[k*3+2] = (Math.random()-0.5)*18 - 6;
+          var c = pal[k % pal.length];
+          pCol[k*3]=c[0]; pCol[k*3+1]=c[1]; pCol[k*3+2]=c[2];
+        }
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
+        scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
+          size:0.05, vertexColors:true, transparent:true, opacity:0.55
+        })));
+
+        // ── Mouse parallax ───────────────────────────────────────────────────
+        var mX = 0, mY = 0;
+        window.addEventListener('mousemove', function(e){
+          mX = (e.clientX / innerWidth  - 0.5) * 2;
+          mY = (e.clientY / innerHeight - 0.5) * 2;
+        }, { passive:true });
+
+        // ── Resize ───────────────────────────────────────────────────────────
+        window.addEventListener('resize', function(){
+          renderer.setSize(innerWidth, innerHeight, false);
+          camera.aspect = innerWidth / innerHeight;
+          camera.updateProjectionMatrix();
+        });
+
+        // ── Animate ──────────────────────────────────────────────────────────
+        var t = 0;
+        (function animate(){
+          requestAnimationFrame(animate);
+          t += 0.011;
+          // gentle camera drift + mouse parallax
+          camera.position.x += (mX * 0.35 - camera.position.x) * 0.04;
+          camera.position.y += (-mY * 0.25 - camera.position.y) * 0.04;
+          camera.lookAt(0, 0, 0);
+          books.forEach(function(b){
+            b.group.position.y = b.baseY + Math.sin(t * b.floatSpd + b.phase) * 0.28;
+            b.group.rotation.y += b.rotSpd;
+          });
+          renderer.render(scene, camera);
+        })();
+      })();
     </script>
   </body>
 </html>

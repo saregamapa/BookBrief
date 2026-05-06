@@ -4,20 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Summary — BookBrief AI</title>
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("bookbrief-theme");
-          if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-            document.documentElement.classList.add("dark");
-          }
-        } catch (e) {}
-      })();
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
-        darkMode: "class",
         theme: {
           extend: {
             colors: {
@@ -35,120 +24,247 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
     <style>
-      /* Markdown content styles */
-      .bb-md h1 { font-size: 1.75rem; font-weight: 700; margin: 1.25rem 0 .75rem; font-family: Literata, Georgia, serif; }
-      .bb-md h2 { font-size: 1.35rem; font-weight: 600; margin: 1.5rem 0 .5rem; font-family: Literata, Georgia, serif; }
-      .bb-md h3 { font-size: 1.1rem; font-weight: 600; margin: 1rem 0 .35rem; }
-      .bb-md p  { margin: .65rem 0; line-height: 1.7; }
-      .bb-md ul, .bb-md ol { margin: .5rem 0 .5rem 1.25rem; padding-left: .25rem; }
-      .bb-md li { margin: .3rem 0; line-height: 1.6; }
-      .bb-md pre, .bb-md code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: .9em; }
-      .bb-md pre { overflow-x:auto; padding: .75rem 1rem; border-radius: .5rem; background: #f5f5f4; margin: .75rem 0; }
-      .dark .bb-md pre { background: #1c1917; }
-      .bb-md code:not(pre code) { background: #f5f5f4; border-radius: .25rem; padding: .1em .35em; }
-      .dark .bb-md code:not(pre code) { background: #292524; }
-      .bb-md blockquote { border-left: 3px solid #b45309; margin: .75rem 0; padding-left: 1rem; color: #57534e; }
-      .dark .bb-md blockquote { color: #a8a29e; border-left-color: #d97706; }
-      .bb-md hr { border: none; border-top: 1px solid #e7e5e4; margin: 1.5rem 0; }
+      /* ── Reading typography ── */
+      .bb-md {
+        font-size: 1.0rem;
+        line-height: 1.75;
+        color: #292524;
+      }
+      .dark .bb-md { color: #e7e5e4; }
+
+      .bb-md h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 1.5rem 0 .75rem;
+        font-family: Literata, Georgia, serif;
+        color: #1c1917;
+        line-height: 1.25;
+      }
+      .dark .bb-md h1 { color: #fafaf9; }
+
+      .bb-md h2 {
+        font-size: 1.3rem;
+        font-weight: 650;
+        margin: 2rem 0 .6rem;
+        font-family: Literata, Georgia, serif;
+        color: #292524;
+        border-bottom: 1px solid #e7e5e4;
+        padding-bottom: .4rem;
+      }
+      .dark .bb-md h2 { color: #f5f5f4; border-bottom-color: #44403c; }
+
+      .bb-md h3 {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin: 1.25rem 0 .4rem;
+        color: #44403c;
+      }
+      .dark .bb-md h3 { color: #d6d3d1; }
+
+      .bb-md p  { margin: .75rem 0; line-height: 1.75; }
+
+      .bb-md ul, .bb-md ol {
+        margin: .6rem 0 .6rem 0;
+        padding-left: 1.5rem;
+      }
+      .bb-md li { margin: .4rem 0; line-height: 1.65; }
+      .bb-md ul li::marker { color: #d97706; }
+
+      .bb-md pre, .bb-md code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: .875em;
+      }
+      .bb-md pre {
+        overflow-x: auto;
+        padding: .875rem 1.125rem;
+        border-radius: .75rem;
+        background: #f5f5f4;
+        margin: 1rem 0;
+        border: 1px solid #e7e5e4;
+      }
+      .dark .bb-md pre {
+        background: #1c1917;
+        border-color: #292524;
+      }
+      .bb-md code:not(pre code) {
+        background: #fef3c7;
+        border-radius: .25rem;
+        padding: .1em .35em;
+        color: #92400e;
+        font-size: .875em;
+      }
+      .dark .bb-md code:not(pre code) {
+        background: rgba(120, 53, 15, 0.25);
+        color: #fde68a;
+      }
+      .bb-md blockquote {
+        border-left: 3px solid #d97706;
+        margin: 1rem 0;
+        padding: .5rem 0 .5rem 1.25rem;
+        color: #57534e;
+        font-style: italic;
+        background: rgba(251, 191, 36, 0.04);
+        border-radius: 0 .5rem .5rem 0;
+      }
+      .dark .bb-md blockquote {
+        color: #a8a29e;
+        border-left-color: #d97706;
+        background: rgba(120, 53, 15, 0.08);
+      }
+      .bb-md hr {
+        border: none;
+        border-top: 1px solid #e7e5e4;
+        margin: 2rem 0;
+      }
       .dark .bb-md hr { border-top-color: #292524; }
+
+      /* Strong highlight */
+      .bb-md strong { color: #1c1917; font-weight: 650; }
+      .dark .bb-md strong { color: #fafaf9; }
+
       @keyframes bb-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
       .bb-pulse { animation: bb-pulse 1.5s ease-in-out infinite; }
+
       @media print {
         header, .no-print { display: none !important; }
         body { background: white !important; color: black !important; }
         .bb-md { max-width: none !important; }
         .print-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
       }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* Content card glassmorphism */
+      .content-card {
+        background: rgba(255, 255, 255, 0.93);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(214, 211, 209, 0.6);
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,0.5) inset,
+          0 8px 32px -8px rgba(28,25,23,.1);
+      }
+      .dark .content-card {
+        background: rgba(28, 25, 23, 0.82);
+        border: 1px solid rgba(68, 64, 60, 0.5);
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,0.04) inset,
+          0 8px 32px -8px rgba(0,0,0,.5);
+      }
+
+      /* Action bar buttons */
+      .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .375rem;
+        border-radius: .625rem;
+        border: 1px solid;
+        padding: .5rem 1rem;
+        font-size: .8125rem;
+        font-weight: 500;
+        transition: all .18s cubic-bezier(0.22, 1, 0.36, 1);
+        cursor: pointer;
+      }
+      .action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(28,25,23,.08);
+      }
+      .action-btn:active { transform: translateY(0); }
+
+      /* Page in */
+      .view-in {
+        animation: viewIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      @keyframes viewIn {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .view-in.delay-1 { animation-delay: 0.1s; }
+      .view-in.delay-2 { animation-delay: 0.2s; }
     </style>
   </head>
 
-  <body class="bb-paper min-h-screen text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-100">
+  <body class="bb-paper min-h-screen text-stone-800 antialiased">
 
     <!-- ── Header ─────────────────────────────────────────────────────────── -->
-    <header class="no-print sticky top-0 z-40 border-b border-stone-200/80 bg-parchment-50/90 backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/90">
+    <header class="no-print sticky top-0 z-40 border-b border-stone-200/80 bg-white/90 backdrop-blur-md">
       <div class="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <a href="/frontend/dashboard.html"
-           class="bb-focus flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100">
+           class="bb-focus flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
           </svg>
           Library
         </a>
         <a href="/frontend/index.html" class="flex items-center gap-2" aria-label="BookBrief AI home">
-          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white dark:bg-amber-600" aria-hidden="true">B</span>
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white" aria-hidden="true">B</span>
         </a>
-        <button type="button" id="theme-toggle"
-          class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
-          aria-label="Toggle dark mode">
-          <span data-theme-icon aria-hidden="true">◐</span>
-          <span data-theme-label class="hidden sm:inline ml-1">Dark</span>
-        </button>
       </div>
     </header>
 
     <main class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
 
       <!-- Error state -->
-      <p id="load-err" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"></p>
+      <p id="load-err" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"></p>
 
       <!-- Polling/processing state -->
       <div id="processing-panel" class="hidden text-center py-16">
-        <div class="mx-auto mb-4 h-12 w-12 rounded-full border-4 border-stone-200 border-t-amber-700 dark:border-stone-700 dark:border-t-amber-500"
+        <div class="mx-auto mb-4 h-12 w-12 rounded-full border-4 border-stone-200 border-t-amber-700"
              style="animation:spin 1s linear infinite;" aria-hidden="true"></div>
-        <h2 class="font-serif-display text-xl font-semibold text-stone-900 dark:text-stone-50">Building your summary…</h2>
-        <p id="processing-status" class="mt-2 text-sm text-stone-500 dark:text-stone-400">Queued for processing</p>
-        <p id="processing-elapsed" class="mt-1 text-xs text-stone-400 dark:text-stone-500"></p>
+        <h2 class="font-serif-display text-xl font-semibold text-stone-900">Building your summary…</h2>
+        <p id="processing-status" class="mt-2 text-sm text-stone-500">Queued for processing</p>
+        <p id="processing-elapsed" class="mt-1 text-xs text-stone-400 font-mono"></p>
       </div>
 
       <!-- Full content shell -->
       <div id="summary-shell" class="hidden">
 
         <!-- Title + meta -->
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div class="view-in flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div class="min-w-0 flex-1">
-            <h1 id="sum-title" class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50"></h1>
-            <p id="sum-meta" class="mt-1.5 text-sm text-stone-500 dark:text-stone-400"></p>
+            <h1 id="sum-title" class="font-serif-display text-2xl font-bold text-stone-900 leading-tight"></h1>
+            <p id="sum-meta" class="mt-2 text-sm text-stone-500"></p>
           </div>
           <span id="sum-status" class="shrink-0 self-start rounded-full px-2.5 py-0.5 text-xs font-semibold" style="display:inline-flex;align-items:center;gap:.25rem;"></span>
         </div>
 
         <!-- Error/warning banner (soft failures) -->
-        <div id="sum-warn" class="hidden no-print mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+        <div id="sum-warn" class="hidden no-print mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           <strong>Note:</strong> <span id="sum-warn-msg"></span>
         </div>
 
         <!-- Action bar -->
-        <div class="no-print mt-6 flex flex-wrap gap-2">
+        <div class="no-print view-in delay-1 mt-6 flex flex-wrap gap-2">
           <button type="button" id="btn-copy"
-            class="bb-focus inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800">
+            class="action-btn bb-focus border-stone-300 bg-white text-stone-700 hover:bg-stone-50">
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
             Copy markdown
           </button>
           <button type="button" id="btn-md"
-            class="bb-focus inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800">
+            class="action-btn bb-focus border-stone-300 bg-white text-stone-700 hover:bg-stone-50">
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
             Download .md
           </button>
           <button type="button" id="btn-print"
-            class="bb-focus inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800">
+            class="action-btn bb-focus border-stone-300 bg-white text-stone-700 hover:bg-stone-50">
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
             </svg>
             Print / PDF
           </button>
           <a href="/frontend/summarize.html"
-            class="bb-focus inline-flex items-center gap-1.5 rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500">
+            class="action-btn bb-focus border-amber-700 bg-amber-800 text-white hover:bg-amber-900">
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
             New style
           </a>
           <button type="button" id="btn-delete"
-            class="bb-focus inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950/50">
+            class="action-btn bb-focus border-red-200 text-red-700 hover:bg-red-50">
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
@@ -156,17 +272,61 @@
           </button>
         </div>
 
-        <!-- Markdown content -->
-        <article id="md-wrap" class="print-card mt-8 rounded-2xl border border-stone-200 bg-white/90 p-6 shadow-soft dark:border-stone-700 dark:bg-stone-900/60 dark:shadow-soft-dark sm:p-8">
-          <div id="md-content" class="bb-md max-w-none text-stone-800 dark:text-stone-200"></div>
+        <!-- Markdown content card -->
+        <article id="md-wrap" class="print-card view-in delay-2 content-card mt-8 rounded-2xl p-6 sm:p-10">
+          <div id="md-content" class="bb-md max-w-none"></div>
         </article>
 
       </div>
     </main>
 
-    <style>
-      @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+    <!-- ═══════════ UNIVERSAL FOOTER ═══════════ -->
+    <footer class="border-t border-stone-200 mt-8" style="background:linear-gradient(180deg,#fafaf9 0%,#f5f4f1 100%);">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-10 pb-6">
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 text-xs">
+          <div>
+            <span class="font-semibold text-stone-700 text-sm">📚 BookBrief AI</span>
+            <p class="mt-2 text-stone-400 leading-relaxed">Transform any book into a rich, structured summary powered by AI.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-stone-600 mb-2">Product</p>
+            <ul class="space-y-1 text-stone-400">
+              <li><a href="/frontend/features.html" class="hover:text-amber-600 transition-colors">Features</a></li>
+              <li><a href="/frontend/pricing.html" class="hover:text-amber-600 transition-colors">Pricing</a></li>
+              <li><a href="/frontend/how-it-works.html" class="hover:text-amber-600 transition-colors">How It Works</a></li>
+              <li><a href="/frontend/faq.html" class="hover:text-amber-600 transition-colors">FAQ</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-stone-600 mb-2">Account</p>
+            <ul class="space-y-1 text-stone-400">
+              <li><a href="/frontend/dashboard.html" class="hover:text-amber-600 transition-colors">Dashboard</a></li>
+              <li><a href="/frontend/settings.html" class="hover:text-amber-600 transition-colors">Settings</a></li>
+              <li><a href="/frontend/login.html" class="hover:text-amber-600 transition-colors">Sign In</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-stone-600 mb-2">Legal</p>
+            <ul class="space-y-1 text-stone-400">
+              <li><a href="/frontend/privacy.html" class="hover:text-amber-600 transition-colors">Privacy Policy</a></li>
+              <li><a href="/frontend/cookies.html" class="hover:text-amber-600 transition-colors">Cookies Policy</a></li>
+              <li><a href="/frontend/terms.html" class="hover:text-amber-600 transition-colors">Terms of Service</a></li>
+              <li><a href="mailto:hi@bookbriefai.com" class="hover:text-amber-600 transition-colors">Contact Us</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-stone-200">
+        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 sm:px-6 py-4 sm:flex-row">
+          <p class="text-xs text-stone-400">© 2026 BookBrief AI. All rights reserved.</p>
+          <div class="flex gap-4 text-xs text-stone-400">
+            <a href="/frontend/privacy.html" class="hover:text-amber-600 transition-colors">Privacy</a>
+            <a href="/frontend/cookies.html" class="hover:text-amber-600 transition-colors">Cookies</a>
+            <a href="/frontend/terms.html" class="hover:text-amber-600 transition-colors">Terms</a>
+          </div>
+        </div>
+      </div>
+    </footer>
 
     <script src="/frontend/js/api.js"></script>
     <script src="/frontend/js/auth.js"></script>
@@ -177,7 +337,6 @@
           window.location.replace("/frontend/login.html");
           return;
         }
-        BBUi.initThemeToggle("#theme-toggle");
 
         var params = new URLSearchParams(window.location.search);
         var id = params.get("id");
@@ -318,6 +477,152 @@
           }
         });
       });
+    </script>
+
+    <!-- ── Ambient floating 3D books ──────────────────────────────────── -->
+        <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js"}}</script>
+    <script type="module">
+      import * as THREE from 'three';
+      (function(){
+        if (window.innerWidth < 640) return;
+
+        var canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.42;';
+        document.body.prepend(canvas);
+
+        var renderer = new THREE.WebGLRenderer({ canvas:canvas, alpha:true, antialias:true });
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.setClearColor(0, 0);
+        renderer.setSize(innerWidth, innerHeight, false);
+
+        var scene  = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(52, innerWidth/innerHeight, 0.1, 120);
+        camera.position.set(0, 0, 13);
+
+        // ── Lighting: warm key + neon rim tints ──────────────────────────────
+        scene.add(new THREE.AmbientLight(0xfff8ef, 1.2));
+        var key = new THREE.DirectionalLight(0xfff4e0, 1.8);
+        key.position.set(4, 8, 8); scene.add(key);
+        var rimBlue = new THREE.PointLight(0x6366f1, 1.6, 55);
+        rimBlue.position.set(-10, 5, 7); scene.add(rimBlue);
+        var rimPurple = new THREE.PointLight(0xa855f7, 1.2, 50);
+        rimPurple.position.set(10, -3, 6); scene.add(rimPurple);
+        var rimCyan = new THREE.DirectionalLight(0x22d3ee, 0.5);
+        rimCyan.position.set(0, -8, 5); scene.add(rimCyan);
+
+        // ── 16 books with vivid spine colours ────────────────────────────────
+        var bookData = [
+          { isbn:'9780735211292', spine:0xe85d04, cover:0xfaa307 },  // Atomic Habits — orange
+          { isbn:'9780062316097', spine:0x0077b6, cover:0x023e8a },  // Sapiens — blue
+          { isbn:'9780441013593', spine:0xd62828, cover:0xa4161a },  // Dune — red
+          { isbn:'9780061122415', spine:0xffb703, cover:0xfb8500 },  // Alchemist — amber
+          { isbn:'9780451524935', spine:0x2d6a4f, cover:0x1b4332 },  // 1984 — forest
+          { isbn:'9780807014271', spine:0x9b5de5, cover:0x5a189a },  // Man Search — purple
+          { isbn:'9780857197689', spine:0x06a77d, cover:0x028090 },  // Psych Money — teal
+          { isbn:'9780399590504', spine:0xf72585, cover:0xb5179e },  // Educated — pink
+          { isbn:'9781612680194', spine:0xe63946, cover:0xc1121f },  // Rich Dad — crimson
+          { isbn:'9780062457714', spine:0x80b918, cover:0x55a630 },  // Power Now — lime
+          { isbn:'9780399594793', spine:0xe040fb, cover:0x9c27b0 },  // Becoming — magenta
+          { isbn:'9780525559474', spine:0x0096c7, cover:0x0077b6 },  // Think Again — ocean
+          { isbn:'9781847941831', spine:0xff6b6b, cover:0xee9b00 },  // Ikigai — coral
+          { isbn:'9780062316110', spine:0x3a86ff, cover:0x023e8a },  // Outliers — electric
+          { isbn:'9780316346627', spine:0x8338ec, cover:0x5f0f40 },  // Tipping Point — violet
+          { isbn:'9780062991539', spine:0x2dc653, cover:0x136f63 },  // Cant Hurt Me — emerald
+        ];
+
+        // Left-side column (x < 0) + right-side column (x > 0)
+        // Kept far from centre so they frame the page without covering the UI
+        var positions = [
+          // LEFT — spread vertically
+          [-11.5,  7.0, -4.5], [-10.5,  3.5, -3.5], [-12.0,  0.0, -5.0],
+          [-11.0, -3.5, -4.0], [-10.0, -7.0, -3.5], [-12.5,  5.5, -6.0],
+          [-11.8, -5.5, -5.5], [-10.8,  1.8, -3.0],
+          // RIGHT — spread vertically
+          [ 11.5,  7.0, -4.5], [ 10.5,  3.5, -3.5], [ 12.0,  0.0, -5.0],
+          [ 11.0, -3.5, -4.0], [ 10.0, -7.0, -3.5], [ 12.5,  5.5, -6.0],
+          [ 11.8, -5.5, -5.5], [ 10.8,  1.8, -3.0],
+        ];
+
+        var BW=0.92, BH=1.38, BD=0.13;
+        var loader = new THREE.TextureLoader();
+        var books = [];
+
+        bookData.forEach(function(bd, i){
+          var pos = positions[i] || [0, 0, 0];
+          var group = new THREE.Group();
+
+          var geo  = new THREE.BoxGeometry(BW, BH, BD);
+          var sM   = function(c){ return new THREE.MeshStandardMaterial({color:c,roughness:0.35,metalness:0.1}); };
+          var mats = [sM(bd.spine),sM(bd.spine),sM(0x222222),sM(0x222222),sM(bd.cover),sM(bd.cover)];
+          var mesh = new THREE.Mesh(geo, mats);
+
+          loader.load('https://covers.openlibrary.org/b/isbn/'+bd.isbn+'-M.jpg', function(tex){
+            tex.colorSpace = THREE.SRGBColorSpace;
+            mesh.material[4] = new THREE.MeshStandardMaterial({map:tex,roughness:0.36,metalness:0.04});
+          });
+
+          group.add(mesh);
+          group.position.set(pos[0], pos[1], pos[2]);
+          group.rotation.y = (Math.random() - 0.5) * 0.8;
+          group.rotation.z = (Math.random() - 0.5) * 0.1;
+          scene.add(group);
+
+          books.push({
+            group:    group,
+            baseY:    pos[1],
+            floatSpd: 0.45 + Math.random() * 0.55,
+            phase:    Math.random() * Math.PI * 2,
+            rotSpd:   (Math.random() - 0.5) * 0.007,
+          });
+        });
+
+        // ── Subtle particles ─────────────────────────────────────────────────
+        var pGeo = new THREE.BufferGeometry();
+        var N = 400, pPos = new Float32Array(N*3), pCol = new Float32Array(N*3);
+        var pal = [[0.39,0.40,0.95],[0.66,0.33,0.97],[0.13,0.83,0.94],[0.96,0.44,0.71],[0.98,0.75,0.2]];
+        for (var k = 0; k < N; k++){
+          pPos[k*3]   = (Math.random()-0.5)*32;
+          pPos[k*3+1] = (Math.random()-0.5)*26;
+          pPos[k*3+2] = (Math.random()-0.5)*18 - 6;
+          var c = pal[k % pal.length];
+          pCol[k*3]=c[0]; pCol[k*3+1]=c[1]; pCol[k*3+2]=c[2];
+        }
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
+        scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
+          size:0.05, vertexColors:true, transparent:true, opacity:0.55
+        })));
+
+        // ── Mouse parallax ───────────────────────────────────────────────────
+        var mX = 0, mY = 0;
+        window.addEventListener('mousemove', function(e){
+          mX = (e.clientX / innerWidth  - 0.5) * 2;
+          mY = (e.clientY / innerHeight - 0.5) * 2;
+        }, { passive:true });
+
+        // ── Resize ───────────────────────────────────────────────────────────
+        window.addEventListener('resize', function(){
+          renderer.setSize(innerWidth, innerHeight, false);
+          camera.aspect = innerWidth / innerHeight;
+          camera.updateProjectionMatrix();
+        });
+
+        // ── Animate ──────────────────────────────────────────────────────────
+        var t = 0;
+        (function animate(){
+          requestAnimationFrame(animate);
+          t += 0.011;
+          // gentle camera drift + mouse parallax
+          camera.position.x += (mX * 0.35 - camera.position.x) * 0.04;
+          camera.position.y += (-mY * 0.25 - camera.position.y) * 0.04;
+          camera.lookAt(0, 0, 0);
+          books.forEach(function(b){
+            b.group.position.y = b.baseY + Math.sin(t * b.floatSpd + b.phase) * 0.28;
+            b.group.rotation.y += b.rotSpd;
+          });
+          renderer.render(scene, camera);
+        })();
+      })();
     </script>
   </body>
 </html>

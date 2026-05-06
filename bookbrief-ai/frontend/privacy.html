@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy — BookBrief AI</title>
+    <meta name="description" content="Privacy Policy for BookBrief AI — how we collect, use, and protect your data." />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme:{ extend:{ colors:{ ink:{950:"#1c1917",900:"#292524",800:"#44403c"}, parchment:{50:"#fafaf9",100:"#f5f5f4",200:"#e7e5e4"} }, boxShadow:{ soft:"0 4px 24px -4px rgba(28,25,23,0.08),0 2px 8px -2px rgba(28,25,23,0.06)" } } } };
+    </script>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <style>
+      body { background: linear-gradient(160deg,#fafaf9 0%,#fffcf5 40%,#faf8f2 100%); }
+      .page-header { position:relative;overflow:hidden;border-bottom:1px solid rgba(217,119,6,0.1);padding:6rem 1rem 5rem;text-align:center;background:linear-gradient(135deg,rgba(255,251,235,0.95) 0%,rgba(255,255,255,1) 50%,rgba(245,243,255,0.7) 100%); }
+      .section-line { width:48px;height:3px;border-radius:9999px;background:linear-gradient(90deg,#f59e0b,#f43f5e);margin:0.75rem auto 0; }
+      .legal-card { background:rgba(255,255,255,0.88);border:1px solid rgba(231,229,228,0.9);border-radius:1.25rem;padding:2rem 2.5rem;backdrop-filter:blur(6px);margin-bottom:1.5rem; }
+      .dark .legal-card { background:rgba(28,25,23,0.65);border-color:rgba(68,64,60,0.5); }
+      .legal-card h2 { font-size:1.15rem;font-weight:700;color:#1c1917;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem; }
+      .dark .legal-card h2 { color:#f5f5f4; }
+      .legal-card p, .legal-card li { font-size:0.9rem;color:#57534e;line-height:1.75;margin-bottom:0.5rem; }
+      .dark .legal-card p, .dark .legal-card li { color:#a8a29e; }
+      .legal-card ul { list-style:disc;padding-left:1.5rem; }
+      header, main, footer { position:relative;z-index:1; }
+      .bb-badge { display:inline-flex;align-items:center;gap:0.5rem;padding:0.25rem 0.875rem;border-radius:9999px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;border:1px solid rgba(217,119,6,0.25);background:rgba(254,243,199,0.6);color:#92400e; }
+      .dark .bb-badge { background:rgba(120,53,15,0.25);border-color:rgba(217,119,6,0.2);color:#fbbf24; }
+    </style>
+  </head>
+  <body class="font-sans text-ink-900 antialiased">
+
+    <!-- ── NAV ──────────────────────────────────────────────────────────── -->
+    <header class="sticky top-0 z-50 border-b border-stone-200/60 bg-white/80 backdrop-blur-xl">
+      <div class="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 h-16">
+        <a href="/frontend/index.html" class="flex items-center gap-2 font-bold text-lg tracking-tight text-stone-800">
+          <span class="text-2xl">📚</span>
+          <span>BookBrief <span style="background:linear-gradient(135deg,#b45309,#f43f5e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">AI</span></span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-stone-600">
+          <a href="/frontend/how-it-works.html" class="hover:text-amber-700 transition-colors">How It Works</a>
+          <a href="/frontend/features.html" class="hover:text-amber-700 transition-colors">Features</a>
+          <a href="/frontend/pricing.html" class="hover:text-amber-700 transition-colors">Pricing</a>
+          <a href="/frontend/faq.html" class="hover:text-amber-700 transition-colors">FAQ</a>
+        </nav>
+        <div class="flex items-center gap-3">
+          <a href="/frontend/login.html" class="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-br from-amber-700 to-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity">Sign In</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── PAGE HEADER ──────────────────────────────────────────────────── -->
+    <div class="page-header">
+      <span class="bb-badge mb-4">Legal</span>
+      <h1 class="text-4xl font-bold text-stone-800 mt-2">Privacy Policy</h1>
+      <div class="section-line"></div>
+      <p class="mt-4 text-stone-500 text-sm max-w-lg mx-auto">Last updated: 1 May 2026 · Effective: 1 May 2026</p>
+    </div>
+
+    <!-- ── CONTENT ───────────────────────────────────────────────────────── -->
+    <main class="mx-auto max-w-3xl px-4 sm:px-6 py-16">
+
+      <div class="legal-card">
+        <h2>👋 Overview</h2>
+        <p>BookBrief AI ("we", "our", or "us") is committed to protecting your privacy. This policy explains what information we collect, how we use it, and your rights regarding your data when you use our website and services at <strong>bookbriefai.com</strong>.</p>
+        <p>By using BookBrief AI, you agree to the collection and use of information in accordance with this policy.</p>
+      </div>
+
+      <div class="legal-card">
+        <h2>📥 Information We Collect</h2>
+        <p>We collect the following categories of information:</p>
+        <ul>
+          <li><strong>Account data:</strong> Your email address and hashed password when you register.</li>
+          <li><strong>Usage data:</strong> Book titles, ISBNs, summary style preferences, and summaries you generate.</li>
+          <li><strong>Technical data:</strong> IP address, browser type, device type, pages visited, and timestamps — collected automatically via server logs and cookies.</li>
+          <li><strong>Payment data:</strong> Billing is processed by Stripe. We never store your full card details. Stripe may share subscription status and plan tier with us.</li>
+          <li><strong>Communications:</strong> If you email us, we retain that correspondence to respond and improve support.</li>
+        </ul>
+      </div>
+
+      <div class="legal-card">
+        <h2>🔧 How We Use Your Information</h2>
+        <ul>
+          <li>To create and manage your account and subscription.</li>
+          <li>To generate AI book summaries on your behalf using the book information you provide.</li>
+          <li>To send transactional emails (summary ready, account changes, billing receipts).</li>
+          <li>To improve our service — analysing aggregated, anonymised usage patterns.</li>
+          <li>To enforce our Terms of Service and prevent abuse.</li>
+          <li>To comply with legal obligations.</li>
+        </ul>
+        <p>We do <strong>not</strong> sell your personal data to third parties. We do not use your summaries to train AI models.</p>
+      </div>
+
+      <div class="legal-card">
+        <h2>🤝 Third-Party Services</h2>
+        <p>We use the following trusted third parties who may process your data on our behalf:</p>
+        <ul>
+          <li><strong>Stripe</strong> — payment processing and subscription management.</li>
+          <li><strong>Anthropic / OpenAI</strong> — AI inference for generating book summaries. Book titles and ISBNs may be sent as part of the prompt. We use API calls only; your data is not used to train their public models.</li>
+          <li><strong>Open Library (Internet Archive)</strong> — for fetching book cover images and metadata. No personal data is shared.</li>
+          <li><strong>Hosting provider</strong> — our infrastructure provider may store logs in accordance with their own privacy policies.</li>
+        </ul>
+      </div>
+
+      <div class="legal-card">
+        <h2>🍪 Cookies &amp; Tracking</h2>
+        <p>We use minimal, essential cookies to keep you signed in and remember your theme preference. We do not use advertising cookies or third-party trackers.</p>
+        <p>You can disable cookies in your browser settings, though this may affect your ability to stay logged in. See our <a href="/frontend/cookies.html" class="text-amber-700 hover:underline">Cookies Policy</a> for full details.</p>
+      </div>
+
+      <div class="legal-card">
+        <h2>🔒 Data Security</h2>
+        <p>We take security seriously and implement appropriate technical and organisational measures, including:</p>
+        <ul>
+          <li>HTTPS (TLS) encryption for all data in transit.</li>
+          <li>Passwords hashed using bcrypt with a per-user salt — we never store plain-text passwords.</li>
+          <li>API keys and secrets stored as environment variables, not in code.</li>
+          <li>SQLite database stored on a private server not accessible to the public internet.</li>
+        </ul>
+        <p>No method of internet transmission is 100% secure. We cannot guarantee absolute security, but we will notify you of any breach that affects your personal data as required by applicable law.</p>
+      </div>
+
+      <div class="legal-card">
+        <h2>📅 Data Retention</h2>
+        <p>We retain your account data and generated summaries for as long as your account is active. If you delete your account, we will permanently delete your personal data within 30 days, except where we are required to retain it for legal or billing purposes.</p>
+      </div>
+
+      <div class="legal-card">
+        <h2>🌍 Your Rights</h2>
+        <p>Depending on your location, you may have the following rights:</p>
+        <ul>
+          <li><strong>Access:</strong> Request a copy of your personal data.</li>
+          <li><strong>Rectification:</strong> Ask us to correct inaccurate data.</li>
+          <li><strong>Erasure:</strong> Request deletion of your account and data.</li>
+          <li><strong>Portability:</strong> Receive your data in a machine-readable format.</li>
+          <li><strong>Objection / Restriction:</strong> Object to or restrict certain processing activities.</li>
+        </ul>
+        <p>To exercise any of these rights, email <a href="mailto:hi@bookbriefai.com" class="text-amber-700 hover:underline">hi@bookbriefai.com</a>. We will respond within 30 days.</p>
+      </div>
+
+      <div class="legal-card">
+        <h2>👶 Children's Privacy</h2>
+        <p>BookBrief AI is not directed at children under 13 years of age. We do not knowingly collect personal data from children. If you believe a child has provided us with personal data, please contact us and we will delete it promptly.</p>
+      </div>
+
+      <div class="legal-card">
+        <h2>🔄 Changes to This Policy</h2>
+        <p>We may update this Privacy Policy from time to time. We will notify you of significant changes by email or by posting a prominent notice on our website. The "last updated" date at the top of this page will always reflect the most recent revision.</p>
+      </div>
+
+      <div class="legal-card">
+        <h2>📬 Contact Us</h2>
+        <p>If you have questions about this Privacy Policy or how we handle your data, please reach out:</p>
+        <p><strong>Email:</strong> <a href="mailto:hi@bookbriefai.com" class="text-amber-700 hover:underline">hi@bookbriefai.com</a></p>
+        <p>We aim to respond to all privacy enquiries within 5 business days.</p>
+      </div>
+
+    </main>
+
+    <!-- ═══════════ UNIVERSAL FOOTER ═══════════ -->
+    <footer class="border-t border-stone-200" style="background:linear-gradient(180deg,#fafaf9 0%,#f5f4f1 100%);">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-12 pb-8">
+        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <a href="/frontend/index.html" class="flex items-center gap-2 font-bold text-stone-800 mb-3">
+              <span class="text-xl">📚</span><span>BookBrief AI</span>
+            </a>
+            <p class="text-sm text-stone-400 leading-relaxed">Transform any book into a rich, structured summary powered by AI.</p>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-stone-600 mb-3">Product</p>
+            <ul class="space-y-2 text-sm text-stone-400">
+              <li><a href="/frontend/features.html" class="hover:text-amber-600 transition-colors">Features</a></li>
+              <li><a href="/frontend/pricing.html" class="hover:text-amber-600 transition-colors">Pricing</a></li>
+              <li><a href="/frontend/how-it-works.html" class="hover:text-amber-600 transition-colors">How It Works</a></li>
+              <li><a href="/frontend/faq.html" class="hover:text-amber-600 transition-colors">FAQ</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-stone-600 mb-3">Account</p>
+            <ul class="space-y-2 text-sm text-stone-400">
+              <li><a href="/frontend/dashboard.html" class="hover:text-amber-600 transition-colors">Dashboard</a></li>
+              <li><a href="/frontend/settings.html" class="hover:text-amber-600 transition-colors">Settings</a></li>
+              <li><a href="/frontend/login.html" class="hover:text-amber-600 transition-colors">Sign In</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-stone-600 mb-3">Legal</p>
+            <ul class="space-y-2 text-sm text-stone-400">
+              <li><a href="/frontend/privacy.html" class="text-amber-600 font-medium">Privacy Policy</a></li>
+              <li><a href="/frontend/cookies.html" class="hover:text-amber-600 transition-colors">Cookies Policy</a></li>
+              <li><a href="/frontend/terms.html" class="hover:text-amber-600 transition-colors">Terms of Service</a></li>
+              <li><a href="mailto:hi@bookbriefai.com" class="hover:text-amber-600 transition-colors">Contact Us</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-stone-200">
+        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 sm:px-6 py-4 sm:flex-row">
+          <p class="text-xs text-stone-400">© 2026 BookBrief AI. All rights reserved.</p>
+          <div class="flex gap-4 text-xs text-stone-400">
+            <a href="/frontend/privacy.html" class="text-amber-600">Privacy</a>
+            <a href="/frontend/cookies.html" class="hover:text-amber-600 transition-colors">Cookies</a>
+            <a href="/frontend/terms.html" class="hover:text-amber-600 transition-colors">Terms</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="/frontend/js/ui.js"></script>
+    <script>document.addEventListener("DOMContentLoaded",function(){if(window.BBUi&&BBUi.initThemeToggle)});</script>
+
+    <!-- ── Ambient floating 3D books ──────────────────────────────────── -->
+    <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js"}}</script>
+    <script type="module">
+      import * as THREE from 'three';
+      (function(){
+        var canvas=document.createElement('canvas');
+        canvas.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.35;';
+        document.body.prepend(canvas);
+        var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+        renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0,0);
+        var scene=new THREE.Scene();
+        var camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.1,100);
+        camera.position.set(0,0,14);
+        scene.add(new THREE.AmbientLight(0xfff8ef,1.1));
+        var dl=new THREE.DirectionalLight(0xffecd0,1.4);dl.position.set(5,10,8);scene.add(dl);
+        var dl2=new THREE.DirectionalLight(0xd0e8ff,0.6);dl2.position.set(-6,-4,6);scene.add(dl2);
+        var isbns=['9780735211292','9780062316097','9780441013593','9780061122415','9780451524935','9780807014271','9780857197689','9780399590504'];
+        var positions=[[-9,4,-5],[-7,-4,-6],[-11,0,-7],[-8.5,6,-8],[9,3.5,-5],[7.5,-4,-6],[11,0.5,-7],[9,-6,-8]];
+        var books=[];
+        isbns.forEach(function(isbn,i){
+          var geo=new THREE.BoxGeometry(1.2,1.85,0.12);
+          var tex=new THREE.TextureLoader().load('https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg');
+          var mats=[new THREE.MeshStandardMaterial({color:0xd4a97a,roughness:0.7}),new THREE.MeshStandardMaterial({color:0xc8936a,roughness:0.7}),new THREE.MeshStandardMaterial({color:0xe8cfa8,roughness:0.5}),new THREE.MeshStandardMaterial({color:0xe8cfa8,roughness:0.5}),new THREE.MeshStandardMaterial({map:tex,roughness:0.4}),new THREE.MeshStandardMaterial({color:0xd4a97a,roughness:0.6})];
+          var mesh=new THREE.Mesh(geo,mats);
+          var p=positions[i];mesh.position.set(p[0],p[1],p[2]);
+          mesh.rotation.set((Math.random()-0.5)*0.4,(Math.random()-0.5)*0.6,(Math.random()-0.5)*0.15);
+          mesh.userData.baseY=p[1];mesh.userData.phase=Math.random()*Math.PI*2;
+          scene.add(mesh);books.push(mesh);
+        });
+        function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+        window.addEventListener('resize',resize);resize();
+        var clock=new THREE.Clock();
+        (function animate(){requestAnimationFrame(animate);
+          var t=clock.getElapsedTime();
+          books.forEach(function(b){b.position.y=b.userData.baseY+Math.sin(t*0.5+b.userData.phase)*0.35;b.rotation.y+=0.002;});
+          renderer.render(scene,camera);
+        })();
+      })();
+    </script>
+  </body>
+</html>

@@ -9,3 +9,4 @@ __pycache__/
 .DS_Store
 dist/
 *.egg-info/
+frontend/landing-src/node_modules/

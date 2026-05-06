@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Features — BookBrief AI</title>
+    <meta name="description" content="Explore all BookBrief AI features: flexible input, 5 summary styles, private library, PDF support, dark mode, real-time progress, and more." />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme:{ extend:{ colors:{ ink:{950:"#1c1917",900:"#292524",800:"#44403c"}, parchment:{50:"#fafaf9",100:"#f5f5f4",200:"#e7e5e4"} }, boxShadow:{ soft:"0 4px 24px -4px rgba(28,25,23,0.08),0 2px 8px -2px rgba(28,25,23,0.06)" } } } };
+    </script>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"}}</script>
+    <style>
+      body { background: linear-gradient(160deg,#fafaf9 0%,#fffcf5 40%,#faf8f2 100%); }
+      .bb-badge { display:inline-flex;align-items:center;gap:0.5rem;padding:0.25rem 0.875rem;border-radius:9999px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;border:1px solid rgba(217,119,6,0.25);background:rgba(254,243,199,0.6);color:#92400e; }
+      .dark .bb-badge { background:rgba(120,53,15,0.25);border-color:rgba(217,119,6,0.2);color:#fbbf24; }
+      .section-line { width:48px;height:3px;border-radius:9999px;background:linear-gradient(90deg,#f59e0b,#f43f5e);margin:0.75rem auto 0; }
+
+      .page-header {
+        position:relative;overflow:hidden;
+        background:linear-gradient(135deg,rgba(255,251,235,0.9) 0%,rgba(255,255,255,1) 50%,rgba(255,251,235,0.9) 100%);
+        border-bottom:1px solid rgba(217,119,6,0.1);
+        padding:6rem 1rem 5rem;text-align:center;
+      }
+
+      /* Feature cards */
+      .feat-card {
+        position:relative;border-radius:1.25rem;overflow:hidden;
+        border:1px solid rgba(231,229,228,0.8);
+        background:rgba(255,255,255,0.85);
+        padding:1.75rem;
+        transition:transform 0.3s ease,box-shadow 0.3s ease;
+        backdrop-filter:blur(8px);
+      }
+      .feat-card:hover { transform:translateY(-6px);box-shadow:0 24px 48px -8px rgba(0,0,0,0.12); }
+      .dark .feat-card { background:rgba(28,25,23,0.65);border-color:rgba(68,64,60,0.6); }
+      .dark .feat-card:hover { box-shadow:0 24px 48px -8px rgba(0,0,0,0.5); }
+
+      .feat-card::before {
+        content:'';position:absolute;inset:0;opacity:0;
+        background:linear-gradient(135deg,rgba(254,243,199,0.4) 0%,transparent 60%);
+        transition:opacity 0.3s;pointer-events:none;
+      }
+      .feat-card:hover::before { opacity:1; }
+
+      .feat-icon-wrap {
+        width:52px;height:52px;border-radius:0.875rem;
+        display:flex;align-items:center;justify-content:center;
+        font-size:1.5rem;
+        transition:transform 0.3s;
+        box-shadow:0 4px 12px -2px rgba(0,0,0,0.08);
+      }
+      .feat-card:hover .feat-icon-wrap { transform:scale(1.1) rotate(-3deg); }
+
+      /* Hero feature (2-col wide) */
+      .feat-card-hero { grid-column:span 2; }
+      @media(max-width:640px){ .feat-card-hero{grid-column:span 1;} }
+
+      /* Comparison table */
+      .compare-row:nth-child(even) { background:rgba(250,250,249,0.6); }
+      .dark .compare-row:nth-child(even) { background:rgba(28,25,23,0.4); }
+
+      /* Ambient canvas */
+      #ambient-canvas { position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.35; }
+      main, header, footer { position:relative;z-index:1; }
+      @media(max-width:480px){ #ambient-canvas{display:none;} }
+    </style>
+  </head>
+  <body class="bb-paper text-stone-800 antialiased">
+    <a href="#main" class="bb-skip-link">Skip to content</a>
+    <canvas id="ambient-canvas" aria-hidden="true"></canvas>
+
+    <!-- ── Header ── -->
+    <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-white/90 backdrop-blur-md">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <a href="/frontend/index.html" class="group flex items-center gap-2">
+          <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-700 text-lg font-bold text-white shadow-sm ring-1 ring-amber-600/30 transition-transform group-hover:scale-105">B</span>
+          <span class="font-serif-display text-lg font-semibold tracking-tight text-stone-900">BookBrief <span class="text-amber-800">AI</span></span>
+        </a>
+        <nav class="hidden items-center gap-8 md:flex" aria-label="Main">
+          <a href="/frontend/how-it-works.html" class="text-sm font-medium text-stone-600 transition-colors hover:text-amber-900">How it works</a>
+          <a href="/frontend/features.html"     class="text-sm font-medium text-amber-800">Features</a>
+          <a href="/frontend/pricing.html"      class="text-sm font-medium text-stone-600 transition-colors hover:text-amber-900">Pricing</a>
+          <a href="/frontend/faq.html"          class="text-sm font-medium text-stone-600 transition-colors hover:text-amber-900">FAQ</a>
+        </nav>
+        <div class="flex items-center gap-2 sm:gap-3">
+          <a href="/frontend/login.html?mode=register" class="bb-focus inline-flex items-center rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white shadow-soft transition-all hover:bg-amber-900">Start free</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- Page header -->
+      <div class="page-header">
+        <div class="pointer-events-none absolute inset-0" style="background:radial-gradient(ellipse 60% 80% at 30% 50%,rgba(244,63,94,0.07) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 70% 50%,rgba(245,158,11,0.1) 0%,transparent 60%);"></div>
+        <span class="bb-badge mb-5">Full feature list</span>
+        <h1 class="font-serif-display text-4xl font-bold text-stone-900 sm:text-5xl mt-3" style="line-height:1.1;">
+          Everything BookBrief AI<br/>
+          <span style="background:linear-gradient(135deg,#f43f5e,#b45309 60%,#d97706);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">can do for you</span>
+        </h1>
+        <div class="section-line mt-4"></div>
+        <p class="mx-auto mt-5 max-w-xl text-lg text-stone-600">One calm workspace for turning any book into a brief you'll actually use.</p>
+      </div>
+
+      <!-- ── Feature grid ── -->
+      <section class="py-24">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6">
+          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+            <!-- Hero feature: Flexible input (wide) -->
+            <article class="feat-card feat-card-hero bb-reveal" style="transition-delay:0.05s;background:linear-gradient(135deg,rgba(255,251,235,0.95),rgba(255,255,255,0.9));">
+              <div class="flex flex-col sm:flex-row gap-6 items-start">
+                <div>
+                  <div class="feat-icon-wrap bg-amber-100 text-amber-800">📖</div>
+                  <h3 class="mt-4 font-serif-display text-xl font-bold text-stone-900">Flexible input — three ways in</h3>
+                  <p class="mt-2 text-sm leading-relaxed text-stone-600">Paste text, upload a PDF (with smart chunking for long books), or just type a title + author and let AI do the research. Works however your reading workflow works — no friction.</p>
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200/60 px-3 py-1 text-xs font-medium text-amber-800">📝 Paste text</span>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200/60 px-3 py-1 text-xs font-medium text-amber-800">📄 Upload PDF</span>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200/60 px-3 py-1 text-xs font-medium text-amber-800">🔍 Title + Author</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- 5 Summary styles -->
+            <article class="feat-card bb-reveal" style="transition-delay:0.10s">
+              <div class="feat-icon-wrap bg-rose-100 text-rose-600">✨</div>
+              <h3 class="mt-4 font-serif-display text-lg font-bold text-stone-900">5 Summary styles</h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600">Ultra-short, standard prose, detailed chapters, takeaways + action items, or a custom goal you define. Switch styles on any existing summary — no re-uploading needed.</p>
+            </article>
+
+            <!-- Private library -->
+            <article class="feat-card bb-reveal" style="transition-delay:0.15s">
+              <div class="feat-icon-wrap bg-emerald-100 text-emerald-700">🗂️</div>
+              <h3 class="mt-4 font-serif-display text-lg font-bold text-stone-900">Private library</h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600">All summaries live in your personal library — only you can see them. Search by title, filter by style, and revisit past briefs anytime. Your summaries stay even if you downgrade.</p>
+            </article>
+
+            <!-- Real-time progress -->
+            <article class="feat-card bb-reveal" style="transition-delay:0.20s">
+              <div class="feat-icon-wrap bg-blue-100 text-blue-700">⚡</div>
+              <h3 class="mt-4 font-serif-display text-lg font-bold text-stone-900">Real-time progress</h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600">A live tracker shows exactly where your summary is — queue, extract, summarize, refine, done. No mystery spinner; you always know what's happening.</p>
+            </article>
+
+            <!-- Export -->
+            <article class="feat-card bb-reveal" style="transition-delay:0.25s">
+              <div class="feat-icon-wrap bg-rose-100 text-rose-700">📤</div>
+              <h3 class="mt-4 font-serif-display text-lg font-bold text-stone-900">Export everywhere</h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600">Copy to clipboard, download as clean Markdown, or print directly — all from the summary view. Perfect for Notion, Obsidian, email, or book clubs.</p>
+            </article>
+
+            <!-- Dark mode -->
+            <article class="feat-card bb-reveal" style="transition-delay:0.30s">
+              <div class="feat-icon-wrap bg-stone-200 text-stone-700">🌙</div>
+              <h3 class="mt-4 font-serif-display text-lg font-bold text-stone-900">Beautiful dark mode</h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600">Fully designed for dark mode from day one. Warm stone tones that feel at home at midnight. Respects your OS preference and persists your choice.</p>
+            </article>
+
+            <!-- Smart search -->
+            <article class="feat-card bb-reveal" style="transition-delay:0.35s">
+              <div class="feat-icon-wrap bg-cyan-100 text-cyan-700">🔍</div>
+              <h3 class="mt-4 font-serif-display text-lg font-bold text-stone-900">Instant smart search</h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600">Filter your library by title, style, or status as you type — no submit button. Find any summary in under a second.</p>
+            </article>
+
+            <!-- Multi-stage AI pipeline (wide) -->
+            <article class="feat-card feat-card-hero bb-reveal" style="transition-delay:0.40s;background:linear-gradient(135deg,rgba(245,243,255,0.95),rgba(255,255,255,0.9));">
+              <div class="flex flex-col sm:flex-row gap-6">
+                <div class="flex-1">
+                  <div class="feat-icon-wrap" style="background:rgba(244,63,94,0.1);color:#f43f5e;">🧠</div>
+                  <h3 class="mt-4 font-serif-display text-xl font-bold text-stone-900">Multi-stage AI pipeline</h3>
+                  <p class="mt-2 text-sm leading-relaxed text-stone-600">Not just a single prompt. BookBrief extracts, summarizes, then runs a refinement pass — ensuring the output is carefully checked before it reaches you. Higher accuracy, less hallucination, better structure.</p>
+                  <div class="mt-4 flex items-center gap-2 text-xs text-stone-500 flex-wrap">
+                    <span class="rounded-full bg-stone-100 px-3 py-1">📥 Extract</span>
+                    <span class="text-amber-500">→</span>
+                    <span class="rounded-full bg-stone-100 px-3 py-1">🧠 Summarize</span>
+                    <span class="text-amber-500">→</span>
+                    <span class="rounded-full bg-stone-100 px-3 py-1">✨ Refine</span>
+                    <span class="text-amber-500">→</span>
+                    <span class="rounded-full bg-amber-100 px-3 py-1 text-amber-800 font-semibold">📦 Deliver</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- Secure & private -->
+            <article class="feat-card bb-reveal" style="transition-delay:0.45s">
+              <div class="feat-icon-wrap bg-green-100 text-green-700">🔒</div>
+              <h3 class="mt-4 font-serif-display text-lg font-bold text-stone-900">Secure & private</h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600">Summaries are only visible to you. PDFs are not stored after processing. Your content is never used to train AI models.</p>
+            </article>
+
+            <!-- Billing portal -->
+            <article class="feat-card bb-reveal" style="transition-delay:0.50s">
+              <div class="feat-icon-wrap bg-amber-100 text-amber-700">💳</div>
+              <h3 class="mt-4 font-serif-display text-lg font-bold text-stone-900">Stripe billing portal</h3>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600">Manage your subscription, download invoices, or cancel anytime — all through a secure Stripe-powered portal with zero friction.</p>
+            </article>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Quick comparison ── -->
+      <section class="py-20" style="background:linear-gradient(135deg,rgba(255,251,235,0.5) 0%,rgba(255,255,255,1) 100%);">
+        <div class="mx-auto max-w-4xl px-4 sm:px-6">
+          <div class="text-center bb-reveal">
+            <h2 class="font-serif-display text-2xl font-bold text-stone-900 sm:text-3xl">Features by plan</h2>
+            <div class="section-line"></div>
+          </div>
+          <div class="mt-10 overflow-hidden rounded-2xl border border-stone-200 bb-reveal" style="transition-delay:0.1s">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-stone-200">
+                  <th class="py-4 px-5 text-left font-semibold text-stone-700">Feature</th>
+                  <th class="py-4 px-4 text-center font-semibold text-stone-600">Free</th>
+                  <th class="py-4 px-4 text-center font-bold text-amber-800">Pro</th>
+                  <th class="py-4 px-4 text-center font-semibold text-stone-600">Growth</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="compare-row border-b border-stone-100">
+                  <td class="py-3.5 px-5 text-stone-700">Summaries per month</td>
+                  <td class="py-3.5 px-4 text-center text-stone-600">3 / week</td>
+                  <td class="py-3.5 px-4 text-center font-semibold text-amber-800">15</td>
+                  <td class="py-3.5 px-4 text-center text-stone-600">25</td>
+                </tr>
+                <tr class="compare-row border-b border-stone-100">
+                  <td class="py-3.5 px-5 text-stone-700">Summary styles</td>
+                  <td class="py-3.5 px-4 text-center text-stone-600">Core (3)</td>
+                  <td class="py-3.5 px-4 text-center font-semibold text-amber-800">All 5 + Custom</td>
+                  <td class="py-3.5 px-4 text-center text-stone-600">All 5 + Custom</td>
+                </tr>
+                <tr class="compare-row border-b border-stone-100">
+                  <td class="py-3.5 px-5 text-stone-700">PDF upload</td>
+                  <td class="py-3.5 px-4 text-center text-green-600">✓</td>
+                  <td class="py-3.5 px-4 text-center text-green-600">✓</td>
+                  <td class="py-3.5 px-4 text-center text-green-600">✓</td>
+                </tr>
+                <tr class="compare-row border-b border-stone-100">
+                  <td class="py-3.5 px-5 text-stone-700">Private library</td>
+                  <td class="py-3.5 px-4 text-center text-green-600">✓</td>
+                  <td class="py-3.5 px-4 text-center text-green-600">✓</td>
+                  <td class="py-3.5 px-4 text-center text-green-600">✓</td>
+                </tr>
+                <tr class="compare-row border-b border-stone-100">
+                  <td class="py-3.5 px-5 text-stone-700">Markdown export</td>
+                  <td class="py-3.5 px-4 text-center text-green-600">✓</td>
+                  <td class="py-3.5 px-4 text-center text-green-600">✓</td>
+                  <td class="py-3.5 px-4 text-center text-green-600">✓</td>
+                </tr>
+                <tr class="compare-row border-b border-stone-100">
+                  <td class="py-3.5 px-5 text-stone-700">Priority processing</td>
+                  <td class="py-3.5 px-4 text-center text-stone-400">—</td>
+                  <td class="py-3.5 px-4 text-center text-stone-400">—</td>
+                  <td class="py-3.5 px-4 text-center text-green-600">✓</td>
+                </tr>
+                <tr class="compare-row">
+                  <td class="py-3.5 px-5 text-stone-700">Support</td>
+                  <td class="py-3.5 px-4 text-center text-stone-500">Community</td>
+                  <td class="py-3.5 px-4 text-center font-semibold text-amber-800">Priority email</td>
+                  <td class="py-3.5 px-4 text-center text-stone-600">Dedicated</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-6 text-center">
+            <a href="/frontend/pricing.html" class="text-sm font-semibold text-amber-800 hover:underline">See full pricing details →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section class="px-4 py-20 sm:px-6">
+        <div class="relative mx-auto max-w-3xl overflow-hidden rounded-3xl px-8 py-16 text-center text-white"
+          style="background:linear-gradient(135deg,#9f1239,#f43f5e 40%,#b45309);box-shadow:0 24px 60px -12px rgba(244,63,94,0.4);">
+          <div class="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full bg-rose-400/20 blur-3xl"></div>
+          <div class="pointer-events-none absolute -bottom-8 -right-8 h-40 w-40 rounded-full bg-amber-500/20 blur-3xl"></div>
+          <div class="relative">
+            <h2 class="font-serif-display text-3xl font-bold sm:text-4xl">All this, starting at $0</h2>
+            <p class="mx-auto mt-3 max-w-md text-amber-100/80">Free forever tier — upgrade only when you're ready.</p>
+            <a href="/frontend/login.html?mode=register"
+              class="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-base font-bold text-amber-950 shadow-lg transition-all hover:bg-rose-50 hover:shadow-xl">
+              Get started free →
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ═══════════ UNIVERSAL FOOTER ═══════════ -->
+    <footer class="border-t border-stone-200" style="background:linear-gradient(180deg,#fafaf9 0%,#f5f4f1 100%);">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-16 pb-10">
+        <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="lg:col-span-1">
+            <a href="/frontend/index.html" class="inline-flex items-center gap-2.5 mb-4">
+              <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-700 text-base font-bold text-white shadow-sm">B</span>
+              <span class="font-serif-display text-base font-semibold text-stone-800">BookBrief <span class="text-amber-700">AI</span></span>
+            </a>
+            <p class="text-sm text-stone-500 leading-relaxed">Turn books into clear, structured summaries — in under a minute.</p>
+            <div class="mt-5"><a href="mailto:hi@bookbriefai.com" class="text-xs font-medium text-amber-800 hover:underline">✉ hi@bookbriefai.com</a></div>
+          </div>
+          <div>
+            <h4 class="mb-4 text-xs font-bold uppercase tracking-widest text-stone-400">Product</h4>
+            <ul class="space-y-2.5 text-sm">
+              <li><a href="/frontend/features.html"     class="text-stone-600 hover:text-amber-800 transition-colors">Features</a></li>
+              <li><a href="/frontend/how-it-works.html" class="text-stone-600 hover:text-amber-800 transition-colors">How It Works</a></li>
+              <li><a href="/frontend/pricing.html"      class="text-stone-600 hover:text-amber-800 transition-colors">Pricing</a></li>
+              <li><a href="/frontend/faq.html"          class="text-stone-600 hover:text-amber-800 transition-colors">FAQ</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="mb-4 text-xs font-bold uppercase tracking-widest text-stone-400">Account</h4>
+            <ul class="space-y-2.5 text-sm">
+              <li><a href="/frontend/login.html"             class="text-stone-600 hover:text-amber-800 transition-colors">Log In</a></li>
+              <li><a href="/frontend/login.html?mode=register" class="text-stone-600 hover:text-amber-800 transition-colors">Sign Up Free</a></li>
+              <li><a href="/frontend/dashboard.html"         class="text-stone-600 hover:text-amber-800 transition-colors">Dashboard</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="mb-4 text-xs font-bold uppercase tracking-widest text-stone-400">Legal</h4>
+            <ul class="space-y-2.5 text-sm">
+              <li><a href="/frontend/privacy.html"  class="text-stone-600 hover:text-amber-800 transition-colors">Privacy Policy</a></li>
+              <li><a href="/frontend/cookies.html"  class="text-stone-600 hover:text-amber-800 transition-colors">Cookie Policy</a></li>
+              <li><a href="/frontend/terms.html"    class="text-stone-600 hover:text-amber-800 transition-colors">Terms of Service</a></li>
+              <li><a href="mailto:hi@bookbriefai.com" class="text-stone-600 hover:text-amber-800 transition-colors">Contact Us</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-stone-200">
+        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:px-6 py-5 sm:flex-row">
+          <p class="text-xs text-stone-400">© 2026 BookBrief AI. All rights reserved. Made with ♥ for readers everywhere.</p>
+          <div class="flex flex-wrap items-center gap-4 text-xs text-stone-400">
+            <a href="/frontend/privacy.html" class="hover:text-amber-700 transition-colors">Privacy</a>
+            <a href="/frontend/cookies.html" class="hover:text-amber-700 transition-colors">Cookies</a>
+            <a href="/frontend/terms.html"   class="hover:text-amber-700 transition-colors">Terms</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="/frontend/js/ui.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var reveals = document.querySelectorAll(".bb-reveal");
+        var obs = new IntersectionObserver(function(entries){
+          entries.forEach(function(e){ if(e.isIntersecting){e.target.classList.add("bb-visible");obs.unobserve(e.target);} });
+        }, { threshold: 0.08, rootMargin:"0px 0px -40px 0px" });
+        reveals.forEach(function(el){ obs.observe(el); });
+      });
+    </script>
+
+    <!-- Ambient floating books -->
+    <script type="module">
+      import * as THREE from 'three';
+      const canvas = document.getElementById('ambient-canvas');
+      if (!canvas) return;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(0, 0, 14);
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setClearColor(0x000000, 0);
+      scene.add(new THREE.AmbientLight(0xfff8ee, 1.2));
+      const sun = new THREE.DirectionalLight(0xffe0aa, 1.4); sun.position.set(4, 6, 5); scene.add(sun);
+      const isbns = ['9780735211292','9780062316097','9780441013593','9780061122415','9780451524935','9780807014271','9780857197689','9780399590504'];
+      const spines = [0x0f3460,0x1e3a5f,0x5c2a00,0x2d1654,0x1a1a1a,0x2c3e50,0x145a3c,0x1e1b4b];
+      const loader = new THREE.TextureLoader(); loader.crossOrigin = 'anonymous';
+      const geo = new THREE.BoxGeometry(1.2, 1.85, 0.12);
+      const books = [];
+      const corners = [[-9,4,-5],[-7,-4,-6],[-11,0,-7],[-8.5,6,-8],[9,3.5,-5],[7.5,-4,-6],[11,0.5,-7],[9,-6,-8]];
+      isbns.forEach(function(isbn,i){
+        const mats = [
+          new THREE.MeshStandardMaterial({color:spines[i],roughness:0.7}),
+          new THREE.MeshStandardMaterial({color:spines[i],roughness:0.7}),
+          new THREE.MeshStandardMaterial({color:0x1a1208,roughness:0.9}),
+          new THREE.MeshStandardMaterial({color:0x1a1208,roughness:0.9}),
+          new THREE.MeshStandardMaterial({color:spines[i],roughness:0.65}),
+          new THREE.MeshStandardMaterial({color:spines[i],roughness:0.8}),
+        ];
+        loader.load('https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg',function(tex){tex.colorSpace=THREE.SRGBColorSpace;mats[4].map=tex;mats[4].needsUpdate=true;},undefined,function(){});
+        const mesh=new THREE.Mesh(geo,mats);
+        const p=corners[i];mesh.position.set(p[0],p[1],p[2]);
+        mesh.rotation.y=(i%2===0?1:-1)*0.3;mesh.rotation.z=(Math.random()-0.5)*0.15;
+        scene.add(mesh);books.push({mesh,oy:p[1],phase:Math.random()*Math.PI*2});
+      });
+      window.addEventListener('resize',function(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+      let t=0;(function animate(){requestAnimationFrame(animate);t+=0.008;books.forEach(function(b){b.mesh.position.y=b.oy+Math.sin(t+b.phase)*0.35;b.mesh.rotation.x=Math.sin(t*0.7+b.phase)*0.04;});renderer.render(scene,camera);})();
+    </script>
+  </body>
+</html>

@@ -4,20 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Settings — BookBrief AI</title>
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("bookbrief-theme");
-          if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-            document.documentElement.classList.add("dark");
-          }
-        } catch (e) {}
-      })();
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
-        darkMode: "class",
         theme: {
           extend: {
             colors: {
@@ -33,38 +22,91 @@
       };
     </script>
     <link rel="stylesheet" href="/static/styles.css" />
+    <style>
+      /* Section cards glassmorphism */
+      .settings-card {
+        background: rgba(255,255,255,0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(214, 211, 209, 0.65);
+        box-shadow: 0 4px 20px -4px rgba(28,25,23,.07), 0 1px 4px rgba(28,25,23,.04);
+        transition: box-shadow 0.25s ease, transform 0.25s ease;
+      }
+      .settings-card:hover {
+        box-shadow: 0 6px 28px -4px rgba(28,25,23,.10);
+      }
+      .dark .settings-card {
+        background: rgba(28, 25, 23, 0.80);
+        border: 1px solid rgba(68, 64, 60, 0.5);
+        box-shadow: 0 4px 20px -4px rgba(0,0,0,.4);
+      }
+      .dark .settings-card:hover {
+        box-shadow: 0 6px 32px -4px rgba(0,0,0,.55);
+      }
+      .danger-card {
+        background: rgba(255,255,255,0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(254, 202, 202, 0.7);
+        box-shadow: 0 4px 16px -4px rgba(153, 27, 27, 0.06);
+      }
+      .dark .danger-card {
+        background: rgba(28, 25, 23, 0.80);
+        border: 1px solid rgba(127, 29, 29, 0.35);
+      }
+
+      /* Staggered page-in animations */
+      .settings-in {
+        animation: settingsIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      @keyframes settingsIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .settings-in.d1 { animation-delay: 0.08s; }
+      .settings-in.d2 { animation-delay: 0.16s; }
+      .settings-in.d3 { animation-delay: 0.24s; }
+      .settings-in.d4 { animation-delay: 0.32s; }
+      .settings-in.d5 { animation-delay: 0.40s; }
+
+      /* Sidebar nav hover */
+      nav a {
+        transition: all 0.18s ease;
+      }
+
+      /* Ambient page background gradient */
+      .settings-bg {
+        background: linear-gradient(135deg,
+          rgba(251, 191, 36, 0.04) 0%,
+          rgba(217, 119, 6, 0.03) 50%,
+          transparent 80%
+        );
+        min-height: 100vh;
+      }
+    </style>
   </head>
-  <body class="bb-paper min-h-screen text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-100">
+  <body class="bb-paper settings-bg text-stone-800 antialiased">
 
     <!-- ── Header ──────────────────────────────────────────────────────── -->
-    <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-parchment-50/90 backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/90">
+    <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-white/90 backdrop-blur-md">
       <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <div class="flex items-center gap-4">
-          <a href="/frontend/dashboard.html" class="bb-focus rounded-lg p-1.5 text-stone-500 hover:text-stone-800 dark:hover:text-stone-200" aria-label="Back to dashboard">
+          <a href="/frontend/dashboard.html" class="bb-focus rounded-lg p-1.5 text-stone-500 hover:text-stone-800" aria-label="Back to dashboard">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </a>
           <a href="/frontend/index.html" class="flex items-center gap-2">
-            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white dark:bg-amber-600">B</span>
-            <span class="font-serif-display text-base font-semibold text-stone-900 dark:text-stone-50">BookBrief <span class="text-amber-800 dark:text-amber-400">AI</span></span>
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white">B</span>
+            <span class="font-serif-display text-base font-semibold text-stone-900">BookBrief <span class="text-amber-800">AI</span></span>
           </a>
         </div>
 
         <div class="flex items-center gap-2">
           <button
             type="button"
-            id="theme-toggle"
-            class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
-            aria-label="Toggle dark mode"
-          >
-            <span data-theme-icon class="hidden sm:inline" aria-hidden="true">◐</span>
-            <span data-theme-label class="hidden sm:inline">Dark</span>
-          </button>
-          <button
-            type="button"
             id="btn-logout"
-            class="bb-focus rounded-lg border border-stone-200 px-3 py-2 text-xs font-medium text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-900"
+            class="bb-focus rounded-lg border border-stone-200 px-3 py-2 text-xs font-medium text-stone-600 hover:bg-stone-50"
           >Log out</button>
         </div>
       </div>
@@ -73,9 +115,12 @@
     <main class="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-12">
 
       <!-- Page title -->
-      <div class="mb-8">
-        <h1 class="font-serif-display text-2xl font-bold text-stone-900 dark:text-stone-50">Account settings</h1>
-        <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Manage your account and security preferences.</p>
+      <div class="mb-8 settings-in flex items-center gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-xl">⚙️</div>
+        <div>
+          <h1 class="font-serif-display text-2xl font-bold text-stone-900">Account settings</h1>
+          <p class="mt-0.5 text-sm text-stone-500">Manage your account and security preferences.</p>
+        </div>
       </div>
 
       <!-- Two-column layout on md+ -->
@@ -83,19 +128,19 @@
 
         <!-- ── Sidebar nav ──────────────────────────────────────────── -->
         <nav class="flex flex-row gap-2 lg:flex-col" aria-label="Settings sections">
-          <a href="#section-profile" class="bb-focus flex items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/40 dark:text-amber-300">
+          <a href="#section-profile" class="bb-focus flex items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-900">
             <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             Profile
           </a>
-          <a href="#section-password" class="bb-focus flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">
+          <a href="#section-password" class="bb-focus flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-100">
             <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             Password
           </a>
-          <a href="#section-sessions" class="bb-focus flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">
+          <a href="#section-sessions" class="bb-focus flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-100">
             <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/></svg>
             Sessions
           </a>
-          <a href="#section-billing" class="bb-focus flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800">
+          <a href="#section-billing" class="bb-focus flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600 hover:bg-stone-100">
             <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             Billing
           </a>
@@ -105,69 +150,69 @@
         <div class="space-y-6 lg:col-span-2">
 
           <!-- Profile -->
-          <section id="section-profile" class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
-            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Profile</h2>
-            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Your account information.</p>
+          <section id="section-profile" class="settings-card settings-in d1 rounded-2xl p-6">
+            <h2 class="font-serif-display text-lg font-semibold text-stone-900">Profile</h2>
+            <p class="mt-1 text-xs text-stone-500">Your account information.</p>
             <div class="mt-5 space-y-4">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500">Email</p>
-                <p id="profile-email" class="mt-1 text-sm text-stone-700 dark:text-stone-300">—</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-stone-400">Email</p>
+                <p id="profile-email" class="mt-1 text-sm text-stone-700">—</p>
               </div>
               <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500">Name</p>
-                <p id="profile-name" class="mt-1 text-sm text-stone-700 dark:text-stone-300">—</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-stone-400">Name</p>
+                <p id="profile-name" class="mt-1 text-sm text-stone-700">—</p>
               </div>
               <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500">Plan</p>
-                <p id="profile-plan" class="mt-1 text-sm text-stone-700 dark:text-stone-300">—</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-stone-400">Plan</p>
+                <p id="profile-plan" class="mt-1 text-sm text-stone-700">—</p>
               </div>
             </div>
           </section>
 
           <!-- Password -->
-          <section id="section-password" class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
-            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Change password</h2>
-            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Choose a strong password of at least 8 characters.</p>
+          <section id="section-password" class="settings-card settings-in d2 rounded-2xl p-6">
+            <h2 class="font-serif-display text-lg font-semibold text-stone-900">Change password</h2>
+            <p class="mt-1 text-xs text-stone-500">Choose a strong password of at least 8 characters.</p>
             <p id="pw-alert" class="mt-3 hidden text-sm font-medium" role="alert"></p>
             <form id="form-password" class="mt-5 space-y-4" novalidate>
               <div>
-                <label for="pw-current" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Current password</label>
+                <label for="pw-current" class="block text-sm font-medium text-stone-700">Current password</label>
                 <input
                   id="pw-current"
                   type="password"
                   autocomplete="current-password"
                   required
-                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition-colors focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition-colors focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15"
                   placeholder="••••••••"
                 />
               </div>
               <div>
-                <label for="pw-new" class="block text-sm font-medium text-stone-700 dark:text-stone-300">New password</label>
+                <label for="pw-new" class="block text-sm font-medium text-stone-700">New password</label>
                 <input
                   id="pw-new"
                   type="password"
                   autocomplete="new-password"
                   required
                   minlength="8"
-                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition-colors focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition-colors focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15"
                   placeholder="At least 8 characters"
                 />
                 <!-- Strength bar -->
                 <div class="mt-2 flex items-center gap-2.5">
-                  <div class="h-1 flex-1 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-700">
+                  <div class="h-1 flex-1 overflow-hidden rounded-full bg-stone-200">
                     <div id="pw-bar" class="h-full w-0 rounded-full bg-stone-400 transition-all duration-300"></div>
                   </div>
-                  <span id="pw-label" class="w-14 text-right text-xs text-stone-400 dark:text-stone-500"></span>
+                  <span id="pw-label" class="w-14 text-right text-xs text-stone-400"></span>
                 </div>
               </div>
               <div>
-                <label for="pw-confirm" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Confirm new password</label>
+                <label for="pw-confirm" class="block text-sm font-medium text-stone-700">Confirm new password</label>
                 <input
                   id="pw-confirm"
                   type="password"
                   autocomplete="new-password"
                   required
-                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition-colors focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                  class="bb-focus mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition-colors focus:border-amber-600 focus:ring-2 focus:ring-amber-600/15"
                   placeholder="Re-enter new password"
                 />
               </div>
@@ -175,65 +220,65 @@
                 <button
                   id="btn-pw"
                   type="submit"
-                  class="bb-focus rounded-xl bg-amber-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-900 disabled:opacity-60 dark:bg-amber-600 dark:hover:bg-amber-500"
+                  class="bb-focus rounded-xl bg-amber-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-900 disabled:opacity-60"
                 >Update password</button>
               </div>
             </form>
           </section>
 
           <!-- Sessions -->
-          <section id="section-sessions" class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
-            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Active sessions</h2>
-            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Sign out of all devices except this one.</p>
-            <div class="mt-5 flex items-center justify-between gap-4 rounded-xl border border-stone-200 p-4 dark:border-stone-700">
+          <section id="section-sessions" class="settings-card settings-in d3 rounded-2xl p-6">
+            <h2 class="font-serif-display text-lg font-semibold text-stone-900">Active sessions</h2>
+            <p class="mt-1 text-xs text-stone-500">Sign out of all devices except this one.</p>
+            <div class="mt-5 flex items-center justify-between gap-4 rounded-xl border border-stone-200 p-4">
               <div>
-                <p class="text-sm font-medium text-stone-800 dark:text-stone-200">Current session</p>
-                <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-500">This browser, signed in now.</p>
+                <p class="text-sm font-medium text-stone-800">Current session</p>
+                <p class="mt-0.5 text-xs text-stone-500">This browser, signed in now.</p>
               </div>
-              <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">Active</span>
+              <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">Active</span>
             </div>
             <div class="mt-4">
               <button
                 id="btn-revoke"
                 type="button"
-                class="bb-focus rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-800/50 dark:text-red-400 dark:hover:bg-red-950/30"
+                class="bb-focus rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
               >Sign out all other devices</button>
-              <p class="mt-2 text-xs text-stone-500 dark:text-stone-500">This will invalidate all tokens except your current session.</p>
+              <p class="mt-2 text-xs text-stone-500">This will invalidate all tokens except your current session.</p>
             </div>
           </section>
 
           <!-- Billing -->
-          <section id="section-billing" class="rounded-2xl border border-stone-200 bg-white p-6 dark:border-stone-700 dark:bg-stone-900">
-            <h2 class="font-serif-display text-lg font-semibold text-stone-900 dark:text-stone-50">Billing</h2>
-            <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">Open Stripe to manage payment method or cancel.</p>
+          <section id="section-billing" class="settings-card settings-in d4 rounded-2xl p-6">
+            <h2 class="font-serif-display text-lg font-semibold text-stone-900">Billing</h2>
+            <p class="mt-2 text-sm text-stone-600">Open Stripe to manage payment method or cancel.</p>
             <div class="mt-4 flex flex-wrap gap-2">
               <button
                 id="btn-portal"
                 type="button"
                 disabled
-                class="bb-focus rounded-xl border border-stone-300 px-4 py-2 text-sm font-semibold hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-600 dark:hover:bg-stone-800"
+                class="bb-focus rounded-xl border border-stone-300 px-4 py-2 text-sm font-semibold hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
               >Billing portal</button>
               <a
                 href="/frontend/dashboard.html"
-                class="bb-focus inline-flex items-center rounded-xl border border-stone-300 px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 dark:border-stone-600 dark:text-stone-400 dark:hover:bg-stone-800"
+                class="bb-focus inline-flex items-center rounded-xl border border-stone-300 px-4 py-2 text-sm text-stone-600 hover:bg-stone-50"
               >Dashboard</a>
             </div>
-            <p id="billing-hint" class="mt-2 hidden text-xs text-stone-500 dark:text-stone-500">Subscribe once from the dashboard to enable the portal.</p>
-            <p id="billing-alert" class="mt-2 hidden text-sm font-medium text-red-600 dark:text-red-400"></p>
+            <p id="billing-hint" class="mt-2 hidden text-xs text-stone-500">Subscribe once from the dashboard to enable the portal.</p>
+            <p id="billing-alert" class="mt-2 hidden text-sm font-medium text-red-600"></p>
           </section>
 
           <!-- Danger zone -->
-          <section class="rounded-2xl border border-red-200 bg-white p-6 dark:border-red-900/40 dark:bg-stone-900">
-            <h2 class="font-serif-display text-lg font-semibold text-red-700 dark:text-red-400">Danger zone</h2>
-            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Irreversible actions. Please be certain before proceeding.</p>
-            <div class="mt-5 flex items-center justify-between gap-4 rounded-xl border border-red-100 bg-red-50/50 p-4 dark:border-red-900/30 dark:bg-red-950/10">
+          <section class="danger-card settings-in d5 rounded-2xl p-6">
+            <h2 class="font-serif-display text-lg font-semibold text-red-700">Danger zone</h2>
+            <p class="mt-1 text-xs text-stone-500">Irreversible actions. Please be certain before proceeding.</p>
+            <div class="mt-5 flex items-center justify-between gap-4 rounded-xl border border-red-100 bg-red-50/50 p-4">
               <div>
-                <p class="text-sm font-medium text-stone-800 dark:text-stone-200">Delete account</p>
-                <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-500">Permanently removes all your data and summaries.</p>
+                <p class="text-sm font-medium text-stone-800">Delete account</p>
+                <p class="mt-0.5 text-xs text-stone-500">Permanently removes all your data and summaries.</p>
               </div>
               <button
                 type="button"
-                class="bb-focus flex-shrink-0 rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400 dark:hover:bg-red-950/30"
+                class="bb-focus flex-shrink-0 rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
                 onclick="alert('Account deletion is not yet available in this version. Please contact support.')"
               >Delete account</button>
             </div>
@@ -242,6 +287,54 @@
         </div>
       </div>
     </main>
+
+    <!-- ═══════════ UNIVERSAL FOOTER ═══════════ -->
+    <footer class="border-t border-stone-200 mt-8" style="background:linear-gradient(180deg,#fafaf9 0%,#f5f4f1 100%);">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-10 pb-6">
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 text-xs">
+          <div>
+            <span class="font-semibold text-stone-700 text-sm">📚 BookBrief AI</span>
+            <p class="mt-2 text-stone-400 leading-relaxed">Transform any book into a rich, structured summary powered by AI.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-stone-600 mb-2">Product</p>
+            <ul class="space-y-1 text-stone-400">
+              <li><a href="/frontend/features.html" class="hover:text-amber-600 transition-colors">Features</a></li>
+              <li><a href="/frontend/pricing.html" class="hover:text-amber-600 transition-colors">Pricing</a></li>
+              <li><a href="/frontend/how-it-works.html" class="hover:text-amber-600 transition-colors">How It Works</a></li>
+              <li><a href="/frontend/faq.html" class="hover:text-amber-600 transition-colors">FAQ</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-stone-600 mb-2">Account</p>
+            <ul class="space-y-1 text-stone-400">
+              <li><a href="/frontend/dashboard.html" class="hover:text-amber-600 transition-colors">Dashboard</a></li>
+              <li><a href="/frontend/settings.html" class="hover:text-amber-600 transition-colors">Settings</a></li>
+              <li><a href="/frontend/login.html" class="hover:text-amber-600 transition-colors">Sign In</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-stone-600 mb-2">Legal</p>
+            <ul class="space-y-1 text-stone-400">
+              <li><a href="/frontend/privacy.html" class="hover:text-amber-600 transition-colors">Privacy Policy</a></li>
+              <li><a href="/frontend/cookies.html" class="hover:text-amber-600 transition-colors">Cookies Policy</a></li>
+              <li><a href="/frontend/terms.html" class="hover:text-amber-600 transition-colors">Terms of Service</a></li>
+              <li><a href="mailto:hi@bookbriefai.com" class="hover:text-amber-600 transition-colors">Contact Us</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-stone-200">
+        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 sm:px-6 py-4 sm:flex-row">
+          <p class="text-xs text-stone-400">© 2026 BookBrief AI. All rights reserved.</p>
+          <div class="flex gap-4 text-xs text-stone-400">
+            <a href="/frontend/privacy.html" class="hover:text-amber-600 transition-colors">Privacy</a>
+            <a href="/frontend/cookies.html" class="hover:text-amber-600 transition-colors">Cookies</a>
+            <a href="/frontend/terms.html" class="hover:text-amber-600 transition-colors">Terms</a>
+          </div>
+        </div>
+      </div>
+    </footer>
 
     <script src="/frontend/js/api.js"></script>
     <script src="/frontend/js/auth.js"></script>
@@ -256,8 +349,6 @@
             window.location.href = "/frontend/login.html";
             return;
           }
-
-          BBUi.initThemeToggle("#theme-toggle");
 
           // ── Populate profile ──
           var user = BBAuth.getUser();
@@ -394,6 +485,152 @@
             }
           });
         });
+      })();
+    </script>
+
+    <!-- ── Ambient floating 3D books ──────────────────────────────────── -->
+        <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js"}}</script>
+    <script type="module">
+      import * as THREE from 'three';
+      (function(){
+        if (window.innerWidth < 640) return;
+
+        var canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.42;';
+        document.body.prepend(canvas);
+
+        var renderer = new THREE.WebGLRenderer({ canvas:canvas, alpha:true, antialias:true });
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.setClearColor(0, 0);
+        renderer.setSize(innerWidth, innerHeight, false);
+
+        var scene  = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(52, innerWidth/innerHeight, 0.1, 120);
+        camera.position.set(0, 0, 13);
+
+        // ── Lighting: warm key + neon rim tints ──────────────────────────────
+        scene.add(new THREE.AmbientLight(0xfff8ef, 1.2));
+        var key = new THREE.DirectionalLight(0xfff4e0, 1.8);
+        key.position.set(4, 8, 8); scene.add(key);
+        var rimBlue = new THREE.PointLight(0x6366f1, 1.6, 55);
+        rimBlue.position.set(-10, 5, 7); scene.add(rimBlue);
+        var rimPurple = new THREE.PointLight(0xa855f7, 1.2, 50);
+        rimPurple.position.set(10, -3, 6); scene.add(rimPurple);
+        var rimCyan = new THREE.DirectionalLight(0x22d3ee, 0.5);
+        rimCyan.position.set(0, -8, 5); scene.add(rimCyan);
+
+        // ── 16 books with vivid spine colours ────────────────────────────────
+        var bookData = [
+          { isbn:'9780735211292', spine:0xe85d04, cover:0xfaa307 },  // Atomic Habits — orange
+          { isbn:'9780062316097', spine:0x0077b6, cover:0x023e8a },  // Sapiens — blue
+          { isbn:'9780441013593', spine:0xd62828, cover:0xa4161a },  // Dune — red
+          { isbn:'9780061122415', spine:0xffb703, cover:0xfb8500 },  // Alchemist — amber
+          { isbn:'9780451524935', spine:0x2d6a4f, cover:0x1b4332 },  // 1984 — forest
+          { isbn:'9780807014271', spine:0x9b5de5, cover:0x5a189a },  // Man Search — purple
+          { isbn:'9780857197689', spine:0x06a77d, cover:0x028090 },  // Psych Money — teal
+          { isbn:'9780399590504', spine:0xf72585, cover:0xb5179e },  // Educated — pink
+          { isbn:'9781612680194', spine:0xe63946, cover:0xc1121f },  // Rich Dad — crimson
+          { isbn:'9780062457714', spine:0x80b918, cover:0x55a630 },  // Power Now — lime
+          { isbn:'9780399594793', spine:0xe040fb, cover:0x9c27b0 },  // Becoming — magenta
+          { isbn:'9780525559474', spine:0x0096c7, cover:0x0077b6 },  // Think Again — ocean
+          { isbn:'9781847941831', spine:0xff6b6b, cover:0xee9b00 },  // Ikigai — coral
+          { isbn:'9780062316110', spine:0x3a86ff, cover:0x023e8a },  // Outliers — electric
+          { isbn:'9780316346627', spine:0x8338ec, cover:0x5f0f40 },  // Tipping Point — violet
+          { isbn:'9780062991539', spine:0x2dc653, cover:0x136f63 },  // Cant Hurt Me — emerald
+        ];
+
+        // Left-side column (x < 0) + right-side column (x > 0)
+        // Kept far from centre so they frame the page without covering the UI
+        var positions = [
+          // LEFT — spread vertically
+          [-11.5,  7.0, -4.5], [-10.5,  3.5, -3.5], [-12.0,  0.0, -5.0],
+          [-11.0, -3.5, -4.0], [-10.0, -7.0, -3.5], [-12.5,  5.5, -6.0],
+          [-11.8, -5.5, -5.5], [-10.8,  1.8, -3.0],
+          // RIGHT — spread vertically
+          [ 11.5,  7.0, -4.5], [ 10.5,  3.5, -3.5], [ 12.0,  0.0, -5.0],
+          [ 11.0, -3.5, -4.0], [ 10.0, -7.0, -3.5], [ 12.5,  5.5, -6.0],
+          [ 11.8, -5.5, -5.5], [ 10.8,  1.8, -3.0],
+        ];
+
+        var BW=0.92, BH=1.38, BD=0.13;
+        var loader = new THREE.TextureLoader();
+        var books = [];
+
+        bookData.forEach(function(bd, i){
+          var pos = positions[i] || [0, 0, 0];
+          var group = new THREE.Group();
+
+          var geo  = new THREE.BoxGeometry(BW, BH, BD);
+          var sM   = function(c){ return new THREE.MeshStandardMaterial({color:c,roughness:0.35,metalness:0.1}); };
+          var mats = [sM(bd.spine),sM(bd.spine),sM(0x222222),sM(0x222222),sM(bd.cover),sM(bd.cover)];
+          var mesh = new THREE.Mesh(geo, mats);
+
+          loader.load('https://covers.openlibrary.org/b/isbn/'+bd.isbn+'-M.jpg', function(tex){
+            tex.colorSpace = THREE.SRGBColorSpace;
+            mesh.material[4] = new THREE.MeshStandardMaterial({map:tex,roughness:0.36,metalness:0.04});
+          });
+
+          group.add(mesh);
+          group.position.set(pos[0], pos[1], pos[2]);
+          group.rotation.y = (Math.random() - 0.5) * 0.8;
+          group.rotation.z = (Math.random() - 0.5) * 0.1;
+          scene.add(group);
+
+          books.push({
+            group:    group,
+            baseY:    pos[1],
+            floatSpd: 0.45 + Math.random() * 0.55,
+            phase:    Math.random() * Math.PI * 2,
+            rotSpd:   (Math.random() - 0.5) * 0.007,
+          });
+        });
+
+        // ── Subtle particles ─────────────────────────────────────────────────
+        var pGeo = new THREE.BufferGeometry();
+        var N = 400, pPos = new Float32Array(N*3), pCol = new Float32Array(N*3);
+        var pal = [[0.39,0.40,0.95],[0.66,0.33,0.97],[0.13,0.83,0.94],[0.96,0.44,0.71],[0.98,0.75,0.2]];
+        for (var k = 0; k < N; k++){
+          pPos[k*3]   = (Math.random()-0.5)*32;
+          pPos[k*3+1] = (Math.random()-0.5)*26;
+          pPos[k*3+2] = (Math.random()-0.5)*18 - 6;
+          var c = pal[k % pal.length];
+          pCol[k*3]=c[0]; pCol[k*3+1]=c[1]; pCol[k*3+2]=c[2];
+        }
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
+        scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
+          size:0.05, vertexColors:true, transparent:true, opacity:0.55
+        })));
+
+        // ── Mouse parallax ───────────────────────────────────────────────────
+        var mX = 0, mY = 0;
+        window.addEventListener('mousemove', function(e){
+          mX = (e.clientX / innerWidth  - 0.5) * 2;
+          mY = (e.clientY / innerHeight - 0.5) * 2;
+        }, { passive:true });
+
+        // ── Resize ───────────────────────────────────────────────────────────
+        window.addEventListener('resize', function(){
+          renderer.setSize(innerWidth, innerHeight, false);
+          camera.aspect = innerWidth / innerHeight;
+          camera.updateProjectionMatrix();
+        });
+
+        // ── Animate ──────────────────────────────────────────────────────────
+        var t = 0;
+        (function animate(){
+          requestAnimationFrame(animate);
+          t += 0.011;
+          // gentle camera drift + mouse parallax
+          camera.position.x += (mX * 0.35 - camera.position.x) * 0.04;
+          camera.position.y += (-mY * 0.25 - camera.position.y) * 0.04;
+          camera.lookAt(0, 0, 0);
+          books.forEach(function(b){
+            b.group.position.y = b.baseY + Math.sin(t * b.floatSpd + b.phase) * 0.28;
+            b.group.rotation.y += b.rotSpd;
+          });
+          renderer.render(scene, camera);
+        })();
       })();
     </script>
   </body>
