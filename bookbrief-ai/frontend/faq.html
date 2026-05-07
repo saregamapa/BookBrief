@@ -18,6 +18,8 @@
       .section-line { width:48px;height:3px;border-radius:9999px;background:linear-gradient(90deg,#f59e0b,#f43f5e);margin:0.75rem auto 0; }
 
       .page-header { position:relative;overflow:hidden;border-bottom:1px solid rgba(217,119,6,0.1);padding:6rem 1rem 5rem;text-align:center; background:linear-gradient(135deg,rgba(255,251,235,0.95) 0%,rgba(255,255,255,1) 50%,rgba(245,243,255,0.7) 100%); }
+      .page-header-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;display:block; }
+      @media(max-width:767px){ .page-header-canvas{display:none;} }
 
       /* FAQ accordion */
       .faq-item {
@@ -97,14 +99,26 @@
     <main id="main">
       <!-- Page header -->
       <div class="page-header">
+        <canvas class="page-header-canvas" aria-hidden="true"></canvas>
+        <!-- Floating book covers -->
+        <div class="bb-hero-books" aria-hidden="true">
+          <figure class="bb-float-book bb-float-book--lg bb-float-book--a" style="--bx:2%;--by:10%;--bd:0s"><img src="https://covers.openlibrary.org/b/isbn/9780316083812-M.jpg" alt="" width="140" height="210" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+          <figure class="bb-float-book bb-float-book--lg bb-float-book--c" style="--bx:81%;--by:9%;--bd:0.5s"><img src="https://covers.openlibrary.org/b/isbn/9780670026197-M.jpg" alt="" width="140" height="210" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+          <figure class="bb-float-book bb-float-book--md bb-float-book--b" style="--bx:5%;--by:56%;--bd:0.85s"><img src="https://covers.openlibrary.org/b/isbn/9781101875568-M.jpg" alt="" width="120" height="180" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+          <figure class="bb-float-book bb-float-book--md bb-float-book--a" style="--bx:85%;--by:50%;--bd:1.2s"><img src="https://covers.openlibrary.org/b/isbn/9780553380163-M.jpg" alt="" width="120" height="180" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+          <figure class="bb-float-book bb-float-book--sm bb-float-book--c" style="--bx:36%;--by:5%;--bd:0.3s"><img src="https://covers.openlibrary.org/b/isbn/9780812981605-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+          <figure class="bb-float-book bb-float-book--sm bb-float-book--a" style="--bx:62%;--by:63%;--bd:1.6s"><img src="https://covers.openlibrary.org/b/isbn/9780143107521-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+          <figure class="bb-float-book bb-float-book--sm bb-float-book--b" style="--bx:20%;--by:70%;--bd:0.15s"><img src="https://covers.openlibrary.org/b/isbn/9781594487330-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+          <figure class="bb-float-book bb-float-book--md bb-float-book--c" style="--bx:70%;--by:27%;--bd:1.0s"><img src="https://covers.openlibrary.org/b/isbn/9780452284234-M.jpg" alt="" width="120" height="180" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+        </div>
         <div class="pointer-events-none absolute inset-0" style="background:radial-gradient(ellipse 60% 80% at 50% -10%,rgba(245,158,11,0.12) 0%,transparent 60%),radial-gradient(ellipse 40% 60% at 90% 60%,rgba(244,63,94,0.07) 0%,transparent 60%);"></div>
-        <span class="bb-badge mb-5">Help & answers</span>
-        <h1 class="font-serif-display text-4xl font-bold text-stone-900 sm:text-5xl mt-3" style="line-height:1.1;">
-          Frequently asked<br/>
-          <span style="background:linear-gradient(135deg,#b45309,#d97706 50%,#f43f5e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">questions</span>
+        <p class="bb-label bb-label--dot mx-auto mb-4" style="justify-content:center">Help &amp; answers</p>
+        <h1 class="font-serif-display text-4xl font-bold text-stone-900 sm:text-5xl mt-2" style="line-height:1.1;position:relative;z-index:2">
+          Frequently <em style="background:linear-gradient(135deg,#b45309,#d97706 50%,#f43f5e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-style:italic;">asked</em><br/>
+          questions
         </h1>
         <div class="section-line mt-4"></div>
-        <p class="mx-auto mt-5 max-w-lg text-lg text-stone-600">Everything you want to know about BookBrief AI — summaries, billing, privacy, and more.</p>
+        <p class="mx-auto mt-5 max-w-lg text-lg text-stone-600" style="position:relative;z-index:2">Everything you want to know about BookBrief AI — summaries, billing, privacy, and more.</p>
       </div>
 
       <!-- ── FAQ section ── -->
@@ -287,57 +301,8 @@
       </section>
     </main>
 
-    <!-- ═══════════ UNIVERSAL FOOTER ═══════════ -->
-    <footer class="border-t border-stone-200" style="background:linear-gradient(180deg,#fafaf9 0%,#f5f4f1 100%);">
-      <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-16 pb-10">
-        <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="lg:col-span-1">
-            <a href="/frontend/index.html" class="inline-flex items-center gap-2.5 mb-4">
-              <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-700 text-base font-bold text-white shadow-sm">B</span>
-              <span class="font-serif-display text-base font-semibold text-stone-800">BookBrief <span class="text-amber-700">AI</span></span>
-            </a>
-            <p class="text-sm text-stone-500 leading-relaxed">Turn books into clear, structured summaries — in under a minute.</p>
-            <div class="mt-5"><a href="mailto:hi@bookbriefai.com" class="text-xs font-medium text-amber-800 hover:underline">✉ hi@bookbriefai.com</a></div>
-          </div>
-          <div>
-            <h4 class="mb-4 text-xs font-bold uppercase tracking-widest text-stone-400">Product</h4>
-            <ul class="space-y-2.5 text-sm">
-              <li><a href="/frontend/features.html"     class="text-stone-600 hover:text-amber-800 transition-colors">Features</a></li>
-              <li><a href="/frontend/how-it-works.html" class="text-stone-600 hover:text-amber-800 transition-colors">How It Works</a></li>
-              <li><a href="/frontend/pricing.html"      class="text-stone-600 hover:text-amber-800 transition-colors">Pricing</a></li>
-              <li><a href="/frontend/faq.html"          class="text-stone-600 hover:text-amber-800 transition-colors">FAQ</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="mb-4 text-xs font-bold uppercase tracking-widest text-stone-400">Account</h4>
-            <ul class="space-y-2.5 text-sm">
-              <li><a href="/frontend/login.html"             class="text-stone-600 hover:text-amber-800 transition-colors">Log In</a></li>
-              <li><a href="/frontend/login.html?mode=register" class="text-stone-600 hover:text-amber-800 transition-colors">Sign Up Free</a></li>
-              <li><a href="/frontend/dashboard.html"         class="text-stone-600 hover:text-amber-800 transition-colors">Dashboard</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="mb-4 text-xs font-bold uppercase tracking-widest text-stone-400">Legal</h4>
-            <ul class="space-y-2.5 text-sm">
-              <li><a href="/frontend/privacy.html"  class="text-stone-600 hover:text-amber-800 transition-colors">Privacy Policy</a></li>
-              <li><a href="/frontend/cookies.html"  class="text-stone-600 hover:text-amber-800 transition-colors">Cookie Policy</a></li>
-              <li><a href="/frontend/terms.html"    class="text-stone-600 hover:text-amber-800 transition-colors">Terms of Service</a></li>
-              <li><a href="mailto:hi@bookbriefai.com" class="text-stone-600 hover:text-amber-800 transition-colors">Contact Us</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div class="border-t border-stone-200">
-        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:px-6 py-5 sm:flex-row">
-          <p class="text-xs text-stone-400">© 2026 BookBrief AI. All rights reserved. Made with ♥ for readers everywhere.</p>
-          <div class="flex flex-wrap items-center gap-4 text-xs text-stone-400">
-            <a href="/frontend/privacy.html" class="hover:text-amber-700 transition-colors">Privacy</a>
-            <a href="/frontend/cookies.html" class="hover:text-amber-700 transition-colors">Cookies</a>
-            <a href="/frontend/terms.html"   class="hover:text-amber-700 transition-colors">Terms</a>
-          </div>
-        </div>
-      </div>
-    </footer>
+    <div id="bb-footer-slot"></div>
+    <script src="/frontend/js/site-footer.js"></script>
 
     <script src="/frontend/js/ui.js"></script>
     <script>
@@ -408,6 +373,16 @@
       });
       window.addEventListener('resize',function(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
       let t=0;(function animate(){requestAnimationFrame(animate);t+=0.008;books.forEach(function(b){b.mesh.position.y=b.oy+Math.sin(t+b.phase)*0.35;b.mesh.rotation.x=Math.sin(t*0.7+b.phase)*0.04;});renderer.render(scene,camera);})();
+    </script>
+
+    <!-- ── Page-header 3D book scene ────────────────────────────────────── -->
+    <script type="module">
+      import { initBookScene } from '/frontend/js/book-scene.js';
+      const canvas    = document.querySelector('.page-header-canvas');
+      const container = canvas ? canvas.closest('.page-header') : null;
+      if (canvas && container) {
+        initBookScene(canvas, container, { theme: 'light', bookCount: 8, particleCount: 90, minWidth: 768 });
+      }
     </script>
   </body>
 </html>

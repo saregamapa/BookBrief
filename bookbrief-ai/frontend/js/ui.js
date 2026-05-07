@@ -328,6 +328,36 @@
     URL.revokeObjectURL(url);
   }
 
+  // ── Card 3D tilt effect ────────────────────────────────────────────────────
+  function initTilt(selector) {
+    var cards = document.querySelectorAll(selector || '.bb-tilt');
+    cards.forEach(function (card) {
+      card.addEventListener('mousemove', function (e) {
+        var rect = card.getBoundingClientRect();
+        var cx = rect.left + rect.width  / 2;
+        var cy = rect.top  + rect.height / 2;
+        var dx = (e.clientX - cx) / (rect.width  / 2);
+        var dy = (e.clientY - cy) / (rect.height / 2);
+        var maxDeg = 8;
+        card.style.setProperty('--rx',  (-dy * maxDeg).toFixed(2) + 'deg');
+        card.style.setProperty('--ry',  ( dx * maxDeg).toFixed(2) + 'deg');
+      }, { passive: true });
+      card.addEventListener('mouseleave', function () {
+        card.style.setProperty('--rx', '0deg');
+        card.style.setProperty('--ry', '0deg');
+      });
+    });
+  }
+
+  // ── Auto-init on DOMContentLoaded ─────────────────────────────────────────
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      initTilt();
+    });
+  } else {
+    initTilt();
+  }
+
   global.BBUi = {
     initThemeToggle: initThemeToggle,
     wireMobileNav: wireMobileNav,
@@ -343,5 +373,6 @@
     prefersDark: prefersDark,
     copyToClipboard: copyToClipboard,
     downloadText: downloadText,
+    initTilt: initTilt,
   };
 })(typeof window !== "undefined" ? window : this);

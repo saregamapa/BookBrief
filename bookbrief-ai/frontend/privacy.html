@@ -150,63 +150,16 @@
         <h2>📬 Contact Us</h2>
         <p>If you have questions about this Privacy Policy or how we handle your data, please reach out:</p>
         <p><strong>Email:</strong> <a href="mailto:hi@bookbriefai.com" class="text-amber-700 hover:underline">hi@bookbriefai.com</a></p>
+        <p>Or use our <a href="/frontend/contact.html" class="text-amber-700 hover:underline">Contact Us</a> page.</p>
         <p>We aim to respond to all privacy enquiries within 5 business days.</p>
       </div>
 
     </main>
 
-    <!-- ═══════════ UNIVERSAL FOOTER ═══════════ -->
-    <footer class="border-t border-stone-200" style="background:linear-gradient(180deg,#fafaf9 0%,#f5f4f1 100%);">
-      <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-12 pb-8">
-        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <a href="/frontend/index.html" class="flex items-center gap-2 font-bold text-stone-800 mb-3">
-              <span class="text-xl">📚</span><span>BookBrief AI</span>
-            </a>
-            <p class="text-sm text-stone-400 leading-relaxed">Transform any book into a rich, structured summary powered by AI.</p>
-          </div>
-          <div>
-            <p class="text-sm font-semibold text-stone-600 mb-3">Product</p>
-            <ul class="space-y-2 text-sm text-stone-400">
-              <li><a href="/frontend/features.html" class="hover:text-amber-600 transition-colors">Features</a></li>
-              <li><a href="/frontend/pricing.html" class="hover:text-amber-600 transition-colors">Pricing</a></li>
-              <li><a href="/frontend/how-it-works.html" class="hover:text-amber-600 transition-colors">How It Works</a></li>
-              <li><a href="/frontend/faq.html" class="hover:text-amber-600 transition-colors">FAQ</a></li>
-            </ul>
-          </div>
-          <div>
-            <p class="text-sm font-semibold text-stone-600 mb-3">Account</p>
-            <ul class="space-y-2 text-sm text-stone-400">
-              <li><a href="/frontend/dashboard.html" class="hover:text-amber-600 transition-colors">Dashboard</a></li>
-              <li><a href="/frontend/settings.html" class="hover:text-amber-600 transition-colors">Settings</a></li>
-              <li><a href="/frontend/login.html" class="hover:text-amber-600 transition-colors">Sign In</a></li>
-            </ul>
-          </div>
-          <div>
-            <p class="text-sm font-semibold text-stone-600 mb-3">Legal</p>
-            <ul class="space-y-2 text-sm text-stone-400">
-              <li><a href="/frontend/privacy.html" class="text-amber-600 font-medium">Privacy Policy</a></li>
-              <li><a href="/frontend/cookies.html" class="hover:text-amber-600 transition-colors">Cookies Policy</a></li>
-              <li><a href="/frontend/terms.html" class="hover:text-amber-600 transition-colors">Terms of Service</a></li>
-              <li><a href="mailto:hi@bookbriefai.com" class="hover:text-amber-600 transition-colors">Contact Us</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div class="border-t border-stone-200">
-        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 sm:px-6 py-4 sm:flex-row">
-          <p class="text-xs text-stone-400">© 2026 BookBrief AI. All rights reserved.</p>
-          <div class="flex gap-4 text-xs text-stone-400">
-            <a href="/frontend/privacy.html" class="text-amber-600">Privacy</a>
-            <a href="/frontend/cookies.html" class="hover:text-amber-600 transition-colors">Cookies</a>
-            <a href="/frontend/terms.html" class="hover:text-amber-600 transition-colors">Terms</a>
-          </div>
-        </div>
-      </div>
-    </footer>
+    <div id="bb-footer-slot"></div>
+    <script src="/frontend/js/site-footer.js"></script>
 
     <script src="/frontend/js/ui.js"></script>
-    <script>document.addEventListener("DOMContentLoaded",function(){if(window.BBUi&&BBUi.initThemeToggle)});</script>
 
     <!-- ── Ambient floating 3D books ──────────────────────────────────── -->
     <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js"}}</script>

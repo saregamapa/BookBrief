@@ -256,6 +256,20 @@
             </svg>
             Print / PDF
           </button>
+          <button type="button" id="btn-audiobook"
+            class="action-btn bb-focus border-violet-300 bg-violet-50 text-violet-800 hover:bg-violet-100">
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+            </svg>
+            🎧 Audiobook
+          </button>
+          <button type="button" id="btn-podcast"
+            class="action-btn bb-focus border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100">
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 1v3m0 16v3m8.66-13l-2.12 2.12M5.46 18.54l-2.12 2.12M23 12h-3M4 12H1m17.54 6.54l2.12 2.12M5.46 5.46L3.34 3.34M12 7a5 5 0 00-5 5v1a5 5 0 0010 0v-1a5 5 0 00-5-5z"/>
+            </svg>
+            🎙 Podcast
+          </button>
           <a href="/frontend/summarize.html"
             class="action-btn bb-focus border-amber-700 bg-amber-800 text-white hover:bg-amber-900">
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -280,53 +294,8 @@
       </div>
     </main>
 
-    <!-- ═══════════ UNIVERSAL FOOTER ═══════════ -->
-    <footer class="border-t border-stone-200 mt-8" style="background:linear-gradient(180deg,#fafaf9 0%,#f5f4f1 100%);">
-      <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-10 pb-6">
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 text-xs">
-          <div>
-            <span class="font-semibold text-stone-700 text-sm">📚 BookBrief AI</span>
-            <p class="mt-2 text-stone-400 leading-relaxed">Transform any book into a rich, structured summary powered by AI.</p>
-          </div>
-          <div>
-            <p class="font-semibold text-stone-600 mb-2">Product</p>
-            <ul class="space-y-1 text-stone-400">
-              <li><a href="/frontend/features.html" class="hover:text-amber-600 transition-colors">Features</a></li>
-              <li><a href="/frontend/pricing.html" class="hover:text-amber-600 transition-colors">Pricing</a></li>
-              <li><a href="/frontend/how-it-works.html" class="hover:text-amber-600 transition-colors">How It Works</a></li>
-              <li><a href="/frontend/faq.html" class="hover:text-amber-600 transition-colors">FAQ</a></li>
-            </ul>
-          </div>
-          <div>
-            <p class="font-semibold text-stone-600 mb-2">Account</p>
-            <ul class="space-y-1 text-stone-400">
-              <li><a href="/frontend/dashboard.html" class="hover:text-amber-600 transition-colors">Dashboard</a></li>
-              <li><a href="/frontend/settings.html" class="hover:text-amber-600 transition-colors">Settings</a></li>
-              <li><a href="/frontend/login.html" class="hover:text-amber-600 transition-colors">Sign In</a></li>
-            </ul>
-          </div>
-          <div>
-            <p class="font-semibold text-stone-600 mb-2">Legal</p>
-            <ul class="space-y-1 text-stone-400">
-              <li><a href="/frontend/privacy.html" class="hover:text-amber-600 transition-colors">Privacy Policy</a></li>
-              <li><a href="/frontend/cookies.html" class="hover:text-amber-600 transition-colors">Cookies Policy</a></li>
-              <li><a href="/frontend/terms.html" class="hover:text-amber-600 transition-colors">Terms of Service</a></li>
-              <li><a href="mailto:hi@bookbriefai.com" class="hover:text-amber-600 transition-colors">Contact Us</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div class="border-t border-stone-200">
-        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 sm:px-6 py-4 sm:flex-row">
-          <p class="text-xs text-stone-400">© 2026 BookBrief AI. All rights reserved.</p>
-          <div class="flex gap-4 text-xs text-stone-400">
-            <a href="/frontend/privacy.html" class="hover:text-amber-600 transition-colors">Privacy</a>
-            <a href="/frontend/cookies.html" class="hover:text-amber-600 transition-colors">Cookies</a>
-            <a href="/frontend/terms.html" class="hover:text-amber-600 transition-colors">Terms</a>
-          </div>
-        </div>
-      </div>
-    </footer>
+    <div id="bb-footer-slot"></div>
+    <script src="/frontend/js/site-footer.js"></script>
 
     <script src="/frontend/js/api.js"></script>
     <script src="/frontend/js/auth.js"></script>
@@ -476,8 +445,31 @@
             BBUi.showToast(e.message || "Delete failed", "error");
           }
         });
+
+        // ── Audio player ─────────────────────────────────────────────────────
+        function openAudioPlayer(mode) {
+          if (typeof BBAudioPlayer === "undefined") {
+            BBUi.showToast("Audio player not available.", "error");
+            return;
+          }
+          var listenTitle = data.title || "Summary";
+          var listenMd = rawMd || "";
+          BBAudioPlayer.init(id, listenTitle, listenMd, function () {
+            // Player closed — nothing extra needed
+          }, { startMode: mode });
+        }
+
+        document.getElementById("btn-audiobook").addEventListener("click", function () {
+          openAudioPlayer("audiobook");
+        });
+
+        document.getElementById("btn-podcast").addEventListener("click", function () {
+          openAudioPlayer("podcast");
+        });
+
       });
     </script>
+    <script src="/frontend/js/audio-player.js"></script>
 
     <!-- ── Ambient floating 3D books ──────────────────────────────────── -->
         <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js"}}</script>

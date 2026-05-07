@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Us — BookBrief AI</title>
+    <meta
+      name="description"
+      content="Get in touch with BookBrief AI — product questions, billing, partnerships, or privacy requests."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              ink: { 950: "#1c1917", 900: "#292524", 800: "#44403c" },
+              parchment: { 50: "#fafaf9", 100: "#f5f5f4", 200: "#e7e5e4" },
+            },
+            boxShadow: {
+              soft: "0 4px 24px -4px rgba(28,25,23,0.08),0 2px 8px -2px rgba(28,25,23,0.06)",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"}}</script>
+    <style>
+      body {
+        background: linear-gradient(160deg, #fafaf9 0%, #fffcf5 40%, #faf8f2 100%);
+      }
+      .page-header {
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid rgba(217, 119, 6, 0.1);
+        padding: 5.5rem 1rem 4rem;
+        text-align: center;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 251, 235, 0.95) 0%,
+          rgba(255, 255, 255, 1) 50%,
+          rgba(245, 243, 255, 0.7) 100%
+        );
+      }
+      .page-header-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;display:block; }
+      @media(max-width:767px){ .page-header-canvas{display:none;} }
+      .section-line {
+        width: 48px;
+        height: 3px;
+        border-radius: 9999px;
+        background: linear-gradient(90deg, #f59e0b, #f43f5e);
+        margin: 0.75rem auto 0;
+      }
+      .contact-card {
+        border-radius: 1.25rem;
+        border: 1px solid rgba(231, 229, 228, 0.9);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 1.75rem;
+        backdrop-filter: blur(8px);
+      }
+      .dark .contact-card {
+        background: rgba(28, 25, 23, 0.65);
+        border-color: rgba(68, 64, 60, 0.5);
+      }
+      .bb-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.875rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        border: 1px solid rgba(217, 119, 6, 0.25);
+        background: rgba(254, 243, 199, 0.6);
+        color: #92400e;
+      }
+    </style>
+  </head>
+  <body class="bb-paper text-stone-800 antialiased dark:bg-stone-950 dark:text-stone-100">
+    <a href="#main" class="bb-skip-link">Skip to content</a>
+
+    <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-white/90 backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/90">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <a href="/frontend/index.html" class="group flex items-center gap-2">
+          <span
+            class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-700 text-lg font-bold text-white shadow-sm ring-1 ring-amber-600/30 transition-transform group-hover:scale-105 dark:bg-amber-600"
+            >B</span
+          >
+          <span class="font-serif-display text-lg font-semibold tracking-tight text-stone-900 dark:text-stone-50"
+            >BookBrief <span class="text-amber-800 dark:text-amber-400">AI</span></span
+          >
+        </a>
+        <nav class="hidden items-center gap-8 md:flex" aria-label="Main">
+          <a href="/frontend/how-it-works.html" class="text-sm font-medium text-stone-600 transition-colors hover:text-amber-900 dark:text-stone-400 dark:hover:text-amber-200"
+            >How it works</a
+          >
+          <a href="/frontend/features.html" class="text-sm font-medium text-stone-600 transition-colors hover:text-amber-900 dark:text-stone-400 dark:hover:text-amber-200"
+            >Features</a
+          >
+          <a href="/frontend/pricing.html" class="text-sm font-medium text-stone-600 transition-colors hover:text-amber-900 dark:text-stone-400 dark:hover:text-amber-200"
+            >Pricing</a
+          >
+          <a href="/frontend/faq.html" class="text-sm font-medium text-stone-600 transition-colors hover:text-amber-900 dark:text-stone-400 dark:hover:text-amber-200">FAQ</a>
+        </nav>
+        <div class="flex items-center gap-2 sm:gap-3">
+          <a
+            href="/frontend/login.html?mode=register"
+            class="bb-focus inline-flex items-center rounded-lg bg-amber-800 px-4 py-2 text-sm font-semibold text-white shadow-soft transition-all hover:bg-amber-900 dark:bg-amber-600 dark:hover:bg-amber-500"
+            >Start free</a
+          >
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <div class="page-header dark:border-stone-800">
+        <canvas class="page-header-canvas" aria-hidden="true"></canvas>
+        <span class="bb-badge mb-4">We’re here to help</span>
+        <h1 class="mt-2 font-serif-display text-4xl font-bold text-stone-900 sm:text-5xl dark:text-stone-50">Contact us</h1>
+        <div class="section-line"></div>
+        <p class="mx-auto mt-5 max-w-lg text-lg text-stone-600 dark:text-stone-400">
+          Questions about summaries, billing, privacy, or partnerships — send a note and we’ll get back as soon as we can.
+        </p>
+      </div>
+
+      <section class="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+        <div class="grid gap-6 sm:grid-cols-2">
+          <div class="contact-card">
+            <h2 class="font-serif-display text-lg font-bold text-stone-900 dark:text-stone-50">Email</h2>
+            <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">Best for account issues, privacy requests, and general enquiries.</p>
+            <a
+              href="mailto:hi@bookbriefai.com?subject=BookBrief%20AI%20enquiry"
+              class="mt-4 inline-flex text-sm font-semibold text-amber-800 underline-offset-2 hover:underline dark:text-amber-400"
+              >hi@bookbriefai.com</a
+            >
+          </div>
+          <div class="contact-card">
+            <h2 class="font-serif-display text-lg font-bold text-stone-900 dark:text-stone-50">Response time</h2>
+            <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">We aim to reply within <strong>2–3 business days</strong>. Privacy and security topics are prioritised.</p>
+          </div>
+        </div>
+
+        <div class="contact-card mt-8">
+          <h2 class="font-serif-display text-lg font-bold text-stone-900 dark:text-stone-50">Before you write</h2>
+          <ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-stone-600 dark:text-stone-400">
+            <li>Billing and invoices: mention the email on your BookBrief account.</li>
+            <li>Data or privacy: see our <a href="/frontend/privacy.html" class="font-medium text-amber-800 hover:underline dark:text-amber-400">Privacy Policy</a>.</li>
+            <li>How the product works: browse <a href="/frontend/how-it-works.html" class="font-medium text-amber-800 hover:underline dark:text-amber-400">How it works</a> and <a href="/frontend/faq.html" class="font-medium text-amber-800 hover:underline dark:text-amber-400">FAQ</a>.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <div id="bb-footer-slot"></div>
+    <script src="/frontend/js/site-footer.js"></script>
+    <script src="/frontend/js/ui.js"></script>
+
+    <!-- ── Page-header 3D book scene ────────────────────────────────────── -->
+    <script type="module">
+      import { initBookScene } from '/frontend/js/book-scene.js';
+      const canvas    = document.querySelector('.page-header-canvas');
+      const container = canvas ? canvas.closest('.page-header') : null;
+      if (canvas && container) {
+        initBookScene(canvas, container, { theme: 'light', bookCount: 6, particleCount: 70, minWidth: 768 });
+      }
+    </script>
+  </body>
+</html>

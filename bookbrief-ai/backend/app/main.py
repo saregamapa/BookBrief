@@ -17,7 +17,7 @@ from app.config import get_settings
 from app.limiter import limiter
 from app.logging_config import configure_logging
 from app.middleware import RequestIDMiddleware, SecurityHeadersMiddleware
-from app.routers import auth, billing, health, summaries, user
+from app.routers import audio, auth, billing, health, summaries, user
 from app.routers.summaries import reset_stuck_processing_jobs
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
@@ -132,6 +132,7 @@ def create_app() -> FastAPI:
     api_v1.include_router(billing.router)
     api_v1.include_router(user.router)
     api_v1.include_router(summaries.router)
+    api_v1.include_router(audio.router)
     app.include_router(api_v1)
 
     # ── Unversioned aliases (backward compat / liveness probes) ──────────────
@@ -151,7 +152,7 @@ def create_app() -> FastAPI:
     # ── Root redirect ─────────────────────────────────────────────────────────
     @app.get("/", include_in_schema=False)
     def root_redirect() -> RedirectResponse:
-        return RedirectResponse(url="/frontend/cinematic/index.html")
+        return RedirectResponse(url="/frontend/index.html")
 
     # ── Startup / shutdown events ─────────────────────────────────────────────
     @app.on_event("startup")
