@@ -12,7 +12,7 @@ import * as THREE from 'three';
 
 // ── Book library (ISBN-13 + title for canvas fallback) ─────────────────────
 const BOOK_LIBRARY = [
-  { isbn: '9780735211292', title: 'Atomic Habits' },
+  { isbn: '9780307387899', title: 'The Road (Vintage)' },
   { isbn: '9780062316097', title: 'Sapiens' },
   { isbn: '9780441013593', title: 'Dune' },
   { isbn: '9780061122415', title: 'The Alchemist' },
@@ -22,11 +22,10 @@ const BOOK_LIBRARY = [
   { isbn: '9780399590504', title: 'The Subtle Art of Not Giving a F*ck' },
   { isbn: '9780525564195', title: 'Where the Crawdads Sing' },
   { isbn: '9780593135228', title: 'The Midnight Library' },
-  { isbn: '9780593299320', title: 'Project Hail Mary' },
   { isbn: '9780316769488', title: 'Catcher in the Rye' },
   { isbn: '9780143127749', title: 'The Power of Habit' },
-  { isbn: '9780812988408', title: 'The Martian' },
-  { isbn: '9780307277677', title: 'No Country for Old Men' },
+  { isbn: '9780141439518', title: 'Pride and Prejudice' },
+  { isbn: '9780671027032', title: 'Angels & Demons' },
   { isbn: '9780385737951', title: 'The Hunger Games' },
   { isbn: '9780439708180', title: "Harry Potter: Sorcerer's Stone" },
   { isbn: '9780618002221', title: 'The Fellowship of the Ring' },
@@ -48,6 +47,10 @@ const BOOK_LIBRARY = [
   { isbn: '9780374533557', title: 'The Road Less Travelled' },
   { isbn: '9780062315007', title: 'The Power of Now' },
   { isbn: '9781982137274', title: 'Think Again' },
+  { isbn: '9781250178602', title: 'Circe' },
+  { isbn: '9780385547345', title: 'The Invisible Life of Addie LaRue' },
+  { isbn: '9780735211292', title: 'Atomic Habits' },
+  { isbn: '9780063204150', title: 'Fourth Wing' },
 ];
 
 // ── Vibrant gradient palette for canvas-generated covers ──────────────────
@@ -197,6 +200,10 @@ const LIGHT_HEADER_POS = [
   { pos: [ 5.8,  1.5, -2.0], rot: [ 0.05, -0.25,  0.05], scale: 0.52 },
   { pos: [-6.8, -1.5, -1.8], rot: [ 0.10,  0.20, -0.05], scale: 0.48 },
   { pos: [ 7.0, -1.8, -1.6], rot: [-0.08, -0.22,  0.07], scale: 0.50 },
+  { pos: [-4.3,  0.3, -2.6], rot: [ 0.06,  0.14,  0.04], scale: 0.44 },
+  { pos: [ 4.5, -0.2, -2.5], rot: [ 0.05, -0.15,  0.05], scale: 0.45 },
+  { pos: [-2.0,  1.6, -3.2], rot: [ 0.03,  0.10,  0.02], scale: 0.40 },
+  { pos: [ 2.2,  1.2, -3.1], rot: [ 0.04, -0.10,  0.03], scale: 0.41 },
 ];
 
 // ── Main export ───────────────────────────────────────────────────────────

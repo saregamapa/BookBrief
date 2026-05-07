@@ -199,10 +199,10 @@
             <!-- Billing -->
             <details class="faq-item bb-reveal" data-cat="billing" style="transition-delay:0.17s">
               <summary class="faq-summary">
-                Is the free tier really free forever?
+                How does the free trial work?
                 <span class="faq-icon">+</span>
               </summary>
-              <p class="faq-body">Yes, completely. The free tier gives you 3 summaries per week indefinitely — no credit card required, no automatic upgrade, no expiry date. It's genuinely free, not a trial.</p>
+              <p class="faq-body">New accounts get a <strong>7-day trial</strong> with <strong>up to 2 summaries</strong> total during that window — no credit card required. After 7 days from signup, you’ll need a paid plan to generate new summaries. You can still read and export everything already in your library.</p>
             </details>
 
             <details class="faq-item bb-reveal" data-cat="billing" style="transition-delay:0.19s">
@@ -218,7 +218,7 @@
                 What happens to my summaries if I downgrade or cancel?
                 <span class="faq-icon">+</span>
               </summary>
-              <p class="faq-body">Nothing is deleted. All your summaries remain in your private library forever. Cancelling just reverts your account to the free tier quota. You can still read, export, and search all your past summaries — you just won't be able to generate more than the free tier allowance.</p>
+              <p class="faq-body">Nothing is deleted. All your summaries remain in your private library forever. Cancelling reverts billing to the free tier rules (7-day trial limits are counted from your original account signup). You can still read, export, and search past summaries — new generations require an active paid plan once the trial window has ended or the trial summary cap is reached.</p>
             </details>
 
             <details class="faq-item bb-reveal" data-cat="billing" style="transition-delay:0.23s">
@@ -234,7 +234,7 @@
                 Do unused summaries roll over to the next month?
                 <span class="faq-icon">+</span>
               </summary>
-              <p class="faq-body">Currently, monthly allocations reset at the start of each billing cycle and don't roll over. We're evaluating credit rollover as a feature for a future update. Free tier summaries reset each week.</p>
+              <p class="faq-body">Currently, monthly allocations reset at the start of each billing cycle and don't roll over. We're evaluating credit rollover as a feature for a future update. The free trial allows up to 2 summaries within the first 7 days after signup (they do not roll past that window).</p>
             </details>
 
             <!-- Privacy -->
@@ -365,7 +365,7 @@
           new THREE.MeshStandardMaterial({color:spines[i],roughness:0.65}),
           new THREE.MeshStandardMaterial({color:spines[i],roughness:0.8}),
         ];
-        loader.load('https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg',function(tex){tex.colorSpace=THREE.SRGBColorSpace;mats[4].map=tex;mats[4].needsUpdate=true;},undefined,function(){});
+        loader.load('https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg',function(tex){tex.colorSpace=THREE.SRGBColorSpace;mats[4].map=tex;mats[4].needsUpdate=true;},undefined,function(){ mesh.visible=false; });
         const mesh=new THREE.Mesh(geo,mats);
         const p=corners[i];mesh.position.set(p[0],p[1],p[2]);
         mesh.rotation.y=(i%2===0?1:-1)*0.3;mesh.rotation.z=(Math.random()-0.5)*0.15;
@@ -381,7 +381,7 @@
       const canvas    = document.querySelector('.page-header-canvas');
       const container = canvas ? canvas.closest('.page-header') : null;
       if (canvas && container) {
-        initBookScene(canvas, container, { theme: 'light', bookCount: 8, particleCount: 90, minWidth: 768 });
+        initBookScene(canvas, container, { theme: 'light', bookCount: 12, particleCount: 90, minWidth: 768 });
       }
     </script>
   </body>

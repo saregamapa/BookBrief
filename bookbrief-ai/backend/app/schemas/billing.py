@@ -26,3 +26,7 @@ class SubscriptionOut(BaseModel):
     current_period_end: Optional[datetime] = None
     has_stripe_subscription: bool
     stripe_customer_id: Optional[str] = None
+    # Free tier: 7-day trial cap (2 summaries); paid: monthly limits. Mirrors quota enforcement.
+    summary_quota_limit: int = 0
+    # Set only for free plan — end of the 7-day trial window (UTC).
+    free_trial_ends_at: Optional[datetime] = None

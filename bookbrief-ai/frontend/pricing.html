@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pricing — BookBrief AI</title>
-    <meta name="description" content="BookBrief AI pricing: Free forever, Pro at $19/month, Growth at $25/month. Start free, upgrade anytime. 7-day satisfaction guarantee." />
+    <meta name="description" content="BookBrief AI pricing: 7-day free trial (2 summaries), Pro at $19/month, Growth at $25/month. Upgrade anytime. 7-day satisfaction guarantee on paid plans." />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = { theme:{ extend:{ colors:{ ink:{950:"#1c1917",900:"#292524",800:"#44403c"}, parchment:{50:"#fafaf9",100:"#f5f5f4",200:"#e7e5e4"} }, boxShadow:{ soft:"0 4px 24px -4px rgba(28,25,23,0.08),0 2px 8px -2px rgba(28,25,23,0.06)" } } } };
@@ -116,7 +116,7 @@
           <em style="background:linear-gradient(135deg,#b45309,#d97706 60%,#92400e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-style:italic;">Upgrade when you're hooked.</em>
         </h1>
         <div class="section-line mt-4"></div>
-        <p class="mx-auto mt-5 max-w-lg text-lg text-stone-600" style="position:relative;z-index:2">No credit card for the free tier. Cancel paid plans anytime. 7-day satisfaction guarantee on all paid plans.</p>
+        <p class="mx-auto mt-5 max-w-lg text-lg text-stone-600" style="position:relative;z-index:2">No credit card for the 7-day free trial (2 summaries). Cancel paid plans anytime. 7-day satisfaction guarantee on all paid plans.</p>
       </div>
 
       <!-- ── Pricing cards ── -->
@@ -126,15 +126,15 @@
 
             <!-- Free -->
             <div class="price-card price-card-free bb-reveal bb-tilt" style="transition-delay:0.05s">
-              <h2 class="font-serif-display text-2xl font-bold text-stone-900">Free</h2>
+              <h2 class="font-serif-display text-2xl font-bold text-stone-900">Free trial</h2>
               <p class="mt-1 text-sm text-stone-500">For curious readers</p>
               <div class="mt-5 flex items-baseline gap-1">
                 <span class="text-5xl font-extrabold text-stone-900">$0</span>
               </div>
-              <p class="text-xs text-stone-400 mt-1">Forever free · no card needed</p>
+              <p class="text-xs text-stone-400 mt-1">7 days from signup · 2 summaries · no card</p>
 
               <ul class="mt-8 flex-1 space-y-3 text-sm">
-                <li class="flex items-start gap-2.5"><span class="price-check">✓</span><span class="text-stone-700">3 summaries per week</span></li>
+                <li class="flex items-start gap-2.5"><span class="price-check">✓</span><span class="text-stone-700">2 summaries in your first 7 days</span></li>
                 <li class="flex items-start gap-2.5"><span class="price-check">✓</span><span class="text-stone-700">Core summary styles (3 of 5)</span></li>
                 <li class="flex items-start gap-2.5"><span class="price-check">✓</span><span class="text-stone-700">PDF upload support</span></li>
                 <li class="flex items-start gap-2.5"><span class="price-check">✓</span><span class="text-stone-700">Private library access</span></li>
@@ -233,12 +233,12 @@
           </div>
           <div class="mt-10 space-y-4">
             <div class="mini-faq bb-reveal" style="transition-delay:0.05s">
-              <h3 class="font-semibold text-stone-800 text-sm">Is the free tier really free forever?</h3>
-              <p class="mt-2 text-sm text-stone-600">Yes. The free tier gives you 3 summaries per week indefinitely with no credit card required. No bait-and-switch.</p>
+              <h3 class="font-semibold text-stone-800 text-sm">How does the free trial work?</h3>
+              <p class="mt-2 text-sm text-stone-600">You get 7 days from signup and up to 2 summaries — no credit card. After that, choose a paid plan to keep generating. Your library stays yours.</p>
             </div>
             <div class="mini-faq bb-reveal" style="transition-delay:0.10s">
               <h3 class="font-semibold text-stone-800 text-sm">What happens to my summaries if I cancel?</h3>
-              <p class="mt-2 text-sm text-stone-600">All your summaries stay in your library — forever. Cancelling just drops you to the free tier quota. Nothing is deleted.</p>
+              <p class="mt-2 text-sm text-stone-600">All your summaries stay in your library — forever. Cancelling stops paid billing; new generations follow the free trial rules from your signup date. Nothing is deleted.</p>
             </div>
             <div class="mini-faq bb-reveal" style="transition-delay:0.15s">
               <h3 class="font-semibold text-stone-800 text-sm">How does the 7-day guarantee work?</h3>
@@ -250,7 +250,7 @@
             </div>
             <div class="mini-faq bb-reveal" style="transition-delay:0.25s">
               <h3 class="font-semibold text-stone-800 text-sm">Do unused summaries roll over?</h3>
-              <p class="mt-2 text-sm text-stone-600">Currently summaries reset on a monthly (or weekly for free) basis and don't roll over. We're considering credit rollover in a future update.</p>
+              <p class="mt-2 text-sm text-stone-600">Paid plans reset monthly and don't roll over. The free trial allows up to 2 summaries within the first 7 days only. We're considering credit rollover in a future update.</p>
             </div>
           </div>
           <p class="mt-8 text-center text-sm text-stone-500">More questions? <a href="/frontend/faq.html" class="text-amber-800 hover:underline font-medium">Visit the full FAQ →</a></p>
@@ -301,7 +301,7 @@
           new THREE.MeshStandardMaterial({color:spines[i],roughness:0.65}),
           new THREE.MeshStandardMaterial({color:spines[i],roughness:0.8}),
         ];
-        loader.load('https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg',function(tex){tex.colorSpace=THREE.SRGBColorSpace;mats[4].map=tex;mats[4].needsUpdate=true;},undefined,function(){});
+        loader.load('https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg',function(tex){tex.colorSpace=THREE.SRGBColorSpace;mats[4].map=tex;mats[4].needsUpdate=true;},undefined,function(){ mesh.visible=false; });
         const mesh=new THREE.Mesh(geo,mats);
         const p=corners[i];mesh.position.set(p[0],p[1],p[2]);
         mesh.rotation.y=(i%2===0?1:-1)*0.3;mesh.rotation.z=(Math.random()-0.5)*0.15;
@@ -317,7 +317,7 @@
       const canvas    = document.querySelector('.page-header-canvas');
       const container = canvas ? canvas.closest('.page-header') : null;
       if (canvas && container) {
-        initBookScene(canvas, container, { theme: 'light', bookCount: 8, particleCount: 90, minWidth: 768 });
+        initBookScene(canvas, container, { theme: 'light', bookCount: 12, particleCount: 90, minWidth: 768 });
       }
     </script>
   </body>

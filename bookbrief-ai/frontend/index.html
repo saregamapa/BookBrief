@@ -8,16 +8,6 @@
       name="description"
       content="Turn books into clear summaries. Paste text, upload PDFs, or describe a title—get ultra-short to detailed briefs with BookBrief AI."
     />
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("bookbrief-theme");
-          if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-            document.documentElement.classList.add("dark");
-          }
-        } catch (e) {}
-      })();
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -93,16 +83,6 @@
         </nav>
 
         <div class="flex items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            id="theme-toggle"
-            class="bb-focus rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-700 shadow-sm hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
-            aria-label="Toggle dark mode"
-          >
-            <span data-theme-icon class="hidden sm:inline" aria-hidden="true">◐</span>
-            <span data-theme-label class="hidden sm:inline">Dark</span>
-            <span class="sm:hidden" aria-hidden="true">◐</span>
-          </button>
           <a
             href="/frontend/login.html"
             class="bb-focus hidden rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100 dark:border-stone-600 dark:text-stone-200 dark:hover:bg-stone-800 sm:inline-block"
@@ -158,10 +138,10 @@
             <img src="https://covers.openlibrary.org/b/isbn/9780618002221-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
           </figure>
           <figure class="bb-float-book bb-float-book--scatter" style="--bx: 92%; --by: 36%; --bd: 0.5s">
-            <img src="https://covers.openlibrary.org/b/isbn/9780307277677-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
+            <img src="https://covers.openlibrary.org/b/isbn/9780143127749-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
           </figure>
           <figure class="bb-float-book bb-float-book--scatter" style="--bx: 32%; --by: 44%; --bd: 0.85s">
-            <img src="https://covers.openlibrary.org/b/isbn/9780812988408-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
+            <img src="https://covers.openlibrary.org/b/isbn/9780141439518-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
           </figure>
           <figure class="bb-float-book bb-float-book--scatter" style="--bx: 58%; --by: 52%; --bd: 0.15s">
             <img src="https://covers.openlibrary.org/b/isbn/9780743273565-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
@@ -176,10 +156,22 @@
             <img src="https://covers.openlibrary.org/b/isbn/9780385490818-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
           </figure>
           <figure class="bb-float-book bb-float-book--scatter" style="--bx: 22%; --by: 80%; --bd: 0.55s">
-            <img src="https://covers.openlibrary.org/b/isbn/9780593299320-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
+            <img src="https://covers.openlibrary.org/b/isbn/9780385547345-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
           </figure>
           <figure class="bb-float-book bb-float-book--scatter" style="--bx: 66%; --by: 86%; --bd: 1.05s">
             <img src="https://covers.openlibrary.org/b/isbn/9780062062227-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
+          </figure>
+          <figure class="bb-float-book bb-float-book--scatter" style="--bx: 40%; --by: 88%; --bd: 0.85s">
+            <img src="https://covers.openlibrary.org/b/isbn/9781250178602-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
+          </figure>
+          <figure class="bb-float-book bb-float-book--scatter" style="--bx: 90%; --by: 76%; --bd: 1.35s">
+            <img src="https://covers.openlibrary.org/b/isbn/9780063204150-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
+          </figure>
+          <figure class="bb-float-book bb-float-book--scatter" style="--bx: 12%; --by: 68%; --bd: 0.65s">
+            <img src="https://covers.openlibrary.org/b/isbn/9780307387899-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
+          </figure>
+          <figure class="bb-float-book bb-float-book--scatter" style="--bx: 60%; --by: 18%; --bd: 0.25s">
+            <img src="https://covers.openlibrary.org/b/isbn/9780671027032-M.jpg" alt="" width="100" height="150" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
           </figure>
         </div>
       </div>
@@ -238,33 +230,23 @@
           <!-- Floating book covers -->
           <div class="bb-hero-scene">
             <div class="bb-hero-books">
-              <figure class="bb-float-book bb-float-book--lg bb-float-book--a" style="--bx: 3%; --by: 12%; --bd: 0s">
-                <img src="https://covers.openlibrary.org/b/isbn/9780735211292-M.jpg" alt="" width="140" height="210" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
-              </figure>
-              <figure class="bb-float-book bb-float-book--lg bb-float-book--b" style="--bx: 80%; --by: 10%; --bd: 0.4s">
-                <img src="https://covers.openlibrary.org/b/isbn/9780062316097-M.jpg" alt="" width="140" height="210" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
-              </figure>
-              <figure class="bb-float-book bb-float-book--md bb-float-book--c" style="--bx: 8%; --by: 55%; --bd: 0.9s">
-                <img src="https://covers.openlibrary.org/b/isbn/9780441013593-M.jpg" alt="" width="120" height="180" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
-              </figure>
-              <figure class="bb-float-book bb-float-book--md bb-float-book--a" style="--bx: 84%; --by: 50%; --bd: 1.2s">
-                <img src="https://covers.openlibrary.org/b/isbn/9780399590504-M.jpg" alt="" width="120" height="180" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
-              </figure>
-              <figure class="bb-float-book bb-float-book--md bb-float-book--b" style="--bx: 42%; --by: 6%; --bd: 0.6s">
-                <img src="https://covers.openlibrary.org/b/isbn/9780061122415-M.jpg" alt="" width="120" height="180" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
-              </figure>
-              <figure class="bb-float-book bb-float-book--sm bb-float-book--c" style="--bx: 50%; --by: 62%; --bd: 1.8s">
-                <img src="https://covers.openlibrary.org/b/isbn/9780451524935-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
-              </figure>
-              <figure class="bb-float-book bb-float-book--sm bb-float-book--a" style="--bx: 26%; --by: 28%; --bd: 1.1s">
-                <img src="https://covers.openlibrary.org/b/isbn/9780857197689-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
-              </figure>
-              <figure class="bb-float-book bb-float-book--md bb-float-book--b" style="--bx: 68%; --by: 30%; --bd: 0.25s">
-                <img src="https://covers.openlibrary.org/b/isbn/9780062409850-M.jpg" alt="" width="120" height="180" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
-              </figure>
-              <figure class="bb-float-book bb-float-book--sm bb-float-book--c" style="--bx: 34%; --by: 72%; --bd: 1.45s">
-                <img src="https://covers.openlibrary.org/b/isbn/9780593135228-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" />
-              </figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--a" style="--bx: 4%; --by: 9%; --bd: 0s"><img src="https://covers.openlibrary.org/b/isbn/9780735211292-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--b" style="--bx: 16%; --by: 20%; --bd: 0.35s"><img src="https://covers.openlibrary.org/b/isbn/9780062316097-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--c" style="--bx: 27%; --by: 8%; --bd: 0.7s"><img src="https://covers.openlibrary.org/b/isbn/9780441013593-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--a" style="--bx: 39%; --by: 18%; --bd: 1.05s"><img src="https://covers.openlibrary.org/b/isbn/9780399590504-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--b" style="--bx: 51%; --by: 6%; --bd: 0.55s"><img src="https://covers.openlibrary.org/b/isbn/9780061122415-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--c" style="--bx: 63%; --by: 16%; --bd: 1.4s"><img src="https://covers.openlibrary.org/b/isbn/9780451524935-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--a" style="--bx: 75%; --by: 8%; --bd: 0.25s"><img src="https://covers.openlibrary.org/b/isbn/9780857197689-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--b" style="--bx: 87%; --by: 19%; --bd: 1.2s"><img src="https://covers.openlibrary.org/b/isbn/9780062409850-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--c" style="--bx: 8%; --by: 40%; --bd: 0.85s"><img src="https://covers.openlibrary.org/b/isbn/9780593135228-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--a" style="--bx: 20%; --by: 52%; --bd: 1.55s"><img src="https://covers.openlibrary.org/b/isbn/9781250178602-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--b" style="--bx: 33%; --by: 44%; --bd: 0.95s"><img src="https://covers.openlibrary.org/b/isbn/9780385547345-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--c" style="--bx: 46%; --by: 56%; --bd: 0.45s"><img src="https://covers.openlibrary.org/b/isbn/9780671027032-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--a" style="--bx: 58%; --by: 42%; --bd: 1.75s"><img src="https://covers.openlibrary.org/b/isbn/9780618002221-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--b" style="--bx: 70%; --by: 54%; --bd: 0.65s"><img src="https://covers.openlibrary.org/b/isbn/9780743273565-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--c" style="--bx: 82%; --by: 46%; --bd: 1.05s"><img src="https://covers.openlibrary.org/b/isbn/9780307387899-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
+              <figure class="bb-float-book bb-float-book--sm bb-float-book--a" style="--bx: 91%; --by: 58%; --bd: 0.15s"><img src="https://covers.openlibrary.org/b/isbn/9780525564195-M.jpg" alt="" width="100" height="150" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('.bb-float-book').style.display='none'" onload="if(this.naturalWidth<=1||this.naturalHeight<=1)this.closest('.bb-float-book').style.display='none'" /></figure>
             </div>
           </div>
         </div>
@@ -306,7 +288,7 @@
               class="bb-focus w-full rounded-xl border border-white/35 bg-white/10 px-8 py-3.5 text-center text-base font-semibold text-white backdrop-blur-sm hover:bg-white/20 sm:w-auto"
             >See how it works</a>
           </div>
-          <p class="mt-5 text-sm text-amber-200/70">No credit card for the free tier · Cancel anytime on paid plans</p>
+          <p class="mt-5 text-sm text-amber-200/70">7-day free trial (2 summaries) · no credit card · cancel anytime on paid plans</p>
         </div>
 
         <!-- Stats bar -->
@@ -530,7 +512,7 @@
           <div class="mx-auto max-w-2xl text-center">
             <p class="bb-label bb-label--dot mx-auto" style="justify-content:center">Pricing</p>
             <h2 class="font-serif-display text-3xl font-bold text-stone-900 dark:text-stone-50">Simple, <em>transparent</em> pricing</h2>
-            <p class="mt-3 text-stone-600 dark:text-stone-400">Start free. Upgrade when summaries become a habit.</p>
+            <p class="mt-3 text-stone-600 dark:text-stone-400">Start with a 7-day free trial. Upgrade when summaries become a habit.</p>
           </div>
 
           <!-- Billing toggle -->
@@ -545,7 +527,7 @@
             <!-- Free -->
             <div class="bb-price-card dark:border-stone-700 dark:bg-stone-900 flex flex-col">
               <div class="p-8 flex flex-col flex-1">
-                <h3 class="font-serif-display text-xl font-semibold text-stone-900 dark:text-stone-50">Free</h3>
+                <h3 class="font-serif-display text-xl font-semibold text-stone-900 dark:text-stone-50">Free trial</h3>
                 <div class="mt-3">
                   <p class="bb-price-number flex items-baseline gap-1" data-monthly>
                     <span class="text-4xl font-bold text-stone-900 dark:text-white">$0</span>
@@ -554,11 +536,11 @@
                     <span class="text-4xl font-bold text-stone-900 dark:text-white">$0</span>
                   </p>
                 </div>
-                <p class="mt-1 text-sm text-stone-500">Forever free</p>
+                <p class="mt-1 text-sm text-stone-500">7 days from signup · no card</p>
                 <ul class="mt-6 flex-1 space-y-3 text-sm text-stone-600 dark:text-stone-400">
                   <li class="flex items-start gap-2.5">
                     <span class="mt-px text-amber-700 dark:text-amber-500">✓</span>
-                    3 summaries per week
+                    2 summaries in your first 7 days
                   </li>
                   <li class="flex items-start gap-2.5">
                     <span class="mt-px text-amber-700 dark:text-amber-500">✓</span>
@@ -749,7 +731,7 @@
                   <span class="flex-shrink-0 text-stone-400 transition-transform group-open:rotate-45" aria-hidden="true">+</span>
                 </summary>
                 <p class="mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
-                  Absolutely. Cancel anytime through your account's billing portal — powered by Stripe. Your summaries remain in your library even after downgrading to the free tier.
+                  Absolutely. Cancel anytime through your account's billing portal — powered by Stripe. Your summaries remain in your library. After canceling a paid plan, generation limits follow the free trial rules from your original signup date.
                 </p>
               </details>
             </div>
@@ -785,8 +767,8 @@
               <div class="flex items-start gap-4">
                 <span class="text-2xl flex-shrink-0 mt-0.5">✅</span>
                 <div>
-                  <p class="font-semibold text-white">Free tier forever</p>
-                  <p class="text-sm text-amber-100/60 mt-0.5">3 summaries/week — no credit card required</p>
+                  <p class="font-semibold text-white">7-day free trial</p>
+                  <p class="text-sm text-amber-100/60 mt-0.5">2 summaries in your first week — no credit card required</p>
                 </div>
               </div>
               <div class="flex items-start gap-4">
@@ -823,7 +805,6 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         if (window.BBUi) {
-          BBUi.initThemeToggle("#theme-toggle");
           BBUi.wireMobileNav("#nav-toggle", "#mobile-nav");
         }
 

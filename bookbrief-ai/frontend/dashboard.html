@@ -414,8 +414,8 @@
         });
 
         // ── Quota limits per plan ───────────────────────────────────────────
-        var QUOTA_LIMITS = { free: 3, pro: 15, growth: 25 };
-        var QUOTA_PERIOD = { free: "week", pro: "month", growth: "month" };
+        var QUOTA_LIMITS = { free: 2, pro: 15, growth: 25 };
+        var QUOTA_PERIOD = { free: "7-day trial", pro: "month", growth: "month" };
 
         // ── Billing / subscription ──────────────────────────────────────────
         var billingErr = document.getElementById("billing-error");
@@ -449,19 +449,28 @@
 
             // Quota bar
             var used = data.summaries_used_period || 0;
-            var limit = QUOTA_LIMITS[planName] || 0;
+            var limit =
+              typeof data.summary_quota_limit === "number" && data.summary_quota_limit > 0
+                ? data.summary_quota_limit
+                : QUOTA_LIMITS[planName] || 0;
             var period = QUOTA_PERIOD[planName] || "period";
+            var trialEnded =
+              planName === "free" &&
+              data.free_trial_ends_at &&
+              Date.now() >= new Date(data.free_trial_ends_at).getTime();
             if (limit > 0) {
-              var pct = Math.min(100, Math.round((used / limit) * 100));
-              document.getElementById("quota-label").textContent = "Summaries this " + period;
+              var pct = trialEnded ? 100 : Math.min(100, Math.round((used / limit) * 100));
+              document.getElementById("quota-label").textContent =
+                planName === "free" ? "Summaries (" + period + ")" : "Summaries this " + period;
               document.getElementById("quota-fraction").textContent = used + " / " + limit;
               document.getElementById("quota-bar").style.width = pct + "%";
               document.getElementById("quota-bar-wrap").setAttribute("aria-valuenow", pct);
-              // Turn bar red when near limit
-              if (pct >= 90) {
-                document.getElementById("quota-bar").style.background = "#991b1b";
+              var qbar = document.getElementById("quota-bar");
+              qbar.style.background = "#b45309";
+              if (trialEnded || pct >= 90) {
+                qbar.style.background = "#991b1b";
               } else if (pct >= 70) {
-                document.getElementById("quota-bar").style.background = "#b45309";
+                qbar.style.background = "#b45309";
               }
             } else {
               document.getElementById("quota-label").textContent = "Summaries this " + period;
@@ -469,10 +478,26 @@
               document.getElementById("quota-bar").style.width = "100%";
             }
 
-            // Renewal date
-            if (data.current_period_end) {
+            // Trial end (free) or renewal date (paid)
+            var renewEl = document.getElementById("plan-renew");
+            renewEl.textContent = "";
+            if (planName === "free" && data.free_trial_ends_at) {
+              var te = new Date(data.free_trial_ends_at);
+              if (trialEnded) {
+                renewEl.textContent =
+                  "Free trial ended — upgrade to create more summaries.";
+              } else {
+                renewEl.textContent =
+                  "Trial ends " +
+                  te.toLocaleDateString(undefined, {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  });
+              }
+            } else if (data.current_period_end) {
               var d = new Date(data.current_period_end);
-              document.getElementById("plan-renew").textContent =
+              renewEl.textContent =
                 "Renews " + d.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
             }
 
@@ -717,6 +742,8 @@
           loader.load('https://covers.openlibrary.org/b/isbn/'+bd.isbn+'-M.jpg', function(tex){
             tex.colorSpace = THREE.SRGBColorSpace;
             mesh.material[4] = new THREE.MeshStandardMaterial({map:tex,roughness:0.36,metalness:0.04});
+          }, undefined, function(){
+            group.visible = false;
           });
 
           group.add(mesh);

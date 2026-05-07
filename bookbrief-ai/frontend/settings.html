@@ -523,6 +523,8 @@
           loader.load('https://covers.openlibrary.org/b/isbn/'+bd.isbn+'-M.jpg', function(tex){
             tex.colorSpace = THREE.SRGBColorSpace;
             mesh.material[4] = new THREE.MeshStandardMaterial({map:tex,roughness:0.36,metalness:0.04});
+          }, undefined, function(){
+            group.visible = false;
           });
 
           group.add(mesh);

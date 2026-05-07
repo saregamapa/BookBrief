@@ -82,14 +82,37 @@ def _chunk_text(text: str, max_chars: int = 3200) -> List[str]:
 
 def text_to_speech(text: str, voice: str = "onyx") -> bytes:
     """
-    Convert text to MP3 audio bytes using OpenAI TTS.
-    Handles long texts by chunking and concatenating raw MP3 bytes.
+    Convert text to speech audio bytes.
+    Uses Manus AI tasks when MANUS_API_KEY is set; otherwise OpenAI TTS (MP3).
+    Handles long texts by chunking; OpenAI chunks are concatenated as raw MP3.
+    Manus chunks are concatenated as raw bytes (typically MP3 per chunk).
     """
-    client = _get_client()
     cleaned = _clean_for_tts(text)
     chunks = _chunk_text(cleaned)
 
-    audio_parts: List[bytes] = []
+    if settings.manus_api_key.strip():
+        from app.services import manus_audio
+
+        audio_parts: List[bytes] = []
+        for chunk in chunks:
+            if not chunk.strip():
+                continue
+            audio_parts.append(
+                manus_audio.synthesize_speech_chunk(
+                    chunk,
+                    voice,
+                    settings.manus_api_key.strip(),
+                    timeout_seconds=float(settings.manus_tts_timeout_seconds),
+                    agent_profile=settings.manus_agent_profile,
+                )
+            )
+        merged = b"".join(audio_parts)
+        if len(merged) == 0:
+            raise RuntimeError("No audio generated for provided text")
+        return merged
+
+    client = _get_client()
+    audio_parts_oai: List[bytes] = []
     for chunk in chunks:
         if not chunk.strip():
             continue
@@ -111,12 +134,12 @@ def text_to_speech(text: str, voice: str = "onyx") -> bytes:
         if not isinstance(raw, (bytes, bytearray)) or len(raw) == 0:
             raise RuntimeError("TTS provider returned empty audio payload")
 
-        audio_parts.append(bytes(raw))
+        audio_parts_oai.append(bytes(raw))
 
-    merged = b"".join(audio_parts)
-    if len(merged) == 0:
+    merged_oai = b"".join(audio_parts_oai)
+    if len(merged_oai) == 0:
         raise RuntimeError("No audio generated for provided text")
-    return merged
+    return merged_oai
 
 
 # ---------------------------------------------------------------------------

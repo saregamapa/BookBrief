@@ -232,17 +232,17 @@
               <thead>
                 <tr class="border-b border-stone-200">
                   <th class="py-4 px-5 text-left font-semibold text-stone-700">Feature</th>
-                  <th class="py-4 px-4 text-center font-semibold text-stone-600">Free</th>
+                  <th class="py-4 px-4 text-center font-semibold text-stone-600">Free trial</th>
                   <th class="py-4 px-4 text-center font-bold text-amber-800">Pro</th>
                   <th class="py-4 px-4 text-center font-semibold text-stone-600">Growth</th>
                 </tr>
               </thead>
               <tbody>
                 <tr class="compare-row border-b border-stone-100">
-                  <td class="py-3.5 px-5 text-stone-700">Summaries per month</td>
-                  <td class="py-3.5 px-4 text-center text-stone-600">3 / week</td>
-                  <td class="py-3.5 px-4 text-center font-semibold text-amber-800">15</td>
-                  <td class="py-3.5 px-4 text-center text-stone-600">25</td>
+                  <td class="py-3.5 px-5 text-stone-700">Summaries</td>
+                  <td class="py-3.5 px-4 text-center text-stone-600">2 in 7-day trial</td>
+                  <td class="py-3.5 px-4 text-center font-semibold text-amber-800">15 / mo</td>
+                  <td class="py-3.5 px-4 text-center text-stone-600">25 / mo</td>
                 </tr>
                 <tr class="compare-row border-b border-stone-100">
                   <td class="py-3.5 px-5 text-stone-700">Summary styles</td>
@@ -297,7 +297,7 @@
           <div class="pointer-events-none absolute -bottom-8 -right-8 h-40 w-40 rounded-full bg-amber-500/20 blur-3xl"></div>
           <div class="relative">
             <h2 class="font-serif-display text-3xl font-bold sm:text-4xl">All this, starting at $0</h2>
-            <p class="mx-auto mt-3 max-w-md text-amber-100/80">Free forever tier — upgrade only when you're ready.</p>
+            <p class="mx-auto mt-3 max-w-md text-amber-100/80">7-day free trial — upgrade when you're ready.</p>
             <a href="/frontend/login.html?mode=register"
               class="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-base font-bold text-amber-950 shadow-lg transition-all hover:bg-rose-50 hover:shadow-xl">
               Get started free →
@@ -326,7 +326,7 @@
       const canvas    = document.querySelector('.page-header-canvas');
       const container = canvas ? canvas.closest('.page-header') : null;
       if (canvas && container) {
-        initBookScene(canvas, container, { theme: 'light', bookCount: 8, particleCount: 90, minWidth: 768 });
+        initBookScene(canvas, container, { theme: 'light', bookCount: 12, particleCount: 90, minWidth: 768 });
       }
     </script>
 
@@ -359,7 +359,7 @@
           new THREE.MeshStandardMaterial({color:spines[i],roughness:0.65}),
           new THREE.MeshStandardMaterial({color:spines[i],roughness:0.8}),
         ];
-        loader.load('https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg',function(tex){tex.colorSpace=THREE.SRGBColorSpace;mats[4].map=tex;mats[4].needsUpdate=true;},undefined,function(){});
+        loader.load('https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg',function(tex){tex.colorSpace=THREE.SRGBColorSpace;mats[4].map=tex;mats[4].needsUpdate=true;},undefined,function(){ mesh.visible=false; });
         const mesh=new THREE.Mesh(geo,mats);
         const p=corners[i];mesh.position.set(p[0],p[1],p[2]);
         mesh.rotation.y=(i%2===0?1:-1)*0.3;mesh.rotation.z=(Math.random()-0.5)*0.15;

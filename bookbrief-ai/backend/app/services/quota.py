@@ -1,7 +1,7 @@
 """Summary quota enforcement: per-plan limits with correct time windows.
 
 Plan rules (matches pricing page):
-  Free:   3 summaries / week  (rolling calendar week, Monday-based)
+  Free:   2 summaries total in the first 7 days after signup (trial window from subscription created_at)
   Pro:    15 summaries / month (Stripe billing period, falls back to calendar month)
   Growth: 25 summaries / month (Stripe billing period, falls back to calendar month)
 """
@@ -22,48 +22,50 @@ from app.models.subscription import Subscription
 
 logger = logging.getLogger(__name__)
 
+_FREE_TRIAL_DAYS = 7
 
 # ---------------------------------------------------------------------------
 # Plan limits
 # ---------------------------------------------------------------------------
 
 _PLAN_LIMITS: dict[PlanTier, Optional[int]] = {
-    PlanTier.free: 3,    # per week
-    PlanTier.pro: 15,    # per billing period / calendar month
-    PlanTier.growth: 25, # per billing period / calendar month
+    PlanTier.free: 2,  # total during 7-day trial window
+    PlanTier.pro: 15,  # per billing period / calendar month
+    PlanTier.growth: 25,
 }
-
-_FREE_WINDOW = "weekly"
-_PAID_WINDOW = "monthly"
 
 
 def plan_limit(plan: PlanTier) -> Optional[int]:
     """Return the summary limit for a plan (None = unlimited)."""
-    return _PLAN_LIMITS.get(plan, 3)
+    return _PLAN_LIMITS.get(plan, 2)
 
 
-def plan_window_type(plan: PlanTier) -> str:
-    """Return 'weekly' for free tier, 'monthly' for paid tiers."""
-    return _FREE_WINDOW if plan == PlanTier.free else _PAID_WINDOW
+def free_trial_window_bounds(sub: Subscription) -> Tuple[datetime, datetime]:
+    """Half-open [trial_start, trial_end) in UTC — 7 days from subscription creation."""
+    start = sub.created_at
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=timezone.utc)
+    else:
+        start = start.astimezone(timezone.utc)
+    end = start + timedelta(days=_FREE_TRIAL_DAYS)
+    return start, end
 
 
 # ---------------------------------------------------------------------------
 # Time window helpers
 # ---------------------------------------------------------------------------
 
+
 def quota_window_bounds(sub: Subscription) -> Tuple[datetime, datetime]:
     """Return half-open interval [start, end) in UTC for the active quota window.
 
-    - Free tier: rolling calendar week (Mon 00:00 → next Mon 00:00 UTC)
+    - Free tier: 7 days from subscription.created_at (signup)
     - Paid tiers: Stripe billing period when present, else calendar month
     """
+    if sub.plan == PlanTier.free:
+        return free_trial_window_bounds(sub)
+
     now = datetime.now(timezone.utc)
-    window_type = plan_window_type(sub.plan)
-
-    if window_type == _FREE_WINDOW:
-        return calendar_week_bounds_utc(now)
-
-    # Paid: prefer Stripe billing period
     cps = sub.current_period_start
     cpe = sub.current_period_end
     if cps is not None and cpe is not None:
@@ -73,17 +75,6 @@ def quota_window_bounds(sub: Subscription) -> Tuple[datetime, datetime]:
             return start, end
 
     return calendar_month_bounds_utc(now)
-
-
-def calendar_week_bounds_utc(now: datetime) -> Tuple[datetime, datetime]:
-    """Return [this Monday 00:00 UTC, next Monday 00:00 UTC)."""
-    now_utc = now.astimezone(timezone.utc)
-    days_since_monday = now_utc.weekday()  # Monday == 0
-    week_start = (now_utc - timedelta(days=days_since_monday)).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    week_end = week_start + timedelta(days=7)
-    return week_start, week_end
 
 
 def calendar_month_bounds_utc(now: datetime) -> Tuple[datetime, datetime]:
@@ -100,6 +91,7 @@ def calendar_month_bounds_utc(now: datetime) -> Tuple[datetime, datetime]:
 # ---------------------------------------------------------------------------
 # Usage counting
 # ---------------------------------------------------------------------------
+
 
 def count_completed_summaries_in_window(
     db: Session,
@@ -138,16 +130,38 @@ def subscription_usage(
 # Enforcement
 # ---------------------------------------------------------------------------
 
+
 def assert_quota_allows_new_summary(db: Session, sub: Subscription) -> None:
     """Raise HTTP 429 if the user has exhausted their quota for this period."""
-    used, limit, _start, _end = subscription_usage(db, sub)
+    if sub.plan == PlanTier.free:
+        trial_start, trial_end = free_trial_window_bounds(sub)
+        now = datetime.now(timezone.utc)
+        if now >= trial_end:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=(
+                    "Your 7-day free trial has ended. Upgrade to a paid plan to generate more summaries."
+                ),
+            )
+        used = count_completed_summaries_in_window(db, sub.user_id, trial_start, trial_end)
+        limit = plan_limit(PlanTier.free)
+        if limit is not None and used >= limit:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=(
+                    f"Trial summary limit reached ({used}/{limit} during your 7-day trial). "
+                    "Upgrade to a paid plan for more summaries."
+                ),
+            )
+        return
+
+    used, limit, _, _ = subscription_usage(db, sub)
     if limit is not None and used >= limit:
-        window = "week" if plan_window_type(sub.plan) == _FREE_WINDOW else "billing period"
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=(
-                f"Summary limit reached ({used}/{limit} this {window}). "
-                f"Upgrade your plan or wait until the next {window}."
+                f"Summary limit reached ({used}/{limit} this billing period). "
+                "Upgrade your plan or wait until the next billing period."
             ),
         )
 

@@ -303,7 +303,9 @@
         ];
         loader.load('https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg', function(tex){
           tex.colorSpace = THREE.SRGBColorSpace; mats[4].map = tex; mats[4].needsUpdate = true;
-        }, undefined, function(){});
+        }, undefined, function(){
+          mesh.visible = false;
+        });
         const mesh = new THREE.Mesh(geo, mats);
         const p = corners[i]; mesh.position.set(p[0], p[1], p[2]);
         mesh.rotation.y = (i % 2 === 0 ? 1 : -1) * 0.3;
@@ -336,7 +338,7 @@
       const canvas    = document.querySelector('.page-header-canvas');
       const container = canvas ? canvas.closest('.page-header') : null;
       if (canvas && container) {
-        initBookScene(canvas, container, { theme: 'light', bookCount: 8, particleCount: 90, minWidth: 768 });
+        initBookScene(canvas, container, { theme: 'light', bookCount: 12, particleCount: 90, minWidth: 768 });
       }
     </script>
   </body>
