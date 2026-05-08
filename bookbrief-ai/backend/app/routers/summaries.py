@@ -76,14 +76,22 @@ def _enforce_summary_rate(user: User) -> None:
     q.append(now)
 
 
+def _safe_enum_value(enum_col, fallback: str) -> str:
+    """Return enum_col.value safely; fall back to raw string if the DB holds an unknown value."""
+    try:
+        return enum_col.value
+    except (LookupError, ValueError, AttributeError):
+        return str(fallback)
+
+
 def _row_to_detail(row: BookSummary) -> SummaryDetail:
     return SummaryDetail(
         id=row.id,
         title=row.title,
         author=row.author,
-        source_type=row.source_type.value,
-        style=row.style.value,
-        status=row.status.value,
+        source_type=_safe_enum_value(row.source_type, row.source_type),
+        style=_safe_enum_value(row.style, row.style),
+        status=_safe_enum_value(row.status, row.status),
         personalization_context=row.personalization_context,
         source_meta=row.source_meta,
         output_markdown=row.output_markdown or "",
@@ -449,7 +457,12 @@ def list_summaries(
         .limit(limit)
     )
     rows = list(db.scalars(stmt).all())
-    items = [SummaryListItem.from_row(r) for r in rows]
+    items: list[SummaryListItem] = []
+    for r in rows:
+        try:
+            items.append(SummaryListItem.from_row(r))
+        except Exception:  # noqa: BLE001
+            log.warning("list_summaries_skip_bad_row", summary_id=getattr(r, "id", "?"))
     return SummaryListResponse(items=items, total=total)
 
 

@@ -99,6 +99,24 @@
     remove: function (id) {
       return apiFetch("/summaries/" + encodeURIComponent(String(id)), { method: "DELETE" });
     },
+    /** @param {string} locale BCP-47 tag, e.g. es, fr, ja */
+    translate: function (id, locale) {
+      return apiFetch("/summaries/" + encodeURIComponent(String(id)) + "/translate", {
+        method: "POST",
+        body: JSON.stringify({ locale: locale }),
+      });
+    },
+    listTranslations: function (id) {
+      return apiFetch("/summaries/" + encodeURIComponent(String(id)) + "/translations");
+    },
+    requestVideo: function (id) {
+      return apiFetch("/summaries/" + encodeURIComponent(String(id)) + "/video-summary", {
+        method: "POST",
+      });
+    },
+    getVideo: function (id) {
+      return apiFetch("/summaries/" + encodeURIComponent(String(id)) + "/video-summary");
+    },
     createJson: function (body) {
       return apiFetch("/summaries", { method: "POST", body: JSON.stringify(body) });
     },

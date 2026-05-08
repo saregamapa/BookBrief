@@ -712,13 +712,17 @@
 
     async _fetchAudio(index) {
       if (this._fetchingIndex.has(index)) {
-        // Wait until the fetch in-flight completes by polling cache
+        // Another call is already fetching this index — wait for it to populate the cache.
+        // Manus TTS can take up to 8 minutes, so give it 12 minutes before giving up.
         return new Promise((resolve, reject) => {
           const check = setInterval(() => {
             const url = this._audioCache.get(this._cacheKey(index));
             if (url) { clearInterval(check); resolve(url); }
-          }, 200);
-          setTimeout(() => { clearInterval(check); reject(new Error("timeout")); }, 30000);
+          }, 300);
+          setTimeout(() => {
+            clearInterval(check);
+            reject(new Error("Timed out waiting for in-flight audio fetch"));
+          }, 720_000);
         });
       }
 
@@ -727,31 +731,84 @@
         const item = this._currentItems()[index];
         if (!item) throw new Error("No item at index " + index);
 
-        const text = this._mode === "podcast" ? item.text : item.text;
+        const text = item.text;
         const voice = this._mode === "podcast" ? item.voice : this._voice;
 
         const token = this._getToken();
-        const headers = { "Content-Type": "application/json" };
-        if (token) headers["Authorization"] = "Bearer " + token;
+        const authHeaders = {};
+        if (token) authHeaders["Authorization"] = "Bearer " + token;
 
-        const res = await fetch(`${API_BASE}/narrate`, {
+        // ── Step 1: Submit the TTS job (returns immediately with job_id) ───────
+        const submitRes = await fetch(`${API_BASE}/narrate`, {
           method: "POST",
-          headers,
+          headers: { "Content-Type": "application/json", ...authHeaders },
           body: JSON.stringify({ text, voice }),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const blob = await res.blob();
-        if (!blob || blob.size < 256 || (blob.type && !blob.type.startsWith("audio/"))) {
+        if (!submitRes.ok) {
           let detail = "";
-          try {
-            detail = await blob.text();
-          } catch (_) {}
-          throw new Error(detail || "Invalid audio payload returned by server");
+          try { detail = (await submitRes.json()).detail || ""; } catch (_) {}
+          throw new Error(`HTTP ${submitRes.status} submitting TTS job${detail ? ": " + detail : ""}`);
         }
-        const url = URL.createObjectURL(blob);
-        this._audioCache.set(this._cacheKey(index), url);
-        return url;
+        const { job_id } = await submitRes.json();
+        if (!job_id) throw new Error("Server returned no job_id");
+
+        // ── Step 2: Poll until audio is ready ────────────────────────────────
+        //   202 → still generating (keep polling)
+        //   200 → binary audio ready
+        //   4xx/5xx → error
+        const MAX_POLL_MS  = 600_000; // 10 minutes (Manus can be slow)
+        const POLL_INTERVAL =   3_000; // 3 seconds between polls
+        const startTime = Date.now();
+
+        while (Date.now() - startTime < MAX_POLL_MS) {
+          await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+
+          // Show elapsed time to the user (only for the segment currently playing)
+          if (this._currentIndex === index && this._els.genMsg) {
+            const elapsed = Math.round((Date.now() - startTime) / 1000);
+            this._els.genMsg.textContent = `Generating audio… ${elapsed}s`;
+          }
+
+          const pollRes = await fetch(`${API_BASE}/narrate/poll/${job_id}`, {
+            headers: authHeaders,
+          });
+
+          if (pollRes.status === 202) {
+            // Still in progress — continue polling
+            continue;
+          }
+
+          if (!pollRes.ok) {
+            let detail = "";
+            try { detail = (await pollRes.json()).detail || ""; } catch (_) {}
+            throw new Error(
+              `Audio generation failed (HTTP ${pollRes.status})${detail ? ": " + detail : ""}`
+            );
+          }
+
+          // HTTP 200 — audio bytes are in the body
+          const blob = await pollRes.blob();
+          const okSize = blob && blob.size >= 256;
+          const ct = (blob && blob.type) || "";
+          const okType =
+            !ct ||
+            ct.startsWith("audio/") ||
+            ct === "application/octet-stream" ||
+            ct === "binary/octet-stream";
+          if (!okSize || !okType) {
+            let detail = "";
+            try {
+              detail = blob ? await blob.text() : "";
+            } catch (_) {}
+            throw new Error(detail || "Server returned an invalid audio payload");
+          }
+
+          const url = URL.createObjectURL(blob);
+          this._audioCache.set(this._cacheKey(index), url);
+          return url;
+        }
+
+        throw new Error(`Audio generation timed out after ${MAX_POLL_MS / 1000}s`);
       } finally {
         this._fetchingIndex.delete(index);
       }

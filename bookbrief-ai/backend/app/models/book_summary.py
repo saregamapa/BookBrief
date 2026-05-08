@@ -10,6 +10,8 @@ from app.database import Base
 from app.models.enums import BookSourceType, SummaryJobStatus, SummaryStyle, sqlalchemy_enum_values
 
 if TYPE_CHECKING:
+    from app.models.summary_translation import SummaryTranslation
+    from app.models.summary_video import SummaryVideo
     from app.models.user import User
 
 
@@ -59,3 +61,14 @@ class BookSummary(Base):
     )
 
     user: Mapped[User] = relationship("User", back_populates="summaries")
+    translations: Mapped[list["SummaryTranslation"]] = relationship(
+        "SummaryTranslation",
+        back_populates="summary",
+        cascade="all, delete-orphan",
+    )
+    video_asset: Mapped[Optional["SummaryVideo"]] = relationship(
+        "SummaryVideo",
+        back_populates="summary",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )

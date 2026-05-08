@@ -14,9 +14,9 @@ from typing import Any, Dict, List, Optional, Set
 
 import httpx
 
-logger = logging.getLogger(__name__)
+from app.services import manus_client
 
-MANUS_BASE = "https://api.manus.ai"
+logger = logging.getLogger(__name__)
 
 # OpenAI voice ids → spoken style hints for the Manus agent
 _VOICE_STYLE: Dict[str, str] = {
@@ -39,34 +39,22 @@ _STRUCTURED_TTS_SCHEMA: Dict[str, Any] = {
     "additionalProperties": False,
 }
 
+# Regex to find audio URLs in plain text — extension-based
 _URL_RE = re.compile(
-    r"https?://[^\s<>\"']+\.(?:mp3|m4a|wav)(?:\?[^\s<>\"']*)?",
+    r"https?://[^\s<>\"']+\.(?:mp3|m4a|wav|ogg|aac|flac|webm)(?:\?[^\s<>\"']*)?",
+    re.IGNORECASE,
+)
+# Broader regex: CDN URLs that don't include extension (e.g. /audio/xyz?dl=1)
+_CDN_URL_RE = re.compile(
+    r"https?://(?:[a-z0-9\-]+\.)*(?:storage\.googleapis\.com|s3\.amazonaws\.com|"
+    r"cdn\.|files\.|media\.|audio\.|dl\.)[^\s<>\"']+",
     re.IGNORECASE,
 )
 
 
-def _headers(api_key: str) -> Dict[str, str]:
-    return {
-        "x-manus-api-key": api_key,
-        "Content-Type": "application/json",
-    }
-
-
-def _raise_for_manus(resp: httpx.Response) -> Dict[str, Any]:
-    try:
-        data = resp.json()
-    except Exception as exc:
-        resp.raise_for_status()
-        raise RuntimeError("Manus API returned non-JSON body") from exc
-    if not data.get("ok"):
-        err = data.get("error") or {}
-        msg = err.get("message") or str(data)
-        raise RuntimeError(f"Manus API error: {msg}")
-    return data
-
-
 def _create_tts_task(
     client: httpx.Client,
+    base_url: str,
     api_key: str,
     chunk: str,
     voice: str,
@@ -90,38 +78,22 @@ def _create_tts_task(
     body: Dict[str, Any] = {
         "message": {"content": prompt},
         "interactive_mode": False,
-        "hide_in_task_list": True,
+        "hide_in_task_list": False,
         "agent_profile": agent_profile,
         "title": "BookBrief TTS",
         "structured_output_schema": _STRUCTURED_TTS_SCHEMA,
     }
     r = client.post(
-        f"{MANUS_BASE}/v2/task.create",
-        headers=_headers(api_key),
+        f"{base_url}/v2/task.create",
+        headers=manus_client.json_headers(api_key),
         json=body,
         timeout=120.0,
     )
     r.raise_for_status()
-    data = _raise_for_manus(r)
-    task_id = data.get("task_id")
-    if not task_id:
-        raise RuntimeError("Manus task.create missing task_id")
+    data = manus_client.raise_for_manus(r)
+    task_id = manus_client.extract_task_id(data)
     logger.info("manus_tts_task_created task_id=%s", task_id)
     return str(task_id)
-
-
-def _list_messages(
-    client: httpx.Client, api_key: str, task_id: str
-) -> List[Dict[str, Any]]:
-    r = client.get(
-        f"{MANUS_BASE}/v2/task.listMessages",
-        headers={"x-manus-api-key": api_key},
-        params={"task_id": task_id, "order": "asc", "limit": 200},
-        timeout=120.0,
-    )
-    r.raise_for_status()
-    data = _raise_for_manus(r)
-    return list(data.get("messages") or [])
 
 
 def _is_audio_attachment(att: Dict[str, Any]) -> bool:
@@ -132,30 +104,39 @@ def _is_audio_attachment(att: Dict[str, Any]) -> bool:
         return True
     if "audio" in ctype:
         return True
-    if fname.endswith((".mp3", ".mpeg", ".wav", ".m4a", ".x-m4a")):
+    _AUDIO_EXTS = (".mp3", ".mpeg", ".wav", ".m4a", ".x-m4a", ".ogg", ".aac", ".webm", ".flac")
+    if any(fname.endswith(ext) for ext in _AUDIO_EXTS):
         return True
     return False
 
 
 def _ordered_audio_urls(messages: List[Dict[str, Any]]) -> List[str]:
-    """Chronological candidates; caller should try newest-first."""
+    """
+    Extract all candidate audio URLs from Manus task messages.
+    Priority: direct audio attachments → structured output → inline URLs.
+    Returns newest-first (reversed chronological).
+    """
     attachments: List[str] = []
     structured_url: Optional[str] = None
     inline_urls: List[str] = []
 
     for ev in messages:
+        # Direct audio attachments on assistant messages
         if ev.get("type") == "assistant_message":
             am = ev.get("assistant_message") or {}
             for att in am.get("attachments") or []:
                 if not isinstance(att, dict):
                     continue
-                url = att.get("url")
+                url = att.get("url") or att.get("download_url") or att.get("href")
                 if url and _is_audio_attachment(att):
                     attachments.append(str(url))
+            # Scan message text for audio URLs
             content = am.get("content") or ""
             if isinstance(content, str):
                 inline_urls.extend(_URL_RE.findall(content))
+                inline_urls.extend(_CDN_URL_RE.findall(content))
 
+        # Structured output result from the schema we submitted
         if ev.get("type") == "structured_output_result":
             sor = ev.get("structured_output_result") or {}
             if sor.get("success"):
@@ -164,19 +145,26 @@ def _ordered_audio_urls(messages: List[Dict[str, Any]]) -> List[str]:
                 if isinstance(u, str) and u.startswith("http"):
                     structured_url = u
 
-    out: List[str] = []
-    out.extend(attachments)
-    if structured_url:
-        out.append(structured_url)
-    out.extend(inline_urls)
-    # Deduplicate preserving order
+        # Some Manus versions emit tool_result events with download URLs
+        if ev.get("type") == "tool_result":
+            tr = ev.get("tool_result") or {}
+            for att in tr.get("attachments") or []:
+                if not isinstance(att, dict):
+                    continue
+                url = att.get("url") or att.get("download_url")
+                if url and _is_audio_attachment(att):
+                    attachments.append(str(url))
+
+    # Build deduplicated list (priority: attachments > structured > inline)
     seen: Set[str] = set()
     deduped: List[str] = []
-    for u in out:
-        if u not in seen:
+    for u in [*attachments, *([] if not structured_url else [structured_url]), *inline_urls]:
+        if u and u not in seen:
             seen.add(u)
             deduped.append(u)
-    return deduped
+
+    # Return newest-first (last in chronological list = most recent = best)
+    return list(reversed(deduped))
 
 
 def _terminal_agent_status(messages: List[Dict[str, Any]]) -> Optional[str]:
@@ -203,7 +191,13 @@ def _first_error_message(messages: List[Dict[str, Any]]) -> Optional[str]:
 def _download_audio(client: httpx.Client, url: str) -> bytes:
     r = client.get(url, timeout=120.0, follow_redirects=True)
     r.raise_for_status()
-    return r.content
+    content = r.content
+    # Sanity-check: anything under 1 KB is almost certainly not audio
+    if len(content) < 1024:
+        raise RuntimeError(
+            f"Downloaded file from {url[:60]!r} is only {len(content)} bytes — not valid audio"
+        )
+    return content
 
 
 def synthesize_speech_chunk(
@@ -211,39 +205,63 @@ def synthesize_speech_chunk(
     voice: str,
     api_key: str,
     *,
+    api_base: str = manus_client.DEFAULT_MANUS_BASE,
     timeout_seconds: float = 480.0,
     poll_interval: float = 3.0,
     agent_profile: str = "manus-1.6-lite",
 ) -> bytes:
     """
     Run one Manus task for a single chunk of plain text and return raw audio bytes.
+
+    BUG FIX: deadline is now set AFTER task creation (not before), so the full
+    timeout_seconds is available for polling rather than being eaten by the API call.
     """
     text = text.strip()
     if not text:
         raise ValueError("Empty text for Manus TTS")
 
-    deadline = time.monotonic() + timeout_seconds
-
+    base = manus_client.normalize_base(api_base)
     with httpx.Client() as client:
+        # ── Create task ───────────────────────────────────────────────────────
         task_id = _create_tts_task(
-            client, api_key, text, voice, agent_profile=agent_profile
+            client, base, api_key, text, voice, agent_profile=agent_profile
         )
+
+        # ── Deadline starts AFTER task creation (was previously set before!) ─
+        deadline = time.monotonic() + timeout_seconds
 
         last_status: Optional[str] = None
         messages: List[Dict[str, Any]] = []
+        poll_count = 0
 
         while time.monotonic() < deadline:
-            messages = _list_messages(client, api_key, task_id)
+            try:
+                messages = manus_client.list_task_messages(
+                    client,
+                    base,
+                    api_key,
+                    task_id,
+                    order="asc",
+                    limit=200,
+                    request_timeout=30.0,
+                )
+            except Exception as exc:
+                logger.warning("manus_poll_error poll=%s err=%s", poll_count, exc)
+                time.sleep(poll_interval)
+                poll_count += 1
+                continue
+
             err = _first_error_message(messages)
             if err:
                 raise RuntimeError(f"Manus task error: {err}")
 
             last_status = _terminal_agent_status(messages)
+            poll_count += 1
 
             if last_status == "waiting":
                 raise RuntimeError(
-                    "Manus task is waiting for user input; set interactive_mode=false "
-                    "or complete the task in the Manus app."
+                    "Manus task is waiting for user input; "
+                    "set interactive_mode=false in task.create."
                 )
 
             if last_status == "error":
@@ -251,35 +269,39 @@ def synthesize_speech_chunk(
 
             if last_status == "stopped":
                 candidate_urls = _ordered_audio_urls(messages)
-                # Prefer newest URLs last in chronological list → try reversed
-                candidate_urls = list(reversed(candidate_urls))
 
                 if not candidate_urls:
                     raise RuntimeError(
-                        "Manus task finished but no audio attachment or URL was found"
+                        f"Manus task stopped but no audio attachment or URL found "
+                        f"(scanned {len(messages)} messages)."
                     )
 
                 last_exc: Optional[Exception] = None
                 for u in candidate_urls:
                     try:
                         audio = _download_audio(client, u)
-                        if len(audio) < 256:
-                            continue
                         logger.info(
-                            "manus_tts_downloaded bytes=%s url_prefix=%s",
-                            len(audio),
-                            u[:48],
+                            "manus_tts_ok bytes=%s voice=%s polls=%s url=%s",
+                            len(audio), voice, poll_count, u[:60],
                         )
                         return audio
                     except Exception as exc:
+                        logger.warning("manus_download_fail url=%s err=%s", u[:60], exc)
                         last_exc = exc
                         continue
+
                 raise RuntimeError(
-                    "Could not download audio from Manus output URLs"
+                    "Could not download valid audio from any Manus URL"
                 ) from last_exc
 
+            logger.debug(
+                "manus_polling task=%s status=%s poll=%s remaining=%.0fs",
+                task_id, last_status, poll_count,
+                max(0.0, deadline - time.monotonic()),
+            )
             time.sleep(poll_interval)
 
         raise TimeoutError(
-            f"Manus TTS timed out after {int(timeout_seconds)}s (last_status={last_status})"
+            f"Manus TTS timed out after {int(timeout_seconds)}s "
+            f"(last_status={last_status}, polls={poll_count})"
         )

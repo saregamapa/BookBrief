@@ -39,3 +39,10 @@ class SummaryJobStatus(str, Enum):
     processing = "processing"
     completed = "completed"
     failed = "failed"
+
+
+class VideoJobStatus(str, Enum):
+    pending = "pending"
+    processing = "processing"
+    ready = "ready"
+    failed = "failed"

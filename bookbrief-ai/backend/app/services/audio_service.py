@@ -94,22 +94,37 @@ def text_to_speech(text: str, voice: str = "onyx") -> bytes:
         from app.services import manus_audio
 
         audio_parts: List[bytes] = []
+        manus_failed = False
         for chunk in chunks:
             if not chunk.strip():
                 continue
-            audio_parts.append(
-                manus_audio.synthesize_speech_chunk(
-                    chunk,
-                    voice,
-                    settings.manus_api_key.strip(),
-                    timeout_seconds=float(settings.manus_tts_timeout_seconds),
-                    agent_profile=settings.manus_agent_profile,
+            try:
+                audio_parts.append(
+                    manus_audio.synthesize_speech_chunk(
+                        chunk,
+                        voice,
+                        settings.manus_api_key.strip(),
+                        api_base=settings.manus_api_base,
+                        timeout_seconds=float(settings.manus_tts_timeout_seconds),
+                        agent_profile=settings.manus_agent_profile,
+                    )
                 )
-            )
-        merged = b"".join(audio_parts)
-        if len(merged) == 0:
-            raise RuntimeError("No audio generated for provided text")
-        return merged
+            except Exception as manus_exc:
+                logger.warning(
+                    "manus_tts_failed chunk_len=%s voice=%s err=%s — falling back to OpenAI TTS",
+                    len(chunk), voice, manus_exc,
+                )
+                manus_failed = True
+                break  # Fall back to OpenAI for the entire text
+
+        if not manus_failed:
+            merged = b"".join(audio_parts)
+            if len(merged) > 0:
+                return merged
+            logger.warning("manus_tts_empty_result — falling back to OpenAI TTS")
+
+        # ── OpenAI TTS fallback ───────────────────────────────────────────────
+        logger.info("tts_fallback_openai voice=%s chunks=%s", voice, len(chunks))
 
     client = _get_client()
     audio_parts_oai: List[bytes] = []

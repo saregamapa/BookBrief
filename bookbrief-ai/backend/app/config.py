@@ -42,9 +42,12 @@ class Settings(BaseSettings):
     openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
 
     # Manus AI (optional) — when set, audiobook/podcast TTS uses Manus tasks instead of OpenAI TTS
+    manus_api_base: str = Field(default="https://api.manus.ai", alias="MANUS_API_BASE")
     manus_api_key: str = Field(default="", alias="MANUS_API_KEY")
     manus_tts_timeout_seconds: int = Field(default=480, alias="MANUS_TTS_TIMEOUT_SECONDS")
     manus_agent_profile: str = Field(default="manus-1.6-lite", alias="MANUS_AGENT_PROFILE")
+    manus_video_timeout_seconds: int = Field(default=900, alias="MANUS_VIDEO_TIMEOUT_SECONDS")
+    manus_video_agent_profile: str = Field(default="manus-1.6", alias="MANUS_VIDEO_AGENT_PROFILE")
 
     stripe_secret_key: str = Field(default="", alias="STRIPE_SECRET_KEY")
     stripe_webhook_secret: str = Field(default="", alias="STRIPE_WEBHOOK_SECRET")

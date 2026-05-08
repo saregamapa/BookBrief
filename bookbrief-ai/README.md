@@ -37,6 +37,18 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 4. Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
+## Audiobook, Podcast, and Video Summary
+
+These features run from the **summary detail** page (`/frontend/summary-view.html`):
+
+| Feature | What it uses | Notes |
+|--------|----------------|-------|
+| **Audiobook** | `POST /api/v1/audio/narrate` + poll | Async jobs are stored in **`audio_tts_jobs`** so polling works with **multiple uvicorn workers** (e.g. Render’s `--workers 2`). |
+| **Podcast** | `POST /api/v1/audio/podcast-script` (GPT), then same `/audio/narrate` per segment | Script generation needs **`OPENAI_API_KEY`**. Optional **`MANUS_API_KEY`** switches narration to Manus tasks (with OpenAI fallback if Manus fails). |
+| **Video summary** | Manus task API via `POST /api/v1/summaries/{id}/video-summary` | Requires **`MANUS_API_KEY`** (and optional **`MANUS_API_BASE`**). |
+
+Always run **`alembic upgrade head`** after pulling so tables such as `audio_tts_jobs` exist.
+
 ## Database
 
 - **Development:** set `DATABASE_URL=sqlite:///./bookbrief.db` (default in `.env.example`).

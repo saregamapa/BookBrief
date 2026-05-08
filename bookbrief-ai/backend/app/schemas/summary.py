@@ -46,13 +46,20 @@ class SummaryListItem(BaseModel):
 
     @classmethod
     def from_row(cls, row: "BookSummary", preview_len: int = 400) -> SummaryListItem:
+        def _safe_value(enum_col, fallback: str) -> str:
+            """Return enum.value, or the raw fallback string if the DB holds an unknown value."""
+            try:
+                return enum_col.value
+            except (LookupError, ValueError, AttributeError):
+                return str(fallback)
+
         return cls(
             id=row.id,
             title=row.title,
             author=row.author,
-            source_type=row.source_type.value,
-            style=row.style.value,
-            status=row.status.value,
+            source_type=_safe_value(row.source_type, row.source_type),
+            style=_safe_value(row.style, row.style),
+            status=_safe_value(row.status, row.status),
             output_preview=(row.output_markdown or "")[:preview_len],
             created_at=row.created_at,
         )
