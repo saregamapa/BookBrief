@@ -12,7 +12,8 @@ databases:
   - name: bookbrief-db
     databaseName: bookbrief
     user: bookbrief
-    plan: starter          # upgrade to standard for production SLA
+    # Legacy Postgres plans (e.g. starter) cannot be used for *new* databases — see Render Blueprint DB `plan` docs.
+    plan: basic-256mb
 
 services:
   - type: web

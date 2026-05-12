@@ -12,32 +12,22 @@ databases:
   - name: bookbrief-db
     databaseName: bookbrief
     user: bookbrief
-    plan: professional          # upgrade to standard for production SLA
+    # Legacy Postgres plans (e.g. starter) cannot be used for *new* databases — see Render Blueprint DB `plan` docs.
+    plan: basic-256mb
 
 services:
   - type: web
     name: bookbrief-web
     runtime: python
     region: oregon         # or: frankfurt, singapore, ohio
-    plan: professional          # upgrade to standard for production
+    plan: starter
 
     # ── Build ──────────────────────────────────────────────────────────────
     rootDir: bookbrief-ai/backend
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-      alembic upgrade head
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
 
-    # ── Start ──────────────────────────────────────────────────────────────
-    startCommand: >
-      uvicorn app.main:app
-      --host 0.0.0.0
-      --port $PORT
-      --workers 2
-      --loop uvloop
-      --http httptools
-      --proxy-headers
-      --forwarded-allow-ips='*'
+    # ── Start (migrations here: full env + DATABASE_URL; avoids Settings validation during image build) ──
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2 --loop uvloop --http httptools --proxy-headers --forwarded-allow-ips='*'
 
     # ── Health check ───────────────────────────────────────────────────────
     healthCheckPath: /api/v1/health
