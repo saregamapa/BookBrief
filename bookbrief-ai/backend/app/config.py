@@ -127,7 +127,18 @@ class Settings(BaseSettings):
 
     @field_validator("database_url")
     @classmethod
-    def normalize_sqlite_url(cls, v: str) -> str:
+    def normalize_database_url(cls, v: str) -> str:
+        """Strip BOM/whitespace, accept Render-style ``postgres://``, tolerate blank env."""
+        if not isinstance(v, str):
+            v = str(v) if v is not None else ""
+        v = v.strip().lstrip("\ufeff")
+        if not v:
+            return "sqlite:///./bookbrief.db"
+        v = v.splitlines()[0].strip()
+        if not v:
+            return "sqlite:///./bookbrief.db"
+        if v.startswith("postgres://"):
+            v = "postgresql://" + v.removeprefix("postgres://")
         if v.startswith("sqlite:///"):
             return v
         if v.startswith("sqlite://"):
