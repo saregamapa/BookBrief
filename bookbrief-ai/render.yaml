@@ -12,14 +12,14 @@ databases:
   - name: bookbrief-db
     databaseName: bookbrief
     user: bookbrief
-    plan: standard          # upgrade to standard for production SLA
+    plan: professional          # upgrade to standard for production SLA
 
 services:
   - type: web
     name: bookbrief-web
     runtime: python
     region: oregon         # or: frankfurt, singapore, ohio
-    plan: standard          # upgrade to standard for production
+    plan: professional          # upgrade to standard for production
 
     # ── Build ──────────────────────────────────────────────────────────────
     rootDir: bookbrief-ai/backend
