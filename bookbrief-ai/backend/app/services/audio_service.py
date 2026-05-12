@@ -1,28 +1,17 @@
 """
-Audio service: OpenAI TTS narration + GPT-powered podcast script generation.
+Audio service: OpenRouter TTS (``OPENROUTER_TTS_MODEL``) + podcast script chat (``OPENROUTER_PODCAST_MODEL``);
+optional Manus TTS fallback when OpenRouter TTS fails or key is unset.
 """
 import re
 import json
-import base64
 import logging
 from typing import List, Optional
 
-from openai import OpenAI
-
 from app.config import get_settings
+from app.services.openrouter_client import get_openrouter_openai_client
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
-
-# Lazy client — created once on first use
-_client: Optional[OpenAI] = None
-
-
-def _get_client() -> OpenAI:
-    global _client
-    if _client is None:
-        _client = OpenAI(api_key=settings.openai_api_key)
-    return _client
 
 
 # ---------------------------------------------------------------------------
@@ -82,17 +71,77 @@ def _chunk_text(text: str, max_chars: int = 3200) -> List[str]:
 
 def text_to_speech(text: str, voice: str = "onyx") -> bytes:
     """
-    Convert text to speech audio bytes.
-    Uses Manus AI tasks when MANUS_API_KEY is set; otherwise OpenAI TTS (MP3).
-    Handles long texts by chunking; OpenAI chunks are concatenated as raw MP3.
-    Manus chunks are concatenated as raw bytes (typically MP3 per chunk).
+    Convert text to speech audio bytes using OpenRouter TTS (primary) or Manus (fallback).
+
+    Flow:
+      1. If OPENROUTER_API_KEY is set → try OpenRouter ``/audio/speech``
+         with ``OPENROUTER_TTS_MODEL`` (default: openai/gpt-4o-mini-tts).
+         Long texts are chunked and MP3 chunks are concatenated.
+      2. If OpenRouter TTS fails for any reason → fall through to Manus.
+      3. If MANUS_API_KEY is set → try Manus TTS.
+      4. If all fail → raise RuntimeError with the actual provider error included.
     """
     cleaned = _clean_for_tts(text)
     chunks = _chunk_text(cleaned)
 
-    if settings.manus_api_key.strip():
+    openrouter_exc: Optional[Exception] = None  # preserved for final error message
+
+    # ── Primary: OpenRouter TTS ───────────────────────────────────────────────
+    if (settings.openrouter_api_key or "").strip():
+        from app.services import openrouter_tts
+
+        api_key = (settings.openrouter_api_key or "").strip()
+
+        # Model fallback chain: configured model → tts-1 (widely available)
+        primary_model = settings.openrouter_tts_model
+        fallback_models = ["openai/tts-1", "openai/tts-1-hd"]
+        tts_candidates = [primary_model] + [m for m in fallback_models if m != primary_model]
+
+        for tts_model in tts_candidates:
+            logger.info(
+                "openrouter_tts_start model=%s voice=%s chunks=%s",
+                tts_model, voice, len(chunks),
+            )
+            try:
+                audio_or: list[bytes] = []
+                for i, chunk in enumerate(chunks):
+                    if not chunk.strip():
+                        continue
+                    chunk_audio = openrouter_tts.synthesize_speech(
+                        api_key,
+                        chunk,
+                        voice,
+                        base_url=settings.openrouter_api_base,
+                        model=tts_model,
+                        response_format=settings.openrouter_tts_response_format,
+                        referer=settings.openrouter_http_referer,
+                        timeout_seconds=float(settings.openrouter_tts_timeout_seconds),
+                    )
+                    audio_or.append(chunk_audio)
+                    logger.debug(
+                        "openrouter_tts_chunk_ok chunk=%s/%s bytes=%s",
+                        i + 1, len(chunks), len(chunk_audio),
+                    )
+                merged_or = b"".join(audio_or)
+                if len(merged_or) == 0:
+                    raise RuntimeError("OpenRouter TTS returned zero audio bytes")
+                logger.info(
+                    "openrouter_tts_complete model=%s total_bytes=%s", tts_model, len(merged_or)
+                )
+                return merged_or
+            except Exception as or_exc:
+                openrouter_exc = or_exc  # preserve for error reporting below
+                logger.warning(
+                    "openrouter_tts_failed model=%s voice=%s err=%s — trying next model",
+                    tts_model, voice, or_exc,
+                )
+                # Try next model in fallback chain
+
+    # ── Fallback: Manus TTS ───────────────────────────────────────────────────
+    if (settings.manus_api_key or "").strip():
         from app.services import manus_audio
 
+        logger.info("manus_tts_start voice=%s chunks=%s", voice, len(chunks))
         audio_parts: List[bytes] = []
         manus_failed = False
         for chunk in chunks:
@@ -111,50 +160,26 @@ def text_to_speech(text: str, voice: str = "onyx") -> bytes:
                 )
             except Exception as manus_exc:
                 logger.warning(
-                    "manus_tts_failed chunk_len=%s voice=%s err=%s — falling back to OpenAI TTS",
+                    "manus_tts_chunk_failed chunk_len=%s voice=%s err=%s",
                     len(chunk), voice, manus_exc,
                 )
                 manus_failed = True
-                break  # Fall back to OpenAI for the entire text
+                break
 
         if not manus_failed:
             merged = b"".join(audio_parts)
             if len(merged) > 0:
+                logger.info("manus_tts_complete total_bytes=%s", len(merged))
                 return merged
-            logger.warning("manus_tts_empty_result — falling back to OpenAI TTS")
+            logger.warning("manus_tts_empty_result")
 
-        # ── OpenAI TTS fallback ───────────────────────────────────────────────
-        logger.info("tts_fallback_openai voice=%s chunks=%s", voice, len(chunks))
-
-    client = _get_client()
-    audio_parts_oai: List[bytes] = []
-    for chunk in chunks:
-        if not chunk.strip():
-            continue
-        response = client.audio.speech.create(
-            model="tts-1",
-            voice=voice,  # type: ignore[arg-type]
-            input=chunk,
-        )
-        raw = getattr(response, "content", None)
-        if not raw and hasattr(response, "read"):
-            raw = response.read()
-
-        if isinstance(raw, str):
-            try:
-                raw = base64.b64decode(raw, validate=False)
-            except Exception:
-                raw = raw.encode("utf-8")
-
-        if not isinstance(raw, (bytes, bytearray)) or len(raw) == 0:
-            raise RuntimeError("TTS provider returned empty audio payload")
-
-        audio_parts_oai.append(bytes(raw))
-
-    merged_oai = b"".join(audio_parts_oai)
-    if len(merged_oai) == 0:
-        raise RuntimeError("No audio generated for provided text")
-    return merged_oai
+    # ── Build a helpful error that includes the real provider error ────────────
+    or_detail = f" ({openrouter_exc})" if openrouter_exc else ""
+    raise RuntimeError(
+        f"TTS generation failed{or_detail}. "
+        "Check your OPENROUTER_TTS_MODEL and API quota, "
+        "or set MANUS_API_KEY as a fallback TTS provider."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -184,36 +209,99 @@ Respond ONLY with valid JSON matching this schema:
 }"""
 
 
+def _extract_podcast_json(raw: str) -> dict:
+    """
+    Robustly extract the podcast JSON from a model response.
+
+    Handles:
+    - Clean JSON responses (ideal case)
+    - Reasoning model output with <think>...</think> blocks
+    - JSON embedded in prose / markdown code fences
+    - Partial / malformed JSON with a ``segments`` array
+    """
+    if not raw:
+        return {"segments": []}
+
+    # 1. Strip reasoning blocks produced by chain-of-thought models
+    text = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+
+    # 2. Strip markdown code fences  ```json ... ``` or ``` ... ```
+    text = re.sub(r"```(?:json)?\s*([\s\S]*?)\s*```", r"\1", text).strip()
+
+    # 3. Try parsing the cleaned text directly
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # 4. Find the first outermost {...} block in the text
+    brace_start = text.find("{")
+    if brace_start != -1:
+        depth = 0
+        for i, ch in enumerate(text[brace_start:], start=brace_start):
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    candidate = text[brace_start: i + 1]
+                    try:
+                        return json.loads(candidate)
+                    except json.JSONDecodeError:
+                        break
+
+    # 5. Last resort — try to reconstruct a segments array from the raw text
+    segs_match = re.search(r'"segments"\s*:\s*(\[.*?\])', raw, re.DOTALL)
+    if segs_match:
+        try:
+            return {"segments": json.loads(segs_match.group(1))}
+        except json.JSONDecodeError:
+            pass
+
+    logger.error("podcast_json_parse_failed raw_preview=%s", raw[:300])
+    return {"segments": []}
+
+
 def generate_podcast_script(
     summary_text: str, title: str, author: Optional[str] = None
 ) -> dict:
     """
-    Use GPT to generate a two-host podcast discussion script.
+    Use OpenRouter (``OPENROUTER_PODCAST_MODEL``) to generate a two-host podcast script.
     Returns a dict with a 'segments' list matching PodcastScriptResponse schema.
     """
-    client = _get_client()
+    client = get_openrouter_openai_client()
     author_line = f" by {author}" if author else ""
     user_prompt = (
         f'Book: "{title}"{author_line}\n\n'
         f"Summary:\n{summary_text[:7000]}"
     )
 
-    response = client.chat.completions.create(
-        model=settings.openai_model,
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": _PODCAST_SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=0.8,
-    )
+    messages = [
+        {"role": "system", "content": _PODCAST_SYSTEM_PROMPT},
+        {"role": "user", "content": user_prompt},
+    ]
+    model = settings.openrouter_podcast_model
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            response_format={"type": "json_object"},
+            messages=messages,
+            temperature=0.8,
+        )
+    except Exception as first_exc:
+        logger.warning(
+            "podcast_script_json_mode_failed model=%s err=%s — retrying without json_object",
+            model,
+            first_exc,
+        )
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=0.8,
+        )
 
     raw = response.choices[0].message.content or "{}"
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        logger.error("Failed to parse podcast JSON: %s", raw[:200])
-        data = {"segments": []}
+    data = _extract_podcast_json(raw)
 
     # Normalise: ensure voice matches speaker defaults if missing
     for seg in data.get("segments", []):

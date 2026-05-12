@@ -37,15 +37,17 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 4. Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
+5. Set **`OPENROUTER_API_KEY`** in `.env`. Summaries and translation use **`OPENROUTER_SUMMARY_MODEL`** (default Gemma). Podcast scripts use **`OPENROUTER_PODCAST_MODEL`** (default Nemotron free). Audiobook TTS uses **`OPENROUTER_TTS_MODEL`** (default OpenAI speech on OpenRouter). Video uses **`OPENROUTER_VIDEO_MODEL`** (default Google Veo Lite).
+
 ## Audiobook, Podcast, and Video Summary
 
 These features run from the **summary detail** page (`/frontend/summary-view.html`):
 
 | Feature | What it uses | Notes |
 |--------|----------------|-------|
-| **Audiobook** | `POST /api/v1/audio/narrate` + poll | Async jobs are stored in **`audio_tts_jobs`** so polling works with **multiple uvicorn workers** (e.g. Render’s `--workers 2`). |
-| **Podcast** | `POST /api/v1/audio/podcast-script` (GPT), then same `/audio/narrate` per segment | Script generation needs **`OPENAI_API_KEY`**. Optional **`MANUS_API_KEY`** switches narration to Manus tasks (with OpenAI fallback if Manus fails). |
-| **Video summary** | Manus task API via `POST /api/v1/summaries/{id}/video-summary` | Requires **`MANUS_API_KEY`** (and optional **`MANUS_API_BASE`**). |
+| **Audiobook** | `POST /api/v1/audio/narrate` + poll | TTS: OpenRouter **`/audio/speech`** + **`OPENROUTER_TTS_MODEL`**, or **Manus** if OpenRouter is unset. |
+| **Podcast** | `POST /api/v1/audio/podcast-script`, then `/audio/narrate` | Script: **`OPENROUTER_PODCAST_MODEL`**. Segments use the same TTS stack as audiobook. |
+| **Video summary** | OpenRouter **`POST /api/v1/videos`** | **`OPENROUTER_VIDEO_MODEL`** (video-capable model, e.g. Veo). Optional **`OPENROUTER_VIDEO_*`**. MP4 under **`/static/generated/videos/`**. |
 
 Always run **`alembic upgrade head`** after pulling so tables such as `audio_tts_jobs` exist.
 
@@ -84,7 +86,7 @@ If the app lives in a **subfolder** of the repo (e.g. `BookBrief/bookbrief-ai/`)
 1. Push the repo to GitHub/GitLab/Bitbucket.
 2. In [Render Dashboard](https://dashboard.render.com/) → **New** → **Blueprint**, connect the repo and apply the matching `render.yaml`.
 3. When prompted for **sync: false** variables, set at least:
-   - **OPENAI_API_KEY** — required for summarization.
+   - **OPENROUTER_API_KEY** — required for summarization, translation, audio, and video.
    - **CORS_ORIGINS** — comma-separated allowed browser origins. After the first deploy, set this to your public URL (same value as **Environment → `RENDER_EXTERNAL_URL`**, e.g. `https://bookbrief-web.onrender.com`). Same-origin requests to the app URL work without extra origins, but set this if you open the API from other sites or tools.
    - **Stripe** — `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_UNLIMITED` for billing (optional until you test Checkout).
 4. **Stripe webhook** — in Stripe Dashboard, endpoint `https://<your-service>.onrender.com/stripe/webhook`, events for subscription lifecycle; use the signing secret as `STRIPE_WEBHOOK_SECRET`.

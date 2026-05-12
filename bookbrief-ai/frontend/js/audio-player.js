@@ -661,11 +661,86 @@
         return;
       }
 
-      this._hideGenerating();
-      this._disableControls(false);
+      // Script is ready — now pre-generate ALL audio segments before playing
       this._updateChapterSelect();
       this._renderTranscript();
       this._syncUI();
+      await this._generateAllPodcastAudio();
+    }
+
+    /**
+     * Pre-generates audio for every podcast segment sequentially, showing
+     * live progress. Sequential (not parallel) to avoid TTS API rate limits.
+     * Only starts playback once ALL segments are attempted so the podcast
+     * plays through like a real continuous recording.
+     */
+    async _generateAllPodcastAudio() {
+      const segments = this._podcastSegments;
+      if (!segments || !segments.length) return;
+
+      const total = segments.length;
+      let completed = 0;
+      let firstError = null;
+      const failedIndices = new Set();
+
+      const updateProgress = () => {
+        if (this._els.genMsg) {
+          this._els.genMsg.textContent =
+            `Generating podcast audio… ${completed} / ${total} segments ready`;
+        }
+      };
+
+      this._showGenerating(`Generating podcast audio… 0 / ${total} segments ready`);
+      this._disableControls(true);
+
+      // Sequential generation — avoids overwhelming the TTS API with parallel requests
+      for (let index = 0; index < segments.length; index++) {
+        try {
+          await this._fetchAudio(index);
+        } catch (err) {
+          console.error(`[BBPlayer] Audio generation failed for segment ${index}:`, err);
+          if (!firstError) firstError = err;
+          failedIndices.add(index);
+        }
+        completed++;
+        updateProgress();
+      }
+
+      this._hideGenerating();
+      this._disableControls(false);
+
+      const successCount = total - failedIndices.size;
+
+      // If nothing at all was generated, show the real error and bail out
+      if (successCount === 0) {
+        const detail = firstError
+          ? firstError.message.replace(/^Audio generation failed[:\s]*/i, "").trim()
+          : "TTS provider returned an error";
+        this._els.sectionName.textContent =
+          `⚠ ${detail.slice(0, 80) || "Audio generation failed — check API key / quota"}`;
+        // Revert to audiobook so user isn't stuck
+        this._mode = "audiobook";
+        this._applyMode();
+        this._updateChapterSelect();
+        this._syncUI();
+        return;
+      }
+
+      // Warn if partial failures occurred but at least some audio is ready
+      if (failedIndices.size > 0) {
+        console.warn(
+          `[BBPlayer] ${failedIndices.size}/${total} segments failed. ` +
+          `Playing the ${successCount} available segments.`
+        );
+      }
+
+      // Advance to first successfully generated segment if index 0 failed
+      if (failedIndices.has(this._currentIndex)) {
+        let firstGood = 0;
+        while (firstGood < total && failedIndices.has(firstGood)) firstGood++;
+        if (firstGood < total) this._currentIndex = firstGood;
+      }
+
       this._startPlayback();
     }
 
@@ -687,7 +762,14 @@
         } catch (err) {
           console.error("[BBPlayer] Audio fetch failed:", err);
           this._hideGenerating();
-          this._els.sectionName.textContent = "⚠ Audio failed — check connection";
+          // Show the real backend error, not just a generic message
+          const detail = (err.message || "")
+            .replace(/^Audio generation failed[:\s]*/i, "")
+            .replace(/^HTTP \d+[:\s]*/i, "")
+            .trim();
+          this._els.sectionName.textContent = detail
+            ? `⚠ ${detail.slice(0, 80)}`
+            : "⚠ Audio failed — check your API key or quota";
           return;
         }
         this._hideGenerating();
@@ -880,10 +962,20 @@
     _onEnded() {
       const items = this._currentItems();
       if (this._currentIndex < items.length - 1) {
-        this._currentIndex++;
-        this._saveState();
-        this._syncUI();
-        this._startPlayback();
+        // Advance to next segment that has cached audio (skip any that failed to generate)
+        let next = this._currentIndex + 1;
+        while (next < items.length && !this._audioCache.has(this._cacheKey(next))) {
+          next++;
+        }
+        if (next < items.length) {
+          this._currentIndex = next;
+          this._saveState();
+          this._syncUI();
+          this._startPlayback();
+        } else {
+          this._els.play.textContent = "▶";
+          this._els.sectionName.textContent = "Finished";
+        }
       } else {
         this._els.play.textContent = "▶";
         this._els.sectionName.textContent = "Finished";
@@ -922,7 +1014,9 @@
       const { sectionName, prev, next, chapterSel, transcript } = this._els;
 
       sectionName.textContent = item
-        ? (this._mode === "podcast" ? `${item.speaker}: segment ${this._currentIndex + 1} / ${items.length}` : `${item.title} (${this._currentIndex + 1}/${items.length})`)
+        ? (this._mode === "podcast"
+            ? `🎙 ${item.speaker} · ${this._currentIndex + 1} / ${items.length}`
+            : `${item.title} (${this._currentIndex + 1}/${items.length})`)
         : "—";
 
       prev.disabled = this._currentIndex === 0;

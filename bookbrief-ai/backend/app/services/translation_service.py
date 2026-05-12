@@ -1,4 +1,4 @@
-"""Translate summary markdown with OpenAI; preserve structure (headings, lists, emphasis)."""
+"""Translate summary markdown via OpenRouter; preserve structure (headings, lists, emphasis)."""
 
 from __future__ import annotations
 
@@ -6,9 +6,8 @@ import logging
 import re
 from typing import FrozenSet
 
-from openai import OpenAI
-
 from app.config import get_settings
+from app.services.openrouter_client import get_openrouter_openai_client
 
 logger = logging.getLogger(__name__)
 
@@ -101,10 +100,10 @@ def translate_markdown(markdown: str, target_locale: str) -> str:
         return markdown
 
     settings = get_settings()
-    if not settings.openai_api_key:
-        raise RuntimeError("OPENAI_API_KEY is not configured")
+    if not (settings.openrouter_api_key or "").strip():
+        raise RuntimeError("OPENROUTER_API_KEY is not configured")
 
-    client = OpenAI(api_key=settings.openai_api_key)
+    client = get_openrouter_openai_client()
     chunks = _split_chunks(markdown or "")
     out_parts: list[str] = []
 
@@ -115,7 +114,7 @@ def translate_markdown(markdown: str, target_locale: str) -> str:
             f"---\n{chunk}\n---"
         )
         resp = client.chat.completions.create(
-            model=settings.openai_model,
+            model=settings.openrouter_summary_model,
             temperature=0.2,
             messages=[
                 {"role": "system", "content": _SYSTEM_PROMPT},
@@ -124,7 +123,7 @@ def translate_markdown(markdown: str, target_locale: str) -> str:
         )
         piece = (resp.choices[0].message.content or "").strip()
         if not piece:
-            raise RuntimeError("OpenAI returned empty translation")
+            raise RuntimeError("Translation model returned empty text")
         out_parts.append(piece)
         logger.debug("translation_chunk done part=%s/%s", idx + 1, len(chunks))
 

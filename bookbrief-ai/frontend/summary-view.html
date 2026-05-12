@@ -296,7 +296,7 @@
         <!-- Translation -->
         <section class="no-print view-in delay-1 mt-6 content-card rounded-2xl border border-stone-200/80 p-4 sm:p-5" aria-labelledby="translate-heading">
           <h2 id="translate-heading" class="text-sm font-semibold text-stone-800">Translation</h2>
-          <p class="mt-1 text-xs text-stone-500">OpenAI — cached per language. Markdown structure is preserved.</p>
+          <p class="mt-1 text-xs text-stone-500">OpenRouter — cached per language. Markdown structure is preserved.</p>
           <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
             <div class="min-w-0 flex-1 sm:max-w-xs">
               <label for="translate-locale" class="sr-only">Language</label>
@@ -361,7 +361,7 @@
                 </li>
                 <li id="vp-row-1" class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-stone-400">
                   <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-stone-300 text-[10px] font-semibold">2</span>
-                  <span>Starting task on Manus</span>
+                  <span>Starting video render</span>
                 </li>
                 <li id="vp-row-2" class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-stone-400">
                   <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-stone-300 text-[10px] font-semibold">3</span>
@@ -383,7 +383,6 @@
                 playsinline
                 webkit-playsinline
                 preload="auto"
-                referrerpolicy="no-referrer"
                 title="Video summary"></video>
             </div>
             <div class="mt-3 flex flex-wrap gap-2">
@@ -625,18 +624,19 @@
           }
         });
 
-        // Video summary modal — native HTML5 video (Manus CDNs often block iframe embedding).
+        // Video summary modal — HTML5 video (generated files are same-origin under /static/).
         var videoModal = document.getElementById("video-modal");
         var videoPlayer = document.getElementById("video-player");
         var videoPollTimer = null;
         var videoVttObjectUrl = null;
+        var videoPlaybackBlobUrl = null;
 
         var VIDEO_PHASE_STEP = { queued: 0, starting: 1, agent_working: 2, finalizing: 3 };
         var VIDEO_PHASE_TITLE = {
           queued: "Queued — about to start",
-          starting: "Starting your video task on Manus",
-          agent_working: "Manus is generating your video",
-          finalizing: "Fetching the file for playback",
+          starting: "Starting Google Veo (via OpenRouter)",
+          agent_working: "Veo is generating your video",
+          finalizing: "Saving your video for playback",
         };
 
         function stopVideoPoll() {
@@ -658,6 +658,12 @@
               URL.revokeObjectURL(videoVttObjectUrl);
             } catch (e) {}
             videoVttObjectUrl = null;
+          }
+          if (videoPlaybackBlobUrl) {
+            try {
+              URL.revokeObjectURL(videoPlaybackBlobUrl);
+            } catch (e) {}
+            videoPlaybackBlobUrl = null;
           }
           videoPlayer.removeAttribute("src");
           videoPlayer.load();
@@ -707,55 +713,101 @@
           }
         }
 
-        function attachVideoToPlayer(v) {
+        function attachSubtitleTrack(v) {
+          var raw = v.subtitle_vtt && String(v.subtitle_vtt).trim();
+          if (!raw) return;
+          try {
+            videoVttObjectUrl = URL.createObjectURL(
+              new Blob([raw], { type: "text/vtt;charset=utf-8" })
+            );
+            var trk = document.createElement("track");
+            trk.kind = "captions";
+            trk.label = "Subtitles";
+            trk.srclang = "en";
+            trk.src = videoVttObjectUrl;
+            trk.default = true;
+            videoPlayer.appendChild(trk);
+            if (videoPlayer.textTracks && videoPlayer.textTracks.length > 0) {
+              videoPlayer.textTracks[0].mode = "showing";
+            }
+          } catch (e) {
+            /* Subtitles are optional */
+          }
+        }
+
+        /**
+         * Load video via same-origin proxy (Bearer fetch → blob). Raw CDN URLs often
+         * trigger MEDIA_ERR_SRC_NOT_SUPPORTED (error 4) as a plain video src.
+         */
+        async function attachVideoToPlayer(v) {
           clearVideoPlayer();
-          var url = v.video_url;
           if (v.poster_url) {
             videoPlayer.setAttribute("poster", v.poster_url);
           }
 
-          function attachSubtitleTrack() {
-            var raw = v.subtitle_vtt && String(v.subtitle_vtt).trim();
-            if (!raw) return;
-            try {
-              videoVttObjectUrl = URL.createObjectURL(
-                new Blob([raw], { type: "text/vtt;charset=utf-8" })
-              );
-              var trk = document.createElement("track");
-              trk.kind = "captions";
-              trk.label = "Subtitles";
-              trk.srclang = "en";
-              trk.src = videoVttObjectUrl;
-              trk.default = true;
-              videoPlayer.appendChild(trk);
-              if (videoPlayer.textTracks && videoPlayer.textTracks.length > 0) {
-                videoPlayer.textTracks[0].mode = "showing";
-              }
-            } catch (e) {
-              /* Subtitles are optional — never block playback */
-            }
+          var rawUrl = v.video_url || "";
+          if (rawUrl.indexOf("/static/") === 0) {
+            videoPlayer.onerror = function () {
+              BBUi.showToast("Playback failed — try Download.", "error");
+            };
+            videoPlayer.src = rawUrl;
+            videoPlayer.preload = "auto";
+            videoPlayer.load();
+            attachSubtitleTrack(v);
+            return;
           }
 
+          var token =
+            window.BBAuth && typeof BBAuth.getToken === "function" ? BBAuth.getToken() : null;
+          var mediaUrl =
+            "/api/v1/summaries/" +
+            encodeURIComponent(String(id)) +
+            "/video-summary/media";
+
           videoPlayer.onerror = function () {
-            var code = videoPlayer.error ? videoPlayer.error.code : 0;
-            BBUi.showToast(
-              "Could not play this video in the browser (error " + code + "). Try Download.",
-              "error"
-            );
+            BBUi.showToast("Playback failed — try Download or open the original link.", "error");
           };
 
-          videoPlayer.src = url;
-          videoPlayer.preload = "auto";
-          videoPlayer.load();
+          try {
+            var res = await fetch(mediaUrl, {
+              headers: token ? { Authorization: "Bearer " + token } : {},
+              credentials: "same-origin",
+            });
+            if (!res.ok) {
+              var detailMsg = "Could not load video.";
+              try {
+                var j = await res.json();
+                if (j && j.detail) {
+                  detailMsg =
+                    typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail);
+                }
+              } catch (ej) {}
+              throw new Error(detailMsg);
+            }
+            var blob = await res.blob();
+            if (!blob || blob.size < 256) {
+              throw new Error("Video file was empty or too small.");
+            }
+            videoPlaybackBlobUrl = URL.createObjectURL(blob);
+            videoPlayer.src = videoPlaybackBlobUrl;
+            videoPlayer.preload = "auto";
+            videoPlayer.load();
 
-          videoPlayer.addEventListener(
-            "loadedmetadata",
-            function onReady() {
-              videoPlayer.removeEventListener("loadedmetadata", onReady);
-              attachSubtitleTrack();
-            },
-            { once: true }
-          );
+            videoPlayer.addEventListener(
+              "loadedmetadata",
+              function onReady() {
+                videoPlayer.removeEventListener("loadedmetadata", onReady);
+                attachSubtitleTrack(v);
+              },
+              { once: true }
+            );
+          } catch (err) {
+            videoPlayer.onerror = null;
+            var msg = err && err.message ? err.message : "Could not load video.";
+            setVideoStatus(msg, "err");
+            BBUi.showToast(msg + " You can still use Download.", "error");
+            throw err;
+          }
         }
 
         function closeVideoModal() {
@@ -782,8 +834,12 @@
           var sh = document.getElementById("btn-video-share");
           if (v.status === "ready" && v.video_url) {
             document.getElementById("video-progress-wrap").classList.add("hidden");
-            setVideoStatus("Here is your video.", "ok");
-            attachVideoToPlayer(v);
+            setVideoStatus("Loading video…", "");
+            attachVideoToPlayer(v)
+              .then(function () {
+                setVideoStatus("Here is your video.", "ok");
+              })
+              .catch(function () {});
             dl.href = v.video_url;
             dl.classList.remove("hidden");
             sh.dataset.url = v.video_url;

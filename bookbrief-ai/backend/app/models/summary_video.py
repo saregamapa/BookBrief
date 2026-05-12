@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class SummaryVideo(Base):
-    """Manus-generated video summary for a book summary (one row per summary)."""
+    """Generated video summary for a book summary (one row per summary; e.g. OpenRouter / Veo)."""
 
     __tablename__ = "summary_videos"
 

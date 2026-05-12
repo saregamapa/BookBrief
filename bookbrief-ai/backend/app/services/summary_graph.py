@@ -18,6 +18,29 @@ from app.models.enums import SummaryStyle
 from app.services.chunking import chunk_source_text
 from app.services.summary_prompts import style_instruction
 
+
+def _has_summarization_api_key() -> bool:
+    return bool((get_settings().openrouter_api_key or "").strip())
+
+
+def _llm() -> ChatOpenAI:
+    """LangChain chat pointed at OpenRouter using ``OPENROUTER_SUMMARY_MODEL``."""
+    settings = get_settings()
+    key = (settings.openrouter_api_key or "").strip()
+    model = (settings.openrouter_summary_model or "").strip() or "google/gemma-4-26b-a4b-it"
+    root = settings.openrouter_api_base.strip().rstrip("/")
+    headers: dict[str, str] = {"X-Title": "BookBrief"}
+    ref = (settings.openrouter_http_referer or "").strip()
+    if ref:
+        headers["HTTP-Referer"] = ref
+    return ChatOpenAI(
+        model=model,
+        temperature=0.25,
+        api_key=key or None,
+        base_url=root,
+        default_headers=headers,
+    )
+
 _EXTRACT_SYSTEM = (
     "You are an expert analytical reader. From the excerpt, extract: main claims or plot beats, "
     "supporting evidence or scenes, important definitions or characters, and any turning points. "
@@ -44,15 +67,6 @@ class SummaryState(TypedDict, total=False):
     final_markdown: str
 
 
-def _llm() -> ChatOpenAI:
-    settings = get_settings()
-    return ChatOpenAI(
-        model=settings.openai_model,
-        temperature=0.25,
-        api_key=settings.openai_api_key or None,
-    )
-
-
 def _parse_style(value: str) -> SummaryStyle:
     try:
         return SummaryStyle(value)
@@ -61,9 +75,11 @@ def _parse_style(value: str) -> SummaryStyle:
 
 
 def _prepare_source_and_chunks(state: SummaryState) -> dict[str, Any]:
-    settings = get_settings()
-    if not settings.openai_api_key:
-        return {"error": "OPENAI_API_KEY is not configured.", "chunks": []}
+    if not _has_summarization_api_key():
+        return {
+            "error": "OPENROUTER_API_KEY is not configured (required for summarization).",
+            "chunks": [],
+        }
 
     text = (state.get("source_text") or "").strip()
     title = (state.get("title") or "").strip()

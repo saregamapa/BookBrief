@@ -9,3 +9,5 @@ __pycache__/
 .DS_Store
 dist/
 *.egg-info/
+# Sora / generated media (keep directory via .gitkeep)
+static/generated/videos/*.mp4

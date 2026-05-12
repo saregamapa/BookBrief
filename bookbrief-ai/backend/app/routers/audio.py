@@ -7,9 +7,8 @@ Endpoints:
   POST /audio/podcast-script          → JSON segments (fast, uses GPT)
 
 Why the job pattern?
-  Manus TTS tasks take 1–8 minutes.  A synchronous HTTP endpoint would be killed
-  by Render (30s), nginx (60s), or the browser long before Manus finishes.
-  The background-task + poll pattern avoids all proxy / browser timeouts.
+  TTS jobs (OpenRouter, Manus, or long OpenAI runs) can exceed proxy timeouts.
+  The background-task + poll pattern avoids Render/nginx/browser limits.
 """
 import logging
 

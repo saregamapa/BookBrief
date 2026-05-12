@@ -58,7 +58,7 @@ services:
         sync: false
       - key: JWT_SECRET_KEY
         sync: false
-      - key: OPENAI_API_KEY
+      - key: OPENROUTER_API_KEY
         sync: false
       - key: STRIPE_SECRET_KEY
         sync: false
@@ -72,8 +72,14 @@ services:
       # Non-secret config — safe to set here
       - key: DEBUG
         value: "false"
-      - key: OPENAI_MODEL
-        value: "gpt-4o-mini"
+      - key: OPENROUTER_SUMMARY_MODEL
+        value: "google/gemma-4-26b-a4b-it"
+      - key: OPENROUTER_PODCAST_MODEL
+        value: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+      - key: OPENROUTER_TTS_MODEL
+        value: "openai/gpt-4o-mini-tts"
+      - key: OPENROUTER_VIDEO_MODEL
+        value: "google/veo-3.1-lite"
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "10080"
       - key: JWT_ALGORITHM
