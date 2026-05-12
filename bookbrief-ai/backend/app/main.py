@@ -160,6 +160,11 @@ def create_app() -> FastAPI:
     async def on_startup() -> None:
         # Reset any summaries stuck in 'processing' from a previous crash.
         reset_stuck_processing_jobs()
+        if settings.stripe_secret_key and not (settings.stripe_webhook_secret or "").strip():
+            logger.warning(
+                "stripe_webhook_secret_missing",
+                hint="POST /api/v1/stripe/webhook will return 503 until STRIPE_WEBHOOK_SECRET is set",
+            )
         logger.info("bookbrief_ready", frontend_dir=str(FRONTEND_DIR))
 
     @app.on_event("shutdown")

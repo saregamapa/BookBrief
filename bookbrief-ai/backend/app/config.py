@@ -114,8 +114,7 @@ class Settings(BaseSettings):
             bad.append("OPENROUTER_API_KEY is not set")
         if not self.stripe_secret_key:
             bad.append("STRIPE_SECRET_KEY is not set")
-        if not self.stripe_webhook_secret:
-            bad.append("STRIPE_WEBHOOK_SECRET is not set")
+        # Webhook signing secret is optional at boot: ``POST /stripe/webhook`` returns 503 until set.
         if "sqlite" in self.database_url.lower():
             bad.append("DATABASE_URL is SQLite (use PostgreSQL in production)")
 
