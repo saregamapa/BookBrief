@@ -1,8 +1,24 @@
 from functools import lru_cache
+import os
 from typing import Literal, Optional
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _is_render_runtime() -> bool:
+    return bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_URL"))
+
+
+def _default_database_url() -> str:
+    """Local dev uses SQLite. On Render, DATABASE_URL must come from linked Postgres or the dashboard."""
+    if _is_render_runtime():
+        raise ValueError(
+            "DATABASE_URL is not set. On Render: Dashboard → your Web Service → Environment → "
+            "link your PostgreSQL instance (or add DATABASE_URL from Postgres → Info → Internal Database URL). "
+            "If you use Docker on Render, link the database to that service so DATABASE_URL is injected."
+        )
+    return "sqlite:///./bookbrief.db"
 
 
 class Settings(BaseSettings):
@@ -24,7 +40,7 @@ class Settings(BaseSettings):
     )
 
     database_url: str = Field(
-        default="sqlite:///./bookbrief.db",
+        default_factory=_default_database_url,
         alias="DATABASE_URL",
     )
 
@@ -116,7 +132,13 @@ class Settings(BaseSettings):
             bad.append("STRIPE_SECRET_KEY is not set")
         # Webhook signing secret is optional at boot: ``POST /stripe/webhook`` returns 503 until set.
         if "sqlite" in self.database_url.lower():
-            bad.append("DATABASE_URL is SQLite (use PostgreSQL in production)")
+            hint = "Use PostgreSQL in production (Render: link Postgres or set DATABASE_URL to the Internal Database URL)."
+            if self.render_external_url or os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_URL"):
+                hint += (
+                    " This service is running on Render but still has a SQLite URL — "
+                    "the database is usually not linked to this web service."
+                )
+            bad.append(f"DATABASE_URL is SQLite ({hint})")
 
         if bad:
             issues = "\n  • ".join(bad)
@@ -128,15 +150,20 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def normalize_database_url(cls, v: str) -> str:
-        """Strip BOM/whitespace, accept Render-style ``postgres://``, tolerate blank env."""
+        """Strip BOM/whitespace, first line only, Render-style ``postgres://`` → ``postgresql://``."""
         if not isinstance(v, str):
             v = str(v) if v is not None else ""
         v = v.strip().lstrip("\ufeff")
         if not v:
-            return "sqlite:///./bookbrief.db"
+            raise ValueError(
+                "DATABASE_URL is empty. Set it to a PostgreSQL URL "
+                "(Render: Environment → link Postgres or paste Internal Database URL)."
+            )
         v = v.splitlines()[0].strip()
         if not v:
-            return "sqlite:///./bookbrief.db"
+            raise ValueError(
+                "DATABASE_URL is empty after stripping. Use a single-line PostgreSQL connection string."
+            )
         if v.startswith("postgres://"):
             v = "postgresql://" + v.removeprefix("postgres://")
         if v.startswith("sqlite:///"):
