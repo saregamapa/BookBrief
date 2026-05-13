@@ -34,8 +34,9 @@ COPY bookbrief-ai/backend/ ./
 # main.py computes ROOT_DIR = Path(__file__).parent.parent.parent = /
 # so it serves frontend from /frontend and static from /static
 COPY bookbrief-ai/frontend/ /frontend/
+COPY bookbrief-ai/static/ /static/
 
-RUN chown -R bookbrief:bookbrief /app && chown -R bookbrief:bookbrief /frontend
+RUN chown -R bookbrief:bookbrief /app /frontend /static
 
 USER bookbrief
 
