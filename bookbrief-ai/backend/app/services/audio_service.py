@@ -2,16 +2,17 @@
 Audio service: OpenRouter TTS (``OPENROUTER_TTS_MODEL``) + podcast script chat (``OPENROUTER_PODCAST_MODEL``);
 optional Manus TTS fallback when OpenRouter TTS fails or key is unset.
 """
-import re
+import io
 import json
 import logging
+import re
+import wave
 from typing import List, Optional
 
 from app.config import get_settings
 from app.services.openrouter_client import get_openrouter_openai_client
 
 logger = logging.getLogger(__name__)
-settings = get_settings()
 
 
 # ---------------------------------------------------------------------------
@@ -39,7 +40,37 @@ def _clean_for_tts(text: str) -> str:
     return text.strip()
 
 
-def _chunk_text(text: str, max_chars: int = 3200) -> List[str]:
+def _merge_wav_chunks(parts: List[bytes]) -> bytes:
+    """Concatenate PCM from multiple WAV files (raw MP3 concat is invalid for decoders)."""
+    bufs = [p for p in parts if p and len(p) > 44]
+    if not bufs:
+        return b""
+    if len(bufs) == 1:
+        return bufs[0]
+    out = io.BytesIO()
+    w_out: Optional[wave.Wave_write] = None
+    ref: tuple[int, int, int] | None = None
+    for raw in bufs:
+        with wave.open(io.BytesIO(raw), "rb") as w_in:
+            params = (w_in.getnchannels(), w_in.getsampwidth(), w_in.getframerate())
+            if ref is None:
+                ref = params
+                w_out = wave.open(out, "wb")
+                w_out.setnchannels(params[0])
+                w_out.setsampwidth(params[1])
+                w_out.setframerate(params[2])
+            elif params != ref:
+                if w_out is not None:
+                    w_out.close()
+                raise RuntimeError("TTS WAV chunks have mismatched format (cannot merge)")
+            assert w_out is not None
+            w_out.writeframes(w_in.readframes(w_in.getnframes()))
+    if w_out is not None:
+        w_out.close()
+    return out.getvalue()
+
+
+def _chunk_text(text: str, max_chars: int = 2400) -> List[str]:
     """Split text at sentence boundaries so each chunk ≤ max_chars."""
     if len(text) <= max_chars:
         return [text]
@@ -76,11 +107,13 @@ def text_to_speech(text: str, voice: str = "onyx") -> bytes:
     Flow:
       1. If OPENROUTER_API_KEY is set → try OpenRouter ``/audio/speech``
          with ``OPENROUTER_TTS_MODEL`` (default: openai/gpt-4o-mini-tts).
-         Long texts are chunked and MP3 chunks are concatenated.
+         Long texts are chunked; multiple chunks use **WAV** and are merged into one WAV
+         (concatenating MP3 binaries produces invalid audio).
       2. If OpenRouter TTS fails for any reason → fall through to Manus.
       3. If MANUS_API_KEY is set → try Manus TTS.
       4. If all fail → raise RuntimeError with the actual provider error included.
     """
+    settings = get_settings()
     cleaned = _clean_for_tts(text)
     chunks = _chunk_text(cleaned)
 
@@ -104,6 +137,10 @@ def text_to_speech(text: str, voice: str = "onyx") -> bytes:
             )
             try:
                 audio_or: list[bytes] = []
+                use_wav_merge = len(chunks) > 1
+                response_fmt = (
+                    "wav" if use_wav_merge else (settings.openrouter_tts_response_format or "mp3")
+                )
                 for i, chunk in enumerate(chunks):
                     if not chunk.strip():
                         continue
@@ -113,7 +150,7 @@ def text_to_speech(text: str, voice: str = "onyx") -> bytes:
                         voice,
                         base_url=settings.openrouter_api_base,
                         model=tts_model,
-                        response_format=settings.openrouter_tts_response_format,
+                        response_format=response_fmt,
                         referer=settings.openrouter_http_referer,
                         timeout_seconds=float(settings.openrouter_tts_timeout_seconds),
                     )
@@ -122,7 +159,10 @@ def text_to_speech(text: str, voice: str = "onyx") -> bytes:
                         "openrouter_tts_chunk_ok chunk=%s/%s bytes=%s",
                         i + 1, len(chunks), len(chunk_audio),
                     )
-                merged_or = b"".join(audio_or)
+                if use_wav_merge:
+                    merged_or = _merge_wav_chunks(audio_or)
+                else:
+                    merged_or = b"".join(audio_or)
                 if len(merged_or) == 0:
                     raise RuntimeError("OpenRouter TTS returned zero audio bytes")
                 logger.info(
@@ -191,7 +231,7 @@ The show has two hosts:
   • Alex — enthusiastic, asks probing questions, focuses on themes and meaning (voice: nova)
   • Jordan — analytical, provides deeper context, connects ideas to real life (voice: onyx)
 
-Given a book summary, write an engaging 10–14-segment conversation.
+Given a book summary, write an engaging 14–22-segment conversation (longer segments when the summary is rich).
 Rules:
 - Alternate between Alex and Jordan (start with Alex)
 - Each segment: 1–3 natural-sounding sentences
@@ -269,6 +309,7 @@ def generate_podcast_script(
     Use OpenRouter (``OPENROUTER_PODCAST_MODEL``) to generate a two-host podcast script.
     Returns a dict with a 'segments' list matching PodcastScriptResponse schema.
     """
+    settings = get_settings()
     client = get_openrouter_openai_client()
     author_line = f" by {author}" if author else ""
     user_prompt = (

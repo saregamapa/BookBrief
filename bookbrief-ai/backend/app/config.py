@@ -82,7 +82,13 @@ class Settings(BaseSettings):
     )
     openrouter_tts_response_format: str = Field(default="mp3", alias="OPENROUTER_TTS_RESPONSE_FORMAT")
     openrouter_tts_timeout_seconds: float = Field(default=300.0, alias="OPENROUTER_TTS_TIMEOUT_SECONDS")
-    openrouter_video_duration: int = Field(default=8, ge=4, le=8, alias="OPENROUTER_VIDEO_DURATION")
+    # Target clip length in **seconds** (Veo / OpenRouter; provider may clamp).
+    openrouter_video_duration: int = Field(
+        default=90,
+        ge=8,
+        le=120,
+        alias="OPENROUTER_VIDEO_DURATION",
+    )
     openrouter_video_resolution: str = Field(default="720p", alias="OPENROUTER_VIDEO_RESOLUTION")
     openrouter_video_aspect_ratio: str = Field(default="16:9", alias="OPENROUTER_VIDEO_ASPECT_RATIO")
     openrouter_video_generate_audio: bool = Field(

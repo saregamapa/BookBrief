@@ -367,8 +367,8 @@
       this._markdown = markdown;
       this._onClose = onClose || null;
 
-      // State
-      this._mode = (options && options.startMode === "podcast") ? "podcast" : "audiobook"; // "audiobook" | "podcast"
+      // State — load persisted prefs first, then apply explicit entry mode (overrides LS mode)
+      this._mode = "audiobook";
       this._sections = parseSections(markdown); // audiobook sections
       this._podcastSegments = null; // array of PodcastSegment objects
       this._currentIndex = 0;
@@ -394,6 +394,9 @@
       this._els = {};
 
       this._loadState();
+      if (options && (options.startMode === "podcast" || options.startMode === "audiobook")) {
+        this._mode = options.startMode;
+      }
     }
 
     // ── State persistence ────────────────────────────────────────────────────
@@ -653,8 +656,7 @@
         this._hideGenerating();
         this._disableControls(false);
         alert("Podcast generation failed. Please try again.");
-        // Revert to audiobook
-        this._mode = "audiobook";
+        this._podcastSegments = null;
         this._applyMode();
         this._updateChapterSelect();
         this._syncUI();
@@ -718,8 +720,11 @@
           : "TTS provider returned an error";
         this._els.sectionName.textContent =
           `⚠ ${detail.slice(0, 80) || "Audio generation failed — check API key / quota"}`;
-        // Revert to audiobook so user isn't stuck
-        this._mode = "audiobook";
+        alert(
+          (detail || "TTS failed") +
+            "\n\nYou can retry from the Podcast tab, or switch to Audiobook."
+        );
+        this._podcastSegments = null;
         this._applyMode();
         this._updateChapterSelect();
         this._syncUI();
@@ -870,7 +875,7 @@
 
           // HTTP 200 — audio bytes are in the body
           const blob = await pollRes.blob();
-          const okSize = blob && blob.size >= 256;
+          const okSize = blob && blob.size >= 128;
           const ct = (blob && blob.type) || "";
           const okType =
             !ct ||

@@ -34,13 +34,15 @@ def _headers(api_key: str, referer: Optional[str], title: str) -> dict[str, str]
     return h
 
 
-def _build_prompt(title: str, markdown: str) -> str:
-    excerpt = (markdown or "").strip()[:6000]
+def _build_prompt(title: str, markdown: str, *, target_seconds: int) -> str:
+    excerpt = (markdown or "").strip()[:14000]
     return (
         "Motion graphics and cinematic b-roll summarizing a book or long article for adults. "
         "Abstract typography, icons, charts, and tasteful transitions — no real public figures, "
         "no identifiable copyrighted characters, no photorealistic unknown faces. "
-        "Clear narration through visuals and short on-screen titles where helpful.\n\n"
+        "Structure the piece as a **complete narrative arc** of the book: hook, core themes, "
+        "key arguments or plot beats, and a satisfying closing takeaway — paced for roughly "
+        f"{target_seconds} seconds of runtime (not a teaser; cover the full summary below).\n\n"
         f"Title: {title or 'Untitled'}\n\n"
         "Source material (Markdown — use ideas only, do not show raw markdown on screen):\n"
         f"{excerpt}"
@@ -55,7 +57,7 @@ def generate_video_summary(
     summary_id: int,
     base_url: str = "https://openrouter.ai/api/v1",
     model: str = "google/veo-3.1-lite",
-    duration: int = 8,
+    duration: int = 90,
     resolution: str = "720p",
     aspect_ratio: str = "16:9",
     referer: Optional[str] = None,
@@ -73,14 +75,14 @@ def generate_video_summary(
     if not key:
         raise RuntimeError("OPENROUTER_API_KEY is not configured")
 
-    dur = max(4, min(8, int(duration)))
+    dur = max(8, min(120, int(duration)))
     root = base_url.rstrip("/")
 
     def emit(phase: str, detail: str) -> None:
         if on_progress:
             on_progress(phase, detail)
 
-    prompt = _build_prompt(title, markdown)
+    prompt = _build_prompt(title, markdown, target_seconds=dur)
     emit("starting", "Submitting video job to OpenRouter (Google Veo)…")
 
     payload = {

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from typing import Optional
 
 import httpx
@@ -95,23 +96,37 @@ def synthesize_speech(
         "response_format": response_format,
     }
     timeout = httpx.Timeout(timeout_seconds, connect=60.0)
-    try:
-        with httpx.Client(timeout=timeout) as client:
-            r = client.post(url, headers=_headers(api_key, referer, title), json=body)
-    except httpx.TimeoutException as exc:
-        raise RuntimeError(
-            "OpenRouter TTS timed out — check your network or increase OPENROUTER_TTS_TIMEOUT_SECONDS."
-        ) from exc
-    except httpx.RequestError as exc:
-        raise RuntimeError(
-            f"OpenRouter TTS could not reach the API ({type(exc).__name__}: {exc}). "
-            "Check internet access, firewall, and that OPENROUTER_API_BASE is correct."
-        ) from exc
-    if r.status_code >= 400:
-        msg = _extract_error_message(r)
-        raise RuntimeError(f"OpenRouter TTS HTTP {r.status_code}: {msg}")
-    raw = r.content
-    if len(raw) < 256:
-        raise RuntimeError("OpenRouter TTS returned empty or trivial audio")
-    logger.info("openrouter_tts_ok model=%s bytes=%s", model, len(raw))
-    return raw
+    for attempt in range(4):
+        try:
+            with httpx.Client(timeout=timeout) as client:
+                r = client.post(url, headers=_headers(api_key, referer, title), json=body)
+        except httpx.TimeoutException as exc:
+            raise RuntimeError(
+                "OpenRouter TTS timed out — check your network or increase OPENROUTER_TTS_TIMEOUT_SECONDS."
+            ) from exc
+        except httpx.RequestError as exc:
+            raise RuntimeError(
+                f"OpenRouter TTS could not reach the API ({type(exc).__name__}: {exc}). "
+                "Check internet access, firewall, and that OPENROUTER_API_BASE is correct."
+            ) from exc
+
+        if r.status_code in (429, 502, 503, 504) and attempt < 3:
+            wait = 1.5 * (2**attempt)
+            logger.warning(
+                "openrouter_tts_retry status=%s attempt=%s sleep=%ss",
+                r.status_code,
+                attempt + 1,
+                wait,
+            )
+            time.sleep(wait)
+            continue
+
+        if r.status_code >= 400:
+            msg = _extract_error_message(r)
+            raise RuntimeError(f"OpenRouter TTS HTTP {r.status_code}: {msg}")
+        raw = r.content
+        min_len = 80 if (response_format or "").lower() == "wav" else 256
+        if len(raw) < min_len:
+            raise RuntimeError("OpenRouter TTS returned empty or trivial audio")
+        logger.info("openrouter_tts_ok model=%s bytes=%s", model, len(raw))
+        return raw

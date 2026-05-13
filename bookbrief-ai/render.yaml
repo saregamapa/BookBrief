@@ -70,6 +70,8 @@ services:
         value: "openai/gpt-4o-mini-tts"
       - key: OPENROUTER_VIDEO_MODEL
         value: "google/veo-3.1-lite"
+      - key: OPENROUTER_VIDEO_DURATION
+        value: "90"
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "10080"
       - key: JWT_ALGORITHM

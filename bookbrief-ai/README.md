@@ -47,7 +47,7 @@ These features run from the **summary detail** page (`/frontend/summary-view.htm
 |--------|----------------|-------|
 | **Audiobook** | `POST /api/v1/audio/narrate` + poll | TTS: OpenRouter **`/audio/speech`** + **`OPENROUTER_TTS_MODEL`**, or **Manus** if OpenRouter is unset. |
 | **Podcast** | `POST /api/v1/audio/podcast-script`, then `/audio/narrate` | Script: **`OPENROUTER_PODCAST_MODEL`**. Segments use the same TTS stack as audiobook. |
-| **Video summary** | OpenRouter **`POST /api/v1/videos`** | **`OPENROUTER_VIDEO_MODEL`** (video-capable model, e.g. Veo). Optional **`OPENROUTER_VIDEO_*`**. MP4 under **`/static/generated/videos/`**. |
+| **Video summary** | OpenRouter **`POST /api/v1/videos`** | **`OPENROUTER_VIDEO_MODEL`** (e.g. Veo). **`OPENROUTER_VIDEO_DURATION`** = target length in **seconds** (default 90, max 120; provider may clamp). MP4 under **`/static/generated/videos/`**. |
 
 Always run **`alembic upgrade head`** after pulling so tables such as `audio_tts_jobs` exist.
 
