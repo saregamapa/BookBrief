@@ -285,7 +285,12 @@
   // ═══════════════════════════════════════════════════════════════════════════
   // Player HTML template
   // ═══════════════════════════════════════════════════════════════════════════
-  function buildPlayerHTML(title) {
+  function buildPlayerHTML(title, mode) {
+    var isPodcast = mode === "podcast";
+    var badgeClass = isPodcast ? "bb-ap-badge podcast" : "bb-ap-badge";
+    var badgeText  = isPodcast ? "PODCAST" : "AUDIOBOOK";
+    var audioBtnClass   = isPodcast ? "bb-ap-mode-btn" : "bb-ap-mode-btn active";
+    var podcastBtnClass = isPodcast ? "bb-ap-mode-btn podcast active" : "bb-ap-mode-btn podcast";
     return `
 <div class="bb-ap-bar" id="bb-ap-bar">
   <div class="bb-ap-bar-left">
@@ -296,7 +301,7 @@
     </div>
   </div>
   <div class="bb-ap-bar-right">
-    <span class="bb-ap-badge" id="bb-ap-badge">AUDIOBOOK</span>
+    <span class="${badgeClass}" id="bb-ap-badge">${badgeText}</span>
     <button class="bb-ap-min-btn" id="bb-ap-min-btn" title="Minimise">⌄</button>
     <button class="bb-ap-close-btn" id="bb-ap-close-btn" title="Close player">✕</button>
   </div>
@@ -319,8 +324,8 @@
   <!-- Options -->
   <div class="bb-ap-options">
     <div class="bb-ap-modes">
-      <button class="bb-ap-mode-btn active" id="bb-ap-mode-audio" data-mode="audiobook">📖 Audiobook</button>
-      <button class="bb-ap-mode-btn podcast" id="bb-ap-mode-podcast" data-mode="podcast">🎙 Podcast</button>
+      <button class="${audioBtnClass}" id="bb-ap-mode-audio" data-mode="audiobook">📖 Audiobook</button>
+      <button class="${podcastBtnClass}" id="bb-ap-mode-podcast" data-mode="podcast">🎙 Podcast</button>
     </div>
 
     <select class="bb-ap-select bb-ap-chapter-sel" id="bb-ap-chapter-sel" title="Jump to chapter/segment"></select>
@@ -439,7 +444,7 @@
       // Create container
       const el = document.createElement("div");
       el.id = "bb-audio-player";
-      el.innerHTML = buildPlayerHTML(this._title);
+      el.innerHTML = buildPlayerHTML(this._title, this._mode);
       document.body.appendChild(el);
       this._el = el;
 

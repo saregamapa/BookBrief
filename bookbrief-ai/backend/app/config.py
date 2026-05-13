@@ -71,8 +71,9 @@ class Settings(BaseSettings):
         alias="OPENROUTER_PODCAST_MODEL",
     )
     # Speech API ``POST /audio/speech`` — must be a TTS-capable model (not general chat).
+    # openai/tts-1 is broadly available on OpenRouter; gpt-4o-mini-tts is unreliable there.
     openrouter_tts_model: str = Field(
-        default="openai/gpt-4o-mini-tts",
+        default="openai/tts-1",
         alias="OPENROUTER_TTS_MODEL",
     )
     # Video API ``POST /videos`` — must be a video model (e.g. Google Veo on OpenRouter).
@@ -88,6 +89,13 @@ class Settings(BaseSettings):
         ge=8,
         le=120,
         alias="OPENROUTER_VIDEO_DURATION",
+    )
+    # Number of individual Veo clips to generate and concatenate (each ~8 s → 10 clips ≈ 80 s).
+    openrouter_video_clips: int = Field(
+        default=10,
+        ge=1,
+        le=15,
+        alias="OPENROUTER_VIDEO_CLIPS",
     )
     openrouter_video_resolution: str = Field(default="720p", alias="OPENROUTER_VIDEO_RESOLUTION")
     openrouter_video_aspect_ratio: str = Field(default="16:9", alias="OPENROUTER_VIDEO_ASPECT_RATIO")

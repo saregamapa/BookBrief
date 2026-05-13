@@ -21,6 +21,7 @@ RUN addgroup --system bookbrief && adduser --system --ingroup bookbrief bookbrie
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libpq5 \
+        ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /install /usr/local

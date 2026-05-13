@@ -112,6 +112,7 @@ def _run_video_job(video_row_id: int) -> None:
                 base_url=settings.openrouter_api_base,
                 model=settings.openrouter_video_model,
                 duration=settings.openrouter_video_duration,
+                num_clips=settings.openrouter_video_clips,
                 resolution=settings.openrouter_video_resolution,
                 aspect_ratio=settings.openrouter_video_aspect_ratio,
                 referer=settings.openrouter_http_referer,
