@@ -1,5 +1,5 @@
 /**
- * libraire — JWT session helpers.
+ * Libraire — JWT session helpers.
  */
 (function (global) {
   "use strict";

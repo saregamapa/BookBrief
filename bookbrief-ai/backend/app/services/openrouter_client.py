@@ -13,7 +13,7 @@ def get_openrouter_openai_client() -> OpenAI:
     if not key:
         raise RuntimeError("OPENROUTER_API_KEY is not configured")
     base = (s.openrouter_api_base or "").strip().rstrip("/")
-    headers: dict[str, str] = {"X-Title": "libraire"}
+    headers: dict[str, str] = {"X-Title": "Libraire"}
     ref = (s.openrouter_http_referer or "").strip()
     if ref:
         headers["HTTP-Referer"] = ref

@@ -83,7 +83,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.app_name,
         description=(
-            "**libraire** — AI-powered book summaries, audiobooks, and podcasts. "
+            "**Libraire** — AI-powered book summaries, audiobooks, and podcasts. "
             "Stripe subscriptions, and a reading-focused UI.\n\n"
             "All versioned API routes live under `/api/v1/`.  "
             "Authentication uses short-lived Bearer JWTs obtained via `POST /api/v1/auth/login`."

@@ -26,7 +26,7 @@ from app.services.summary_prompts import style_instruction
 log = structlog.get_logger(__name__)
 
 _SUMMARIZE_SYSTEM = (
-    "You are libraire: precise, readable, bookish tone. "
+    "You are Libraire: precise, readable, bookish tone. "
     "Output polished markdown only — use ## and ### headings, one top-level # title if appropriate. "
     "No preamble, no code fences, no meta commentary about being an AI."
 )
@@ -42,7 +42,7 @@ def _llm() -> ChatOpenAI:
     key = (settings.openrouter_api_key or "").strip()
     model = (settings.openrouter_summary_model or "").strip() or "google/gemma-4-26b-a4b-it"
     root = settings.openrouter_api_base.strip().rstrip("/")
-    headers: dict[str, str] = {"X-Title": "libraire"}
+    headers: dict[str, str] = {"X-Title": "Libraire"}
     ref = (settings.openrouter_http_referer or "").strip()
     if ref:
         headers["HTTP-Referer"] = ref

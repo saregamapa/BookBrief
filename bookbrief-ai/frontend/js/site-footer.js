@@ -1,5 +1,5 @@
 /**
- * libraire — inject universal marketing footer into #bb-footer-slot.
+ * Libraire — inject universal marketing footer into #bb-footer-slot.
  */
 (function () {
   "use strict";
@@ -12,8 +12,8 @@
     '    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">' +
     '      <div class="lg:col-span-1">' +
     '        <a href="/frontend/index.html" class="mb-4 inline-flex items-center gap-2.5">' +
-    '          <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-700 text-base font-bold text-white shadow-sm dark:bg-amber-600">L</span>' +
-    '          <span class="font-serif-display text-base font-semibold text-stone-800 dark:text-stone-100">libraire</span>' +
+    '          <span class="text-2xl leading-none" aria-hidden="true">📚</span>' +
+    '          <span class="font-serif-display text-lg font-semibold text-stone-800 dark:text-stone-100">Libraire</span>' +
     "        </a>" +
     '        <p class="text-sm leading-relaxed text-stone-500 dark:text-stone-400">Read Less. Know More. Build Your AI-Powered Mind Library.</p>' +
     '        <div class="mt-5"><a href="mailto:hi@bookbriefai.com" class="text-xs font-medium text-amber-800 hover:underline dark:text-amber-400">✉ hi@bookbriefai.com</a></div>' +
@@ -49,7 +49,7 @@
     "  </div>" +
     '  <div class="border-t border-stone-200 dark:border-stone-800">' +
     '    <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">' +
-    '      <p class="text-center text-xs text-stone-400 dark:text-stone-500 sm:text-left">© 2026 libraire. All rights reserved.</p>' +
+    '      <p class="text-center text-xs text-stone-400 dark:text-stone-500 sm:text-left">© 2026 Libraire. All rights reserved.</p>' +
     '      <p class="text-center text-xs text-stone-500 dark:text-stone-400 sm:text-right">Made with Love for readers everywhere</p>' +
     "    </div>" +
     "  </div>" +

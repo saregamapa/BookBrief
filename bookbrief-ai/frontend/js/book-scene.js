@@ -1,6 +1,6 @@
 /**
  * book-scene.js — Shared Three.js floating 3D book scene
- * libraire — used on hero and page-header sections site-wide
+ * Libraire — used on hero and page-header sections site-wide
  *
  * Usage:
  *   import { initBookScene } from '/frontend/js/book-scene.js';
@@ -165,7 +165,7 @@ function makeCanvasCover(title, gradA, gradB) {
   ctx.shadowBlur = 0;
   ctx.font = '7px Arial, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.40)';
-  ctx.fillText('libraire', W / 2, H - 12);
+  ctx.fillText('Libraire', W / 2, H - 12);
 
   const tex = new THREE.CanvasTexture(cvs);
   tex.colorSpace = THREE.SRGBColorSpace;

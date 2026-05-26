@@ -63,7 +63,7 @@ def _create_tts_task(
 ) -> str:
     style = _VOICE_STYLE.get(voice.lower(), _VOICE_STYLE["onyx"])
     prompt = (
-        "BookBrief needs a single spoken audio file (text-to-speech).\n\n"
+        "Libraire needs a single spoken audio file (text-to-speech).\n\n"
         f"Narration style: {style}.\n\n"
         "Requirements:\n"
         "- Attach ONE audio file to your reply: MP3 preferred (WAV acceptable).\n"
@@ -80,7 +80,7 @@ def _create_tts_task(
         "interactive_mode": False,
         "hide_in_task_list": False,
         "agent_profile": agent_profile,
-        "title": "BookBrief TTS",
+        "title": "Libraire TTS",
         "structured_output_schema": _STRUCTURED_TTS_SCHEMA,
     }
     r = client.post(

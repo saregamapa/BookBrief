@@ -84,7 +84,7 @@ def synthesize_speech(
     model: str = "openai/gpt-4o-mini-tts",
     response_format: str = "mp3",
     referer: Optional[str] = None,
-    title: str = "libraire",
+    title: str = "Libraire",
     timeout_seconds: float = 300.0,
 ) -> bytes:
     """Return raw audio bytes (e.g. MP3)."""

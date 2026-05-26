@@ -49,7 +49,7 @@ ALLOWED_LOCALES: FrozenSet[str] = frozenset(
     }
 )
 
-_SYSTEM_PROMPT = """You are a professional translator for libraire.
+_SYSTEM_PROMPT = """You are a professional translator for Libraire.
 
 Rules:
 - Translate the user's Markdown book summary into the requested target language.

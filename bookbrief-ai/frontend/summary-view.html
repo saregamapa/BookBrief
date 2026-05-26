@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Summary — libraire</title>
+    <title>Libraire — Summary</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -196,8 +196,9 @@
           </svg>
           Library
         </a>
-        <a href="/frontend/index.html" class="flex items-center gap-2" aria-label="libraire home">
-          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-700 text-sm font-bold text-white" aria-hidden="true">L</span>
+        <a href="/frontend/index.html" class="group flex items-center gap-2" aria-label="Libraire home">
+          <span class="text-2xl leading-none" aria-hidden="true">📚</span>
+          <span class="font-serif-display text-lg font-semibold tracking-tight text-stone-900 dark:text-stone-50">Libraire</span>
         </a>
       </div>
     </header>
@@ -369,7 +370,7 @@
                 </li>
                 <li id="vp-row-3" class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-stone-400">
                   <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-stone-300 text-[10px] font-semibold">4</span>
-                  <span>Preparing playback in libraire</span>
+                  <span>Preparing playback in Libraire</span>
                 </li>
               </ol>
             </div>
@@ -490,7 +491,7 @@
 
         var title = data.title || "Untitled summary";
         document.getElementById("sum-title").textContent = title;
-        document.title = title + " — libraire";
+        document.title = title + " · Libraire";
 
         // Meta line
         var metaParts = [

@@ -307,7 +307,7 @@ def stream_video_summary_media(
     media_type = _guess_video_media_type(remote)
     ua = (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 BookBrief/1.0"
+        "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Libraire/1.0"
     )
 
     timeout = httpx.Timeout(300.0, connect=60.0)

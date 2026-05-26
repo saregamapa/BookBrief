@@ -1,5 +1,5 @@
 /**
- * libraire — fetch wrapper (same-origin API).
+ * Libraire — fetch wrapper (same-origin API).
  */
 (function (global) {
   "use strict";

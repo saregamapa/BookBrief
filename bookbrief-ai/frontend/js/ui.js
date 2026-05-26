@@ -1,5 +1,5 @@
 /**
- * libraire — theme toggle, toast notifications, skeleton loaders, and UI helpers.
+ * Libraire — theme toggle, toast notifications, skeleton loaders, and UI helpers.
  */
 (function (global) {
   "use strict";

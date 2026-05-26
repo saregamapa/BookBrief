@@ -28,7 +28,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "libraire"
+    app_name: str = "Libraire"
     debug: bool = False
     secret_key: str = Field(
         default="dev-only-change-me-in-production",
