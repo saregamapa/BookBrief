@@ -1286,14 +1286,39 @@ details[open] .bb-faq-icon {
   background: rgba(28,25,23,0.8);
 }
 
-.bb-price-card--featured {
+.bb-price-card--featured,
+.bb-price-card--popular {
   border-color: #b45309;
   border-width: 2px;
   box-shadow: 0 8px 32px -4px rgba(180,83,9,0.16);
+  overflow: visible;
+  z-index: 1;
 }
-.dark .bb-price-card--featured {
+.dark .bb-price-card--featured,
+.dark .bb-price-card--popular {
   border-color: #d97706;
   box-shadow: 0 8px 32px -4px rgba(217,119,6,0.18);
+}
+
+.bb-price-popular-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  white-space: nowrap;
+  border-radius: 9999px;
+  padding: 0.35rem 1.1rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #92400e, #d97706);
+  box-shadow: 0 4px 14px -2px rgba(180, 83, 9, 0.45);
+}
+.dark .bb-price-popular-badge {
+  background: linear-gradient(135deg, #b45309, #f59e0b);
 }
 
 .bb-price-header {
