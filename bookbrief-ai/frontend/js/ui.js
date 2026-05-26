@@ -1,5 +1,5 @@
 /**
- * BookBrief AI — theme toggle, toast notifications, skeleton loaders, and UI helpers.
+ * libraire — theme toggle, toast notifications, skeleton loaders, and UI helpers.
  */
 (function (global) {
   "use strict";

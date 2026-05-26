@@ -1,5 +1,5 @@
 /**
- * BookBrief AI — JWT session helpers.
+ * libraire — JWT session helpers.
  */
 (function (global) {
   "use strict";

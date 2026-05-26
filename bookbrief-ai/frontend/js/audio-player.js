@@ -1,5 +1,5 @@
 /**
- * BookBrief AI Audio Player
+ * libraire Audio Player
  * ─────────────────────────
  * Provides two playback modes:
  *   • Audiobook — straight TTS narration, section-by-section
@@ -195,7 +195,7 @@
   // Injected CSS
   // ═══════════════════════════════════════════════════════════════════════════
   const PLAYER_CSS = `
-/* ── BookBrief Audio Player ─────────────────────────────────────────────── */
+/* ── libraire Audio Player ─────────────────────────────────────────────── */
 #bb-audio-player {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
   background: #1a1a2e; color: #e8e8f0;

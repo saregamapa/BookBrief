@@ -28,7 +28,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "BookBrief AI"
+    app_name: str = "libraire"
     debug: bool = False
     secret_key: str = Field(
         default="dev-only-change-me-in-production",

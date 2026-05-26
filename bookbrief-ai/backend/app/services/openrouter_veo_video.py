@@ -131,7 +131,7 @@ def _submit_and_poll_clip(
     emit("agent_working", f"Submitting {clip_label} to OpenRouter (Google Veo)…")
     cr = client.post(
         f"{root}/videos",
-        headers={**_headers(api_key, referer, "BookBrief"), "Content-Type": "application/json"},
+        headers={**_headers(api_key, referer, "libraire"), "Content-Type": "application/json"},
         json=payload,
         timeout=httpx.Timeout(120.0, connect=30.0),
     )
@@ -157,7 +157,7 @@ def _submit_and_poll_clip(
     while time.monotonic() < deadline:
         pr = client.get(
             poll_url,
-            headers=_headers(api_key, referer, "BookBrief"),
+            headers=_headers(api_key, referer, "libraire"),
             timeout=httpx.Timeout(30.0, connect=15.0),
         )
         if pr.status_code >= 400:
@@ -203,7 +203,7 @@ def _submit_and_poll_clip(
     emit("agent_working", f"Downloading {clip_label}…")
     parsed = urlparse(video_http)
     host = (parsed.hostname or "").lower()
-    dl_headers = _headers(api_key, referer, "BookBrief") if "openrouter" in host else None
+    dl_headers = _headers(api_key, referer, "libraire") if "openrouter" in host else None
 
     dl = client.get(
         video_http,
@@ -214,7 +214,7 @@ def _submit_and_poll_clip(
     if dl.status_code == 401 and dl_headers is None:
         dl = client.get(
             video_http,
-            headers=_headers(api_key, referer, "BookBrief"),
+            headers=_headers(api_key, referer, "libraire"),
             timeout=httpx.Timeout(600.0, connect=60.0),
             follow_redirects=True,
         )

@@ -1,5 +1,5 @@
 /**
- * BookBrief AI — fetch wrapper (same-origin API).
+ * libraire — fetch wrapper (same-origin API).
  */
 (function (global) {
   "use strict";
