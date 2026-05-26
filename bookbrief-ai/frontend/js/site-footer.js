@@ -50,7 +50,7 @@
     '  <div class="border-t border-stone-200 dark:border-stone-800">' +
     '    <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">' +
     '      <p class="text-center text-xs text-stone-400 dark:text-stone-500 sm:text-left">© 2026 Libraire. All rights reserved.</p>' +
-    '      <p class="text-center text-xs text-stone-500 dark:text-stone-400 sm:text-right">Made with Love for readers everywhere</p>' +
+    '      <p class="text-center text-xs text-stone-500 dark:text-stone-400 sm:text-right">Made with <span aria-hidden="true">❤️</span> for readers everywhere</p>' +
     "    </div>" +
     "  </div>" +
     "</footer>";
