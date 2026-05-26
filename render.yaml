@@ -64,6 +64,10 @@ services:
         value: "false"
       - key: OPENROUTER_SUMMARY_MODEL
         value: "google/gemma-4-26b-a4b-it"
+      - key: SUMMARY_LLM_TIMEOUT_SECONDS
+        value: "50"
+      - key: SUMMARY_MAX_INPUT_CHARS
+        value: "28000"
       - key: OPENROUTER_PODCAST_MODEL
         value: "openai/gpt-4o-mini"
       - key: OPENROUTER_TTS_MODEL

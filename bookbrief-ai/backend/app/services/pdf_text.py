@@ -8,8 +8,8 @@ import fitz  # PyMuPDF
 def extract_text_from_pdf(
     file_bytes: bytes,
     *,
-    max_pages: int = 30,
-    max_total_chars: int = 200_000,
+    max_pages: int = 24,
+    max_total_chars: int = 80_000,
 ) -> str:
     """
     Read up to ``max_pages`` pages and concatenate text.

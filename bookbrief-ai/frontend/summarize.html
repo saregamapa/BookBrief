@@ -508,7 +508,7 @@
               }
               var res = await BBApi.summaries.createJson(body);
               summaryId = res.id;
-              showProgress("Running multi-step summarization pipeline…");
+              showProgress("Generating your summary (usually under 60 seconds)…");
             }
           } catch (err) {
             btn.disabled = false;
@@ -521,7 +521,8 @@
           try {
             await BBApi.summaries.pollUntilDone(summaryId, {
               onStatus: onStatusUpdate,
-              timeoutMs: 360000, // 6 min
+              intervalMs: 1000,
+              timeoutMs: 90000,
             });
             allDone();
             setTimeout(function () {

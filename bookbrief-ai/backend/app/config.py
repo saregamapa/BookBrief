@@ -65,6 +65,25 @@ class Settings(BaseSettings):
         default="google/gemma-4-26b-a4b-it",
         alias="OPENROUTER_SUMMARY_MODEL",
     )
+    # Summarization speed — single-pass pipeline targets SUMMARY_TARGET_SECONDS wall clock.
+    summary_max_input_chars: int = Field(
+        default=28_000,
+        ge=8_000,
+        le=80_000,
+        alias="SUMMARY_MAX_INPUT_CHARS",
+    )
+    summary_llm_timeout_seconds: float = Field(
+        default=50.0,
+        ge=15.0,
+        le=120.0,
+        alias="SUMMARY_LLM_TIMEOUT_SECONDS",
+    )
+    summary_target_seconds: int = Field(
+        default=60,
+        ge=30,
+        le=180,
+        alias="SUMMARY_TARGET_SECONDS",
+    )
     # Chat JSON — podcast script only (must support chat completions + JSON mode on OpenRouter).
     openrouter_podcast_model: str = Field(
         default="openai/gpt-4o-mini",

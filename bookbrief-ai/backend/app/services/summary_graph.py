@@ -1,22 +1,35 @@
 """
-LangGraph multi-step summarization: chunk → extract → draft → refine.
+LangGraph summarization optimized for sub-60-second completion.
 
-Public entry: `run_summarization(...)`.
+Pipeline (2 nodes):
+  prepare — resolve title-only input, cap source length for one fast LLM pass
+  summarize — single publication-ready markdown call (no per-chunk extract, no separate refine)
+
+Public entry: ``run_summarization(...)``.
 """
 
 from __future__ import annotations
 
+import time
 from functools import lru_cache
-from typing import Any, List, Optional, TypedDict
+from typing import Any, Optional, TypedDict
 
+import structlog
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 
 from app.config import get_settings
 from app.models.enums import SummaryStyle
-from app.services.chunking import chunk_source_text
 from app.services.summary_prompts import style_instruction
+
+log = structlog.get_logger(__name__)
+
+_SUMMARIZE_SYSTEM = (
+    "You are BookBrief AI: precise, readable, bookish tone. "
+    "Output polished markdown only — use ## and ### headings, one top-level # title if appropriate. "
+    "No preamble, no code fences, no meta commentary about being an AI."
+)
 
 
 def _has_summarization_api_key() -> bool:
@@ -24,7 +37,7 @@ def _has_summarization_api_key() -> bool:
 
 
 def _llm() -> ChatOpenAI:
-    """LangChain chat pointed at OpenRouter using ``OPENROUTER_SUMMARY_MODEL``."""
+    """OpenRouter chat client with tight timeout for the <60s product target."""
     settings = get_settings()
     key = (settings.openrouter_api_key or "").strip()
     model = (settings.openrouter_summary_model or "").strip() or "google/gemma-4-26b-a4b-it"
@@ -33,25 +46,32 @@ def _llm() -> ChatOpenAI:
     ref = (settings.openrouter_http_referer or "").strip()
     if ref:
         headers["HTTP-Referer"] = ref
+    timeout = float(settings.summary_llm_timeout_seconds)
     return ChatOpenAI(
         model=model,
-        temperature=0.25,
+        temperature=0.2,
         api_key=key or None,
         base_url=root,
         default_headers=headers,
+        timeout=timeout,
+        max_retries=1,
     )
 
-_EXTRACT_SYSTEM = (
-    "You are an expert analytical reader. From the excerpt, extract: main claims or plot beats, "
-    "supporting evidence or scenes, important definitions or characters, and any turning points. "
-    "Respond in concise bullet lists grouped by subtopic. Stay faithful to the excerpt—do not invent beyond reasonable inference."
-)
 
-_REFINE_SYSTEM = (
-    "You are an editor polishing a book summary for publication. Improve clarity, flow, and markdown structure. "
-    "Use ## and ### headings where helpful, keep a single top-level title as # only once if appropriate. "
-    "Remove redundancy and fix awkward phrasing. Preserve factual meaning. Output markdown only, no preamble."
-)
+def _cap_source_text(text: str, max_chars: int) -> str:
+    """Fit long books into one LLM context window (head + tail preserves arc)."""
+    text = (text or "").strip()
+    if len(text) <= max_chars:
+        return text
+    head_len = int(max_chars * 0.72)
+    tail_len = max_chars - head_len - 80
+    if tail_len < 2000:
+        return text[:max_chars] + "\n\n[... truncated for speed ...]\n"
+    return (
+        text[:head_len]
+        + "\n\n[... middle of source omitted to meet speed target — beginning and ending preserved ...]\n\n"
+        + text[-tail_len:]
+    )
 
 
 class SummaryState(TypedDict, total=False):
@@ -61,9 +81,6 @@ class SummaryState(TypedDict, total=False):
     style: str
     personalization_context: str
     error: str
-    chunks: List[str]
-    extracted_notes: str
-    draft_summary: str
     final_markdown: str
 
 
@@ -74,13 +91,13 @@ def _parse_style(value: str) -> SummaryStyle:
         return SummaryStyle.standard
 
 
-def _prepare_source_and_chunks(state: SummaryState) -> dict[str, Any]:
+def _prepare_source(state: SummaryState) -> dict[str, Any]:
     if not _has_summarization_api_key():
         return {
             "error": "OPENROUTER_API_KEY is not configured (required for summarization).",
-            "chunks": [],
         }
 
+    settings = get_settings()
     text = (state.get("source_text") or "").strip()
     title = (state.get("title") or "").strip()
     author = (state.get("author") or "").strip()
@@ -92,99 +109,44 @@ def _prepare_source_and_chunks(state: SummaryState) -> dict[str, Any]:
             meta += f"\nAuthor: {author}"
         human = (
             meta
-            + "\n\nBased on widely available public knowledge of this work, write 700–1100 words of neutral "
-            "factual overview: premise, structure, major themes, and ideas a reader should know before a deeper read. "
-            "If the title might refer to multiple works or you are uncertain, say so briefly and still give a careful, "
-            "tentative overview labeled as uncertain."
+            + "\n\nIn 450–650 words, give a neutral factual overview from widely known information: "
+            "premise, structure, major themes, and key ideas. If uncertain which edition/work, say so briefly."
         )
         try:
             resp = llm.invoke(
                 [
                     SystemMessage(
-                        content="You help readers by synthesizing well-known information about books. "
-                        "Do not claim to quote the book unless citing widely known lines. No markdown code fences."
+                        content="Synthesize well-known book information. No code fences. Be concise."
                     ),
                     HumanMessage(content=human),
                 ]
             )
             text = (resp.content or "").strip()
         except Exception as exc:  # noqa: BLE001
-            return {"error": f"Could not expand title/author into text: {exc}", "chunks": []}
+            return {"error": f"Could not expand title/author into text: {exc}"}
 
         if not text:
-            return {"error": "Title lookup produced empty text.", "chunks": []}
+            return {"error": "Title lookup produced empty text."}
 
     if not text:
-        return {"error": "No source text provided. Paste an excerpt, upload a PDF (processed elsewhere), or supply a book title.", "chunks": []}
-
-    chunks = chunk_source_text(text)
-    return {"source_text": text, "chunks": chunks}
-
-
-def _extract_key_sections(state: SummaryState) -> dict[str, Any]:
-    if state.get("error"):
-        return {"extracted_notes": ""}
-
-    chunks = state.get("chunks") or []
-    if not chunks:
-        return {"error": state.get("error") or "No chunks to process.", "extracted_notes": ""}
-
-    llm = _llm()
-    notes_parts: list[str] = []
-    max_segments = 10
-    try:
-        for i, chunk in enumerate(chunks[:max_segments]):
-            human = (
-                f"Excerpt segment {i + 1} of {len(chunks)}:\n\n"
-                f"{chunk[:11000]}"
-            )
-            resp = llm.invoke(
-                [SystemMessage(content=_EXTRACT_SYSTEM), HumanMessage(content=human)]
-            )
-            notes_parts.append(f"### Segment {i + 1}\n{(resp.content or '').strip()}")
-
-        merged = "\n\n".join(notes_parts)
-        if len(chunks) > max_segments:
-            merged += (
-                f"\n\n_Note: {len(chunks) - max_segments} further segment(s) were not processed "
-                "to control cost; consider shortening the source._\n"
-            )
-
-        if len(merged) > 16000:
-            merged = merged[:16000] + "\n\n[... extraction truncated ...]\n"
-
-        if len(chunks) > 1:
-            # Second pass: compress cross-segment notes when multiple chunks were used
-            compress_msg = (
-                "Merge and de-duplicate the following segment-level notes into one coherent outline "
-                "(headings + bullets). Preserve nuance; drop repetition.\n\n"
-                + merged[:14000]
-            )
-            resp2 = llm.invoke(
-                [
-                    SystemMessage(content="You consolidate reader notes into one structured outline."),
-                    HumanMessage(content=compress_msg),
-                ]
-            )
-            merged = (resp2.content or merged).strip()
-
-        return {"extracted_notes": merged}
-    except Exception as exc:  # noqa: BLE001
-        return {"error": f"Extraction failed: {exc}", "extracted_notes": ""}
-
-
-def _summarize(state: SummaryState) -> dict[str, Any]:
-    if state.get("error"):
-        err = state["error"]
         return {
-            "draft_summary": f"# Summary unavailable\n\n{err}\n",
+            "error": "No source text provided. Paste an excerpt, upload a PDF (processed elsewhere), or supply a book title.",
         }
 
-    style = _parse_style(state.get("style") or "standard")
-    notes = (state.get("extracted_notes") or "").strip()
-    if not notes:
-        return {"draft_summary": "# Summary unavailable\n\nNo extracted notes to summarize.\n"}
+    capped = _cap_source_text(text, settings.summary_max_input_chars)
+    return {"source_text": capped}
 
+
+def _summarize_once(state: SummaryState) -> dict[str, Any]:
+    if state.get("error"):
+        err = state["error"]
+        return {"final_markdown": f"# Summary unavailable\n\n{err}\n"}
+
+    text = (state.get("source_text") or "").strip()
+    if not text:
+        return {"final_markdown": "# Summary unavailable\n\nNo source text to summarize.\n"}
+
+    style = _parse_style(state.get("style") or "standard")
     title = (state.get("title") or "").strip()
     author = (state.get("author") or "").strip()
     pers = (state.get("personalization_context") or "").strip()
@@ -192,6 +154,8 @@ def _summarize(state: SummaryState) -> dict[str, Any]:
     book_line = ""
     if title:
         book_line = f"Book: *{title}*" + (f" — {author}" if author else "")
+    elif author:
+        book_line = f"Author: {author}"
 
     style_block = style_instruction(style)
     pers_block = ""
@@ -200,71 +164,52 @@ def _summarize(state: SummaryState) -> dict[str, Any]:
     elif pers:
         pers_block = f"\nOptional reader context:\n{pers}\n"
 
+    title_hint = ""
+    if title:
+        title_hint = f"\nUse `# {title}` as the main title line.\n"
+
     human = (
         f"{book_line}\n\n"
         f"{style_block}\n"
-        f"{pers_block}\n"
+        f"{pers_block}"
+        f"{title_hint}\n"
         "---\n"
-        "Structured notes from the source material:\n\n"
-        f"{notes}\n"
+        "Source material:\n\n"
+        f"{text}\n"
         "---\n"
-        "Write the summary in polished markdown. Match the requested style and length guidance."
+        "Write the complete summary now in polished markdown matching the style above."
     )
 
-    llm = _llm()
+    settings = get_settings()
+    t0 = time.monotonic()
     try:
-        resp = llm.invoke(
+        resp = _llm().invoke(
             [
-                SystemMessage(
-                    content="You are BookBrief AI: precise, readable, bookish tone. Output markdown only."
-                ),
-                HumanMessage(content=human[:118000]),
+                SystemMessage(content=_SUMMARIZE_SYSTEM),
+                HumanMessage(content=human[: settings.summary_max_input_chars + 8000]),
             ]
         )
-        return {"draft_summary": (resp.content or "").strip() or "# Summary\n\n(Empty model response.)\n"}
+        out = (resp.content or "").strip() or "# Summary\n\n(Empty model response.)\n"
+        elapsed = time.monotonic() - t0
+        log.info(
+            "summary_llm_done",
+            elapsed_s=round(elapsed, 2),
+            target_s=settings.summary_target_seconds,
+            source_chars=len(text),
+        )
+        return {"final_markdown": out}
     except Exception as exc:  # noqa: BLE001
-        return {"draft_summary": f"# Summary unavailable\n\nSummarization failed: {exc}\n"}
-
-
-def _refine_and_format(state: SummaryState) -> dict[str, Any]:
-    draft = (state.get("draft_summary") or "").strip()
-    if not draft:
-        return {"final_markdown": "# Summary\n\n(Empty draft.)\n"}
-
-    if draft.startswith("# Summary unavailable"):
-        return {"final_markdown": draft}
-
-    title = (state.get("title") or "").strip()
-    llm = _llm()
-    hint = ""
-    if title and not draft.lstrip().startswith("#"):
-        hint = f"Prefer starting with a single markdown title line: # {title}\n\n"
-
-    try:
-        resp = llm.invoke(
-            [
-                SystemMessage(content=_REFINE_SYSTEM),
-                HumanMessage(content=hint + "Draft to polish:\n\n" + draft[:118000]),
-            ]
-        )
-        out = (resp.content or draft).strip()
-        return {"final_markdown": out or draft}
-    except Exception:  # noqa: BLE001
-        return {"final_markdown": draft}
+        return {"final_markdown": f"# Summary unavailable\n\nSummarization failed: {exc}\n"}
 
 
 @lru_cache(maxsize=1)
 def get_compiled_summary_graph() -> Any:
     graph = StateGraph(SummaryState)
-    graph.add_node("prepare", _prepare_source_and_chunks)
-    graph.add_node("extract", _extract_key_sections)
-    graph.add_node("summarize", _summarize)
-    graph.add_node("refine", _refine_and_format)
+    graph.add_node("prepare", _prepare_source)
+    graph.add_node("summarize", _summarize_once)
     graph.add_edge(START, "prepare")
-    graph.add_edge("prepare", "extract")
-    graph.add_edge("extract", "summarize")
-    graph.add_edge("summarize", "refine")
-    graph.add_edge("refine", END)
+    graph.add_edge("prepare", "summarize")
+    graph.add_edge("summarize", END)
     return graph.compile()
 
 
@@ -277,11 +222,13 @@ def run_summarization(
     personalization_context: Optional[str] = None,
 ) -> str:
     """
-    Run the LangGraph summarization pipeline and return markdown.
+    Run the fast summarization pipeline and return markdown.
 
-    Provide either ``source_text`` (paste/PDF extraction) or ``title`` (and optionally ``author``)
-    for a model-generated overview that is then summarized like other inputs.
+    Typical path: 1 LLM call (paste/PDF). Title-only: 2 calls (expand + summarize).
+    Designed to complete within ``SUMMARY_TARGET_SECONDS`` when the model/API is healthy.
     """
+    settings = get_settings()
+    t0 = time.monotonic()
     graph = get_compiled_summary_graph()
     result = graph.invoke(
         {
@@ -291,5 +238,12 @@ def run_summarization(
             "style": style.value,
             "personalization_context": personalization_context or "",
         }
+    )
+    elapsed = time.monotonic() - t0
+    log.info(
+        "run_summarization_complete",
+        elapsed_s=round(elapsed, 2),
+        target_s=settings.summary_target_seconds,
+        style=style.value,
     )
     return (result.get("final_markdown") or "").strip()

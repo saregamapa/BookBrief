@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import traceback
 from collections import defaultdict
-from time import time
+from time import monotonic, time
 from typing import DefaultDict, List, Optional
 
 import structlog
@@ -151,6 +151,7 @@ def _bg_run_summarization(
         log.info("summarization_started", summary_id=summary_id, user_id=user_id, style=style.value)
 
         try:
+            _t0 = monotonic()
             md = run_summarization(
                 source_text=source_text,
                 title=title,
@@ -158,6 +159,7 @@ def _bg_run_summarization(
                 style=style,
                 personalization_context=personalization,
             )
+            _elapsed = monotonic() - _t0
             row = db.get(BookSummary, summary_id)
             if row is None:
                 return  # Deleted while processing — nothing to do.
@@ -170,7 +172,12 @@ def _bg_run_summarization(
                 )
             else:
                 row.error_message = None
-            log.info("summarization_completed", summary_id=summary_id, user_id=user_id)
+            log.info(
+                "summarization_completed",
+                summary_id=summary_id,
+                user_id=user_id,
+                elapsed_s=round(_elapsed, 2),
+            )
         except Exception as exc:  # noqa: BLE001
             log.error(
                 "summarization_failed",
