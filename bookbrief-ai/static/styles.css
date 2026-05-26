@@ -933,6 +933,7 @@ h1 em, h2 em, h3 em {
 .bb-process-grid {
   display: grid;
   gap: 2rem;
+  overflow: visible;
 }
 @media (min-width: 768px) { .bb-process-grid { grid-template-columns: repeat(3, 1fr); gap: 2.5rem; } }
 
@@ -941,11 +942,15 @@ h1 em, h2 em, h3 em {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow: visible;
 }
-/* horizontal connector on desktop */
+/* horizontal connector between steps (desktop) */
+.bb-process-connector {
+  display: none;
+}
 @media (min-width: 768px) {
-  .bb-process-step:not(:last-child)::after {
-    content: '';
+  .bb-process-step:not(:last-child) .bb-process-connector {
+    display: block;
     position: absolute;
     top: 22px;
     left: calc(100% + 1.25rem);
@@ -953,6 +958,10 @@ h1 em, h2 em, h3 em {
     height: 1px;
     background: linear-gradient(90deg, rgba(217,119,6,0.4), rgba(217,119,6,0.08));
     pointer-events: none;
+    z-index: 2;
+  }
+  .bb-process-step:nth-child(1) .bb-process-connector {
+    z-index: 4;
   }
 }
 
